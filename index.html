@@ -133,7 +133,7 @@ km:"km",m:"m",locok:"Position :",locno:"Position inconnue",locfail:"Localisation
 paid:"Payé",none:"Aucune offre trouvée",err:"Erreur réseau",cheapest:"Moins cher",same:"Prix équivalent",
 tpaid:"Total payé",tbest:"Total optimisé",tsave:"Économie possible",tfound:"Articles comparés",online_tag:"En ligne",mine:"Mon ticket",away:"à",
 bstat:(n,i)=>`${n} ticket(s), ${i} article(s) enregistrés.`,confirmclear:"Effacer toute la base locale ?",needloc:"Indiquez d’abord votre position (ou choisissez Internet).",
-srcnote:"Cliquez sur une offre pour la retenir."},
+srcnote:"Cliquez sur une offre pour la retenir.",nearbest:"Le moins cher à proximité",nonear:"Aucune offre dans le périmètre",outside:"Prix moins chers hors périmètre",viewfar:"Voir",hidefar:"Masquer",remove:"Retirer de la liste",restore:"Remettre",removed:"Article retiré du résultat",noprice:"prix payé inconnu",saveby:"économie",nothing:"Aucun article à comparer. Ajoutez au moins un nom d’article."},
 en:{s1:"Scan a receipt",s1h:"Take a photo of a receipt you already paid: the app reads the store, the items and the prices paid.",photo:"📷 Scan / pick a photo",manual:"Paste text",demo:"Sample receipt",rawph:"Paste the receipt text here…",analyse:"Analyse",
 s2:"Check the items read",store:"Store",date:"Date",item:"Item (receipt)",search:"Search term",qty:"Qty",total:"Total €",addrow:"+ Add an item",searchhint:"Receipt names are often abbreviated: adjust the “search term” (e.g. “semi-skimmed milk”) for better results.",
 s3:"Where to search?",near:"Around me",online:"Online",radius:"Search radius:",geo:"📍 Locate me",addrph:"or type a city / address",find:"Search",keep:"Add this receipt to my local price base (on this device)",compare:"Find the cheapest prices",
@@ -144,7 +144,7 @@ km:"km",m:"m",locok:"Position:",locno:"Position unknown",locfail:"Location denie
 paid:"Paid",none:"No offer found",err:"Network error",cheapest:"Cheapest",same:"Same price",
 tpaid:"Total paid",tbest:"Optimised total",tsave:"Possible saving",tfound:"Items compared",online_tag:"Online",mine:"My receipt",away:"at",
 bstat:(n,i)=>`${n} receipt(s), ${i} item(s) saved.`,confirmclear:"Clear the whole local base?",needloc:"Set your location first (or choose Online).",
-srcnote:"Click an offer to select it."}};
+srcnote:"Click an offer to select it.",nearbest:"Cheapest nearby",nonear:"No offer within the radius",outside:"Cheaper prices outside the radius",viewfar:"Show",hidefar:"Hide",remove:"Remove from list",restore:"Restore",removed:"Item removed from the result",noprice:"price paid unknown",saveby:"saving",nothing:"No item to compare. Add at least one item name."}};
 let lang=localStorage.getItem('pm_lang')||((navigator.language||'fr').startsWith('en')?'en':'fr');
 const t=k=>T[lang][k];
 function applyLang(){
@@ -169,18 +169,34 @@ function parseReceipt(text){
   if(!store&&lines[0]&&!/\d{2}[.,]\d{2}/.test(lines[0]))store=lines[0].slice(0,40);
   const dm=text.match(/(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/);
   if(dm){let y=dm[3].length===2?'20'+dm[3]:dm[3];date=`${y}-${dm[2].padStart(2,'0')}-${dm[1].padStart(2,'0')}`;}
-  const out=[];
+  const out=[],pending=[];
+  const PRICE_ONLY=/^\s*(-?\d{1,4}[.,]\s?\d{2})\s*(?:€|eur)?\s*[A-Z*]?\s*$/i;
+  const HEADER=/(\b\d{5}\b|\brue\b|\bavenue\b|\bav\.|\bbd\b|boulevard|\bplace\b|\bzone\b|\bcentre\b|\d{2}[ .]\d{2}[ .]\d{2}[ .]\d{2}|\d{1,2}[\/.\-]\d{1,2}[\/.\-]\d{2,4}|\d{1,2}[:h]\d{2})/i;
+  const low=store.toLowerCase();
   for(const ln of lines){
     if(SKIP.test(ln))continue;
-    const m=ln.match(PRICE_END);if(!m)continue;
-    let name=m[1].trim(),price=parseFloat(m[2].replace(/\s/,'').replace(',','.'));
-    if(!(price>0)||price>999)continue;
+    const po=ln.match(PRICE_ONLY);
+    if(po){
+      const price=parseFloat(po[1].replace(/\s/,'').replace(',','.'));
+      const it=pending.shift();
+      if(it&&price>0&&price<1000)it.total=price;
+      continue;
+    }
+    let name,price=0;
+    const m=ln.match(PRICE_END);
+    if(m){name=m[1].trim();price=parseFloat(m[2].replace(/\s/,'').replace(',','.'));if(!(price>0)||price>999)continue;}
+    else{
+      if(HEADER.test(ln)||(low&&ln.toLowerCase().includes(low))||ln===lines[0])continue;
+      name=ln.trim();
+    }
     let qty=1;
     const q=name.match(/^(\d{1,2})\s*[x×*]\s*(.*)$/i);
     if(q){qty=parseInt(q[1],10);name=q[2];}
     name=name.replace(/\s*\d+\s*[x×]\s*\d+[.,]\d{2}\s*$/i,'').replace(/[\s.*]+$/,'').trim();
-    if((name.match(/[A-Za-zÀ-ÿ]/g)||[]).length<3)continue;
-    out.push({name,term:searchTerm(name),qty,total:price});
+    if((name.match(/[A-Za-zÀ-ÿ]/g)||[]).length<3||name.length>60)continue;
+    const it={name,term:searchTerm(name),qty,total:price};
+    out.push(it);
+    if(!price)pending.push(it);
   }
   return{store,date,items:out};
 }
@@ -284,12 +300,10 @@ async function findCodes(term){
   }
   return[];
 }
-async function fetchOpen(term,mode){
-  const codes=await findCodes(term);
-  if(!codes.length)return[];
+async function fetchPrices(codes,mode,radius,term){
   const p=new URLSearchParams({product_code__in:codes.join(','),currency:'EUR',order_by:'price',size:'30'});
   if(mode==='online')p.set('location__type','ONLINE');
-  else{p.set('lat',loc.lat);p.set('lon',loc.lon);p.set('radius_km',radKm());}
+  else{p.set('lat',loc.lat);p.set('lon',loc.lon);p.set('radius_km',radius);}
   const r=await fetch('https://prices.openfoodfacts.org/api/v1/prices?'+p);
   if(!r.ok)throw new Error(r.status);
   const j=await r.json();
@@ -300,71 +314,105 @@ async function fetchOpen(term,mode){
       product:[P.product_name,P.brands,P.quantity].filter(Boolean).join(' · ')||term,date:x.date||'',dist:d,online:L.type==='ONLINE',src:'op'};
   });
 }
-function fromBase(term,mode,paidStore){
-  const toks=norm(term).split(/\s+/).filter(Boolean);if(!toks.length)return[];
+const WIDE=100;
+async function fetchOpen(term,mode){
+  const codes=await findCodes(term);
+  if(!codes.length)return[];
+  if(mode==='online')return fetchPrices(codes,mode,0,term);
+  const [a,b]=await Promise.all([fetchPrices(codes,mode,radKm(),term),fetchPrices(codes,mode,Math.max(WIDE,radKm()),term)]);
+  return a.concat(b);
+}
+function fromBase(term,mode){
+  const toks=norm(term).split(/\s+/).filter(Boolean);if(!toks.length||mode!=='near')return[];
   const out=[];
   for(const rc of getBase()){
-    if(mode==='near'){if(rc.lat==null)continue;if(hav(loc.lat,loc.lon,rc.lat,rc.lon)>radKm())continue;}
-    else continue;
+    if(rc.lat==null)continue;
+    const dist=hav(loc.lat,loc.lon,rc.lat,rc.lon);if(dist>Math.max(WIDE,radKm()))continue;
     for(const it of rc.items){
       const n=norm(it.name);if(!toks.every(w=>n.includes(w)))continue;
-      out.push({price:it.total/(it.qty||1),store:rc.store||'?',city:'',product:it.name,date:rc.date||'',dist:rc.lat!=null?hav(loc.lat,loc.lon,rc.lat,rc.lon):null,online:false,src:'mine'});
+      out.push({price:it.total/(it.qty||1),store:rc.store||'?',city:'',product:it.name,date:rc.date||'',dist,online:false,src:'mine'});
     }
   }
   return out;
 }
+const fd=d=>d==null?'':(d<1?Math.round(d*1000)+' m':d.toFixed(1)+' km');
 $('go').onclick=async()=>{
   const mode=getMode();
-  if(mode==='near'&&!loc){$('locmsg').textContent=t('needloc');return;}
-  const valid=items.filter(i=>i.name.trim()&&i.total>0);if(!valid.length)return;
+  if(mode==='near'&&!loc){$('locmsg').textContent=t('needloc');$('nearbox').scrollIntoView({behavior:'smooth'});return;}
+  const valid=items.filter(i=>i.name.trim());
+  $('res').hidden=false;$('list').innerHTML='';$('summary').innerHTML='';$('rbari').style.width='0';
+  $('res').scrollIntoView({behavior:'smooth'});
+  if(!valid.length){$('list').innerHTML='<p class="err">'+esc(t('nothing'))+'</p>';return;}
   const store=$('store').value.trim(),date=$('rdate').value.trim();
-  // snapshot of base BEFORE adding the current receipt, so it is not compared with itself
   const baseBefore=getBase();
-  $('res').hidden=false;$('res').scrollIntoView({behavior:'smooth'});
-  $('list').innerHTML='';$('summary').innerHTML='';$('rbari').style.width='0';
+  $('go').disabled=true;
   const results=new Array(valid.length);let done=0;
   const work=async(i)=>{
     const it=valid[i],term=(it.term||searchTerm(it.name)).trim();
-    const unit=it.total/(it.qty||1);
+    const unit=it.total>0?it.total/(it.qty||1):0;
     let offers=[],err=false;
     try{offers=await fetchOpen(term,mode);}catch{err=true;}
     offers=offers.concat(fromBase(term,mode));
     offers.sort((a,b)=>a.price-b.price);
-    {const seen=new Set();offers=offers.filter(o=>{const k=o.store+'|'+o.product+'|'+o.price;if(seen.has(k))return false;seen.add(k);return true;});}
-    results[i]={it,unit,term,offers:offers.slice(0,6),sel:0,err};
+    const seen=new Set();offers=offers.filter(o=>{const k=o.store+'|'+o.product+'|'+o.price;if(seen.has(k))return false;seen.add(k);return true;});
+    const R=radKm();
+    const isNear=o=>mode==='online'||o.dist==null||o.dist<=R;
+    const near=offers.filter(isNear).slice(0,5),far=offers.filter(o=>!isNear(o)).slice(0,5);
+    results[i]={it,unit,term,near,far,sel:near[0]||null,showFar:false,off:false,err};
     $('rbari').style.width=Math.round(++done/valid.length*100)+'%';
   };
   const q=valid.map((_,i)=>i);
-  await Promise.all([0,1,2].map(async()=>{while(q.length)await work(q.shift());}));
+  try{await Promise.all([0,1,2].map(async()=>{while(q.length)await work(q.shift());}));}
+  finally{$('go').disabled=false;}
   renderResults(results);
   if($('keep').checked){
-    const b=baseBefore;
-    b.push({store,date,lat:loc?loc.lat:null,lon:loc?loc.lon:null,items:valid.map(i=>({name:i.name,qty:i.qty||1,total:i.total}))});
-    setBase(b);baseStat();
+    const priced=valid.filter(i=>i.total>0);
+    if(priced.length){baseBefore.push({store,date,lat:loc?loc.lat:null,lon:loc?loc.lon:null,items:priced.map(i=>({name:i.name,qty:i.qty||1,total:i.total}))});setBase(baseBefore);baseStat();}
   }
 };
+function offerRow(R,r,o){
+  const row=document.createElement('div');row.className='offer'+(o===r.sel?' sel':'');
+  const cls=r.unit>0?(o.price<r.unit-0.005?'cheap':(o.price>r.unit+0.005?'dear':'')):'';
+  const where=o.online?t('online_tag'):[o.city,fd(o.dist)].filter(Boolean).join(' · ');
+  row.innerHTML=`<span><b>${esc(o.store)}</b>${o.src==='mine'?`<span class="tag">${t('mine')}</span>`:''}<br><span class="small">${esc(o.product)}${where?' — '+esc(where):''}${o.date?' — '+esc(o.date):''}</span></span><span class="pr ${cls}">${fmt(o.price)}</span>`;
+  row.onclick=()=>{r.sel=o;renderResults(R);};
+  return row;
+}
 function renderResults(R){
   const L=$('list');L.innerHTML='';
-  R.forEach((r,ri)=>{
+  R.forEach(r=>{
     const d=document.createElement('div');d.className='item';
     const h=document.createElement('div');h.className='ihead';
-    h.innerHTML=`<span>${esc(r.it.name)} ${r.it.qty>1?'×'+r.it.qty:''}</span><span class="paid">${t('paid')} : ${fmt(r.unit)}${r.it.qty>1?' /u':''}</span>`;
-    d.appendChild(h);
-    if(r.err&&!r.offers.length){const e=document.createElement('div');e.className='err';e.textContent=t('err');d.appendChild(e);}
-    else if(!r.offers.length){const e=document.createElement('div');e.className='small';e.textContent=t('none')+' (« '+r.term+' »)';d.appendChild(e);}
-    r.offers.forEach((o,oi)=>{
-      const row=document.createElement('div');row.className='offer'+(oi===r.sel?' sel':'');
-      const cls=o.price<r.unit-0.005?'cheap':(o.price>r.unit+0.005?'dear':'');
-      const where=o.online?t('online_tag'):(o.city||'')+(o.dist!=null?` · ${o.dist<1?Math.round(o.dist*1000)+' m':o.dist.toFixed(1)+' km'}`:'');
-      row.innerHTML=`<span><b>${esc(o.store)}</b>${o.src==='mine'?`<span class="tag">${t('mine')}</span>`:''}<br><span class="small">${esc(o.product)}${where?' — '+esc(where):''}${o.date?' — '+esc(o.date):''}</span></span><span class="pr ${cls}">${fmt(o.price)}</span>`;
-      row.onclick=()=>{r.sel=oi;renderResults(R);};
-      d.appendChild(row);
-    });
+    const paid=r.unit>0?`${t('paid')} : ${fmt(r.unit)}${r.it.qty>1?' /u':''}`:t('noprice');
+    h.innerHTML=`<span>${esc(r.it.name)} ${r.it.qty>1?'×'+r.it.qty:''}<br><span class="paid">${paid}</span></span>`;
+    const btn=document.createElement('button');btn.className='s';btn.style.fontSize='13px';btn.textContent=r.off?t('restore'):t('remove');
+    btn.onclick=()=>{r.off=!r.off;renderResults(R);};
+    h.appendChild(btn);d.appendChild(h);
+    if(r.off){d.style.opacity='.5';const e=document.createElement('div');e.className='small';e.textContent=t('removed');d.appendChild(e);L.appendChild(d);return;}
+    if(r.err&&!r.near.length&&!r.far.length){const e=document.createElement('div');e.className='err';e.textContent=t('err');d.appendChild(e);}
+    if(r.near.length){
+      const lab=document.createElement('div');lab.className='small';lab.style.marginTop='6px';lab.textContent=t('nearbest');d.appendChild(lab);
+      r.near.forEach(o=>d.appendChild(offerRow(R,r,o)));
+    }else if(!r.err){const e=document.createElement('div');e.className='small';e.style.marginTop='6px';e.textContent=t('nonear')+' (« '+r.term+' »)';d.appendChild(e);}
+    const fb=r.far[0],nb=r.near[0];
+    if(fb&&(!nb||fb.price<nb.price-0.005)){
+      const w=document.createElement('div');w.className='note';
+      const diff=nb?` (−${fmt(nb.price-fb.price)})`:'';
+      w.innerHTML=`⚠ ${esc(t('outside'))} : <b>${fmt(fb.price)}</b> — ${esc(fb.store)}${fb.dist!=null?' · '+fd(fb.dist):''}${diff} `;
+      const tb=document.createElement('button');tb.className='s';tb.style.fontSize='13px';tb.textContent=r.showFar?t('hidefar'):t('viewfar');
+      tb.onclick=()=>{r.showFar=!r.showFar;renderResults(R);};w.appendChild(tb);d.appendChild(w);
+      if(r.showFar)r.far.forEach(o=>d.appendChild(offerRow(R,r,o)));
+    }
     L.appendChild(d);
   });
   let paid=0,best=0,n=0;
-  R.forEach(r=>{const q=r.it.qty||1;paid+=r.it.total;const o=r.offers[r.sel];if(o){n++;best+=Math.min(o.price,r.unit)*q;}else best+=r.it.total;});
-  $('summary').innerHTML=`<div class="sum"><div><span class="small">${t('tpaid')}</span><b>${fmt(paid)}</b></div><div><span class="small">${t('tbest')}</span><b>${fmt(best)}</b></div><div class="save"><span class="small">${t('tsave')}</span><b>${fmt(paid-best)}</b></div><div><span class="small">${t('tfound')}</span><b>${n}/${R.length}</b></div></div><p class="small">${t('srcnote')}</p>`;
+  R.forEach(r=>{
+    if(r.off||!(r.it.total>0))return;
+    const q=r.it.qty||1;paid+=r.it.total;
+    if(r.sel){n++;best+=Math.min(r.sel.price,r.unit)*q;}else best+=r.it.total;
+  });
+  const act=R.filter(r=>!r.off).length;
+  $('summary').innerHTML=`<div class="sum"><div><span class="small">${t('tpaid')}</span><b>${fmt(paid)}</b></div><div><span class="small">${t('tbest')}</span><b>${fmt(best)}</b></div><div class="save"><span class="small">${t('tsave')}</span><b>${fmt(paid-best)}</b></div><div><span class="small">${t('tfound')}</span><b>${R.filter(r=>!r.off&&r.sel).length}/${act}</b></div></div><p class="small">${t('srcnote')}</p>`;
 }
 
 /* ============ BASE ============ */
