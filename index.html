@@ -79,6 +79,7 @@ td input{padding:6px 8px}
     <div class="row"><button class="p" id="parse" data-i="analyse"></button></div>
   </div>
   <div id="listbox" hidden>
+    <p class="small" data-i="listh"></p>
     <textarea id="rawlist" data-ph="listph"></textarea>
     <div class="row"><button class="p" id="addlist" data-i="addlist"></button></div>
   </div>
@@ -152,7 +153,7 @@ km:"km",m:"m",locok:"Position :",locno:"Position inconnue",locfail:"Localisation
 paid:"Payé",none:"Aucune offre trouvée",err:"Erreur réseau",cheapest:"Moins cher",same:"Prix équivalent",
 tpaid:"Total payé",tbest:"Total optimisé",tsave:"Économie possible",tfound:"Articles moins chers",online_tag:"En ligne",mine:"Mon ticket",away:"à",
 bstat:(n,i)=>`${n} ticket(s), ${i} article(s) enregistrés.`,confirmclear:"Effacer toute la base locale ?",needloc:"Indiquez d’abord votre position (ou choisissez Internet).",
-srcnote:"Cliquez sur une offre pour la retenir.",nearbest:"Le moins cher à proximité",nonear:"Aucune offre dans le périmètre",outside:"Prix moins chers hors périmètre",viewfar:"Voir",hidefar:"Masquer",remove:"Retirer de la liste",restore:"Remettre",removed:"Article retiré du résultat",noprice:"prix payé inconnu",saveby:"économie",nothing:"Aucun article à comparer. Ajoutez au moins un nom d’article.",impjson:"Importer (JSON)",expxls:"Exporter (Excel)",impxls:"Importer (Excel)",wheretitle:"Où acheter vos articles",stayat:"Rien de moins cher trouvé — rester chez",nitems:n=>n+" article"+(n>1?"s":""),subtotal:"Sous-total",imported:(a,b)=>`${a} ticket(s) importé(s), ${b} déjà présent(s).`,importfail:"Fichier illisible ou format non reconnu.",xlsfail:"Impossible de charger le module Excel (connexion ?).",unknownp:"prix inconnu",impfile:"📂 Importer un ancien fichier (JSON / Excel)",typelist:"Saisir une liste",listph:"Un article par ligne, par ex. :\nlait demi-écrémé\n2 x pâtes spaghetti 1,20",addlist:"Ajouter à la liste",srcs:"Sources de prix :",useop:"Open Prices (prix relevés en magasin)",usebase:"Ma base locale (mes tickets, fichiers importés)",clearlist:"Vider la liste",atstore:"chez",added:(n,l)=>`${n} nouvel(s) article(s) depuis « ${l} ».`},
+srcnote:"Cliquez sur une offre pour la retenir.",nearbest:"Le moins cher à proximité",nonear:"Aucune offre dans le périmètre",outside:"Prix moins chers hors périmètre",viewfar:"Voir",hidefar:"Masquer",remove:"Retirer de la liste",restore:"Remettre",removed:"Article retiré du résultat",noprice:"prix payé inconnu",saveby:"économie",nothing:"Aucun article à comparer. Ajoutez au moins un nom d’article.",impjson:"Importer (JSON)",expxls:"Exporter (Excel)",impxls:"Importer (Excel)",wheretitle:"Où acheter vos articles",stayat:"Rien de moins cher trouvé — rester chez",nitems:n=>n+" article"+(n>1?"s":""),subtotal:"Sous-total",imported:(a,b)=>`${a} ticket(s) importé(s), ${b} déjà présent(s).`,importfail:"Fichier illisible ou format non reconnu.",xlsfail:"Impossible de charger le module Excel (connexion ?).",unknownp:"prix inconnu",testim:"Panier estimé (articles sans prix)",tlist:"Articles trouvés",nooffer:"Aucune offre trouvée dans le périmètre",listh:"Liste sans prix : l’appli cherche le meilleur prix de chaque article dans le périmètre choisi à l’étape 3.",impfile:"📂 Importer un ancien fichier (JSON / Excel)",typelist:"Saisir une liste",listph:"Un article par ligne, par ex. :\nlait demi-écrémé\n2 x pâtes spaghetti 1,20",addlist:"Ajouter à la liste",srcs:"Sources de prix :",useop:"Open Prices (prix relevés en magasin)",usebase:"Ma base locale (mes tickets, fichiers importés)",clearlist:"Vider la liste",atstore:"chez",added:(n,l)=>`${n} nouvel(s) article(s) depuis « ${l} ».`},
 en:{s1:"Scan a receipt",s1h:"Combine several sources: a photo of a new receipt, an old shopping file (JSON or Excel), a typed list… Everything is added to the list below, then the search checks the prices again.",photo:"📷 Scan / pick a photo",manual:"Paste text",demo:"Sample receipt",rawph:"Paste the receipt text here…",analyse:"Analyse",
 s2:"Check the items read",store:"Store",date:"Date",item:"Item (receipt)",search:"Search term",qty:"Qty",total:"Total €",addrow:"+ Add an item",searchhint:"Receipt names are often abbreviated: adjust the “search term” (e.g. “semi-skimmed milk”) for better results.",
 s3:"Where to search?",near:"Around me",online:"Online",radius:"Search radius:",geo:"📍 Locate me",addrph:"or type a city / address",find:"Search",keep:"Add this receipt to my local price base (on this device)",compare:"Find the cheapest prices",
@@ -163,7 +164,7 @@ km:"km",m:"m",locok:"Position:",locno:"Position unknown",locfail:"Location denie
 paid:"Paid",none:"No offer found",err:"Network error",cheapest:"Cheapest",same:"Same price",
 tpaid:"Total paid",tbest:"Optimised total",tsave:"Possible saving",tfound:"Cheaper items",online_tag:"Online",mine:"My receipt",away:"at",
 bstat:(n,i)=>`${n} receipt(s), ${i} item(s) saved.`,confirmclear:"Clear the whole local base?",needloc:"Set your location first (or choose Online).",
-srcnote:"Click an offer to select it.",nearbest:"Cheapest nearby",nonear:"No offer within the radius",outside:"Cheaper prices outside the radius",viewfar:"Show",hidefar:"Hide",remove:"Remove from list",restore:"Restore",removed:"Item removed from the result",noprice:"price paid unknown",saveby:"saving",nothing:"No item to compare. Add at least one item name.",impjson:"Import (JSON)",expxls:"Export (Excel)",impxls:"Import (Excel)",wheretitle:"Where to buy your items",stayat:"Nothing cheaper found — stay at",nitems:n=>n+" item"+(n>1?"s":""),subtotal:"Subtotal",imported:(a,b)=>`${a} receipt(s) imported, ${b} already present.`,importfail:"Unreadable file or unknown format.",xlsfail:"Could not load the Excel module (connection?).",unknownp:"price unknown",impfile:"📂 Import an old file (JSON / Excel)",typelist:"Type a list",listph:"One item per line, e.g.:\nsemi-skimmed milk\n2 x spaghetti 1.20",addlist:"Add to the list",srcs:"Price sources:",useop:"Open Prices (in-store prices)",usebase:"My local base (my receipts, imported files)",clearlist:"Clear the list",atstore:"at",added:(n,l)=>`${n} new item(s) from “${l}”.`}};
+srcnote:"Click an offer to select it.",nearbest:"Cheapest nearby",nonear:"No offer within the radius",outside:"Cheaper prices outside the radius",viewfar:"Show",hidefar:"Hide",remove:"Remove from list",restore:"Restore",removed:"Item removed from the result",noprice:"price paid unknown",saveby:"saving",nothing:"No item to compare. Add at least one item name.",impjson:"Import (JSON)",expxls:"Export (Excel)",impxls:"Import (Excel)",wheretitle:"Where to buy your items",stayat:"Nothing cheaper found — stay at",nitems:n=>n+" item"+(n>1?"s":""),subtotal:"Subtotal",imported:(a,b)=>`${a} receipt(s) imported, ${b} already present.`,importfail:"Unreadable file or unknown format.",xlsfail:"Could not load the Excel module (connection?).",unknownp:"price unknown",testim:"Estimated basket (items without price)",tlist:"Items found",nooffer:"No offer found within the radius",listh:"Price-less list: the app looks for the best price of each item within the radius chosen in step 3.",impfile:"📂 Import an old file (JSON / Excel)",typelist:"Type a list",listph:"One item per line, e.g.:\nsemi-skimmed milk\n2 x spaghetti 1.20",addlist:"Add to the list",srcs:"Price sources:",useop:"Open Prices (in-store prices)",usebase:"My local base (my receipts, imported files)",clearlist:"Clear the list",atstore:"at",added:(n,l)=>`${n} new item(s) from “${l}”.`}};
 let lang=localStorage.getItem('pm_lang')||((navigator.language||'fr').startsWith('en')?'en':'fr');
 const t=k=>T[lang][k];
 function applyLang(){
@@ -465,22 +466,24 @@ function renderResults(R){
     }
     L.appendChild(d);
   });
-  let paid=0,best=0;
-  R.forEach(r=>{
-    if(r.off||!(r.it.total>0))return;
-    const q=r.it.qty||1;paid+=r.it.total;
-    best+=isCheaper(r)?r.sel.price*q:r.it.total;
-  });
-  const act=R.filter(r=>!r.off).length,cheap=R.filter(r=>!r.off&&isCheaper(r)).length;
-  $('summary').innerHTML=`<div class="sum"><div><span class="small">${t('tpaid')}</span><b>${fmt(paid)}</b></div><div><span class="small">${t('tbest')}</span><b>${fmt(best)}</b></div><div class="save"><span class="small">${t('tsave')}</span><b>${fmt(paid-best)}</b></div><div><span class="small">${t('tfound')}</span><b>${cheap}/${act}</b></div></div><p class="small">${t('srcnote')}</p>`;
+  let paid=0,best=0,est=0;
+  const act=R.filter(r=>!r.off),priced=act.filter(r=>r.it.total>0),unpriced=act.filter(r=>!(r.it.total>0));
+  priced.forEach(r=>{const q=r.it.qty||1;paid+=r.it.total;best+=isCheaper(r)?r.sel.price*q:r.it.total;});
+  unpriced.forEach(r=>{if(r.sel)est+=r.sel.price*(r.it.qty||1);});
+  const tile=(l,v,c)=>`<div${c?` class="${c}"`:''}><span class="small">${l}</span><b>${v}</b></div>`;
+  let tiles='';
+  if(priced.length)tiles+=tile(t('tpaid'),fmt(paid))+tile(t('tbest'),fmt(best))+tile(t('tsave'),fmt(paid-best),'save')+tile(t('tfound'),`${priced.filter(isCheaper).length}/${priced.length}`);
+  if(unpriced.length)tiles+=tile(t('testim'),fmt(est))+tile(t('tlist'),`${unpriced.filter(r=>r.sel).length}/${unpriced.length}`);
+  $('summary').innerHTML=`<div class="sum">${tiles}</div><p class="small">${t('srcnote')}</p>`;
   renderPlan(R);
 }
 function renderPlan(R){
   const G={},store0=$('store').value.trim()||'—';
   R.filter(r=>!r.off).forEach(r=>{
     const o=(isCheaper(r)||(r.unit<=0&&r.sel))?r.sel:null;
-    const key=o?[o.store,o.city,o.dist!=null?o.dist.toFixed(2):'',o.online].join('|'):'__stay|'+(r.it.store||store0);
-    const g=G[key]||(G[key]={o,stay:!o,ss:o?null:(r.it.store||store0),rows:[],sum:0});
+    const none=!o&&!(r.unit>0);
+    const key=o?[o.store,o.city,o.dist!=null?o.dist.toFixed(2):'',o.online].join('|'):(none?'__none':'__stay|'+(r.it.store||store0));
+    const g=G[key]||(G[key]={o,stay:!o,none,ss:o?null:(r.it.store||store0),rows:[],sum:0});
     const q=r.it.qty||1,price=o?o.price:(r.unit>0?r.unit:null);
     g.rows.push({name:r.it.name,q,price});if(price!=null)g.sum+=price*q;
   });
@@ -489,7 +492,7 @@ function renderPlan(R){
   arr.forEach(g=>{
     const d=document.createElement('div');d.className='plan';
     const where=g.stay?'':(g.o.online?t('online_tag'):[g.o.city,fd(g.o.dist)].filter(Boolean).join(' · '));
-    const title=g.stay?`${t('stayat')} ${esc(g.ss)}`:`🛒 ${esc(g.o.store)}${where?` <span class="small">— ${esc(where)}</span>`:''}`;
+    const title=g.none?esc(t('nooffer')):g.stay?`${t('stayat')} ${esc(g.ss)}`:`🛒 ${esc(g.o.store)}${where?` <span class="small">— ${esc(where)}</span>`:''}`;
     d.innerHTML=`<h3><span>${title}</span><span class="small">${t('nitems')(g.rows.length)} · ${t('subtotal')} ${fmt(g.sum)}</span></h3><ul>`+
       g.rows.map(x=>`<li><span>${esc(x.name)}${x.q>1?' ×'+x.q:''}</span><b>${x.price!=null?fmt(x.price*x.q):esc(t('unknownp'))}</b></li>`).join('')+'</ul>';
     box.appendChild(d);
