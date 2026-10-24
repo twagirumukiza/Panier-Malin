@@ -21,7 +21,7 @@ main{max-width:860px;margin:0 auto;padding:0 16px 60px}
 .num{background:var(--acc);color:#fff;border-radius:50%;width:24px;height:24px;display:inline-grid;place-items:center;font-size:13px}
 .hint,.small{color:var(--mute);font-size:13px}
 button.p,label.p{background:var(--acc);color:#fff;border:0;border-radius:10px;padding:10px 16px;font-size:15px;font-weight:600;cursor:pointer;display:inline-block}
-button.s{background:var(--acc2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:14px;cursor:pointer}
+button.s,label.s{display:inline-block;background:var(--acc2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:14px;cursor:pointer}
 button:disabled{opacity:.5;cursor:default}
 input[type=text],input[type=number],textarea,select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
 textarea{min-height:90px;font-family:ui-monospace,Menlo,monospace;font-size:13px}
@@ -51,6 +51,15 @@ td input{padding:6px 8px}
 .plan h3{margin:0 0 6px;font-size:15px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .plan li{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:2px 0;list-style:none}
 .plan ul{margin:0;padding:0}
+#printhead{display:none}
+body.printing{background:#fff;color:#000}
+body.printing header,body.printing main>section:not(#res){display:none}
+body.printing #res{border:0;padding:0;background:#fff}
+body.printing #res>*{display:none}
+body.printing #res>#printhead,body.printing #res>#plantitle,body.printing #res>#plan{display:block}
+body.printing #printhead{font-weight:700;font-size:20px;margin-bottom:10px}
+body.printing .plan{break-inside:avoid;border-color:#999}
+body.printing .plan li span:first-child::before{content:'☐ '}
 .err{color:var(--bad);font-size:14px}
 [hidden]{display:none!important}
 </style>
@@ -69,6 +78,7 @@ td input{padding:6px 8px}
     <label class="p"><span data-i="photo"></span><input id="file" type="file" accept="image/*" capture="environment" hidden></label>
     <button class="s" id="impbtn" data-i="impfile"></button>
     <button class="s" id="listbtn" data-i="typelist"></button>
+    <label class="s"><span data-i="artphoto"></span><input id="artfile" type="file" accept="image/*" capture="environment" hidden></label>
     <button class="s" id="paste" data-i="manual"></button>
     <button class="s" id="demo" data-i="demo"></button>
   </div>
@@ -94,7 +104,7 @@ td input{padding:6px 8px}
     <div><label class="small" data-i="date"></label><input type="text" id="rdate" style="width:130px"></div>
   </div>
   <table><thead><tr><th data-i="item"></th><th data-i="search"></th><th style="width:56px" data-i="qty"></th><th style="width:84px" data-i="total"></th><th style="width:30px"></th></tr></thead><tbody id="rows"></tbody></table>
-  <div class="row"><button class="s" id="addrow" data-i="addrow"></button></div>
+  <div class="row"><button class="s" id="addrow" data-i="addrow"></button><label class="s"><span data-i="artphoto"></span><input id="artfile2" type="file" accept="image/*" capture="environment" hidden></label></div>
   <p class="small" data-i="searchhint"></p>
 </section>
 
@@ -123,6 +133,7 @@ td input{padding:6px 8px}
 </section>
 
 <section class="card" id="res" hidden>
+  <div id="printhead"></div>
   <h2><span class="num">4</span><span data-i="s4"></span></h2>
   <div class="bar" id="rbar"><i id="rbari"></i></div>
   <div id="stores"></div>
@@ -130,6 +141,7 @@ td input{padding:6px 8px}
   <div id="list"></div>
   <h2 style="margin-top:18px" id="plantitle" hidden data-i="wheretitle"></h2>
   <div id="plan"></div>
+  <div class="row" id="printrow" hidden><button class="s" id="printplan" data-i="printplan"></button></div>
   <div class="note" data-i="caveat"></div>
 </section>
 
@@ -155,7 +167,7 @@ km:"km",m:"m",locok:"Position :",locno:"Position inconnue",locfail:"Localisation
 paid:"Payé",none:"Aucune offre trouvée",err:"Erreur réseau",cheapest:"Moins cher",same:"Prix équivalent",
 tpaid:"Total payé",tbest:"Total optimisé",tsave:"Économie possible",tfound:"Articles moins chers",online_tag:"En ligne",mine:"Mon ticket",away:"à",
 bstat:(n,i)=>`${n} ticket(s), ${i} article(s) enregistrés.`,confirmclear:"Effacer toute la base locale ?",needloc:"Indiquez d’abord votre position (ou choisissez Internet).",
-srcnote:"Cliquez sur une offre pour la retenir.",nearbest:"Le moins cher à proximité",nonear:"Aucune offre dans le périmètre",outside:"Prix moins chers hors périmètre",viewfar:"Voir",hidefar:"Masquer",remove:"Retirer de la liste",restore:"Remettre",removed:"Article retiré du résultat",noprice:"prix payé inconnu",saveby:"économie",nothing:"Aucun article à comparer. Ajoutez au moins un nom d’article.",impjson:"Importer (JSON)",expxls:"Exporter (Excel)",impxls:"Importer (Excel)",wheretitle:"Où acheter vos articles",stayat:"Rien de moins cher trouvé — rester chez",nitems:n=>n+" article"+(n>1?"s":""),subtotal:"Sous-total",imported:(a,b)=>`${a} ticket(s) importé(s), ${b} déjà présent(s).`,importfail:"Fichier illisible ou format non reconnu.",xlsfail:"Impossible de charger le module Excel (connexion ?).",unknownp:"prix inconnu",est:"indicatif",estfrom:"prix relevé chez",storesnear:"Magasins dans le périmètre",nonearstores:"Aucun prix relevé pour cet article dans le périmètre. Magasins proches :",contrib:"Peu de prix relevés ici : scannez vos tickets pour enrichir la base.",useest:"Prix indicatifs (même enseigne, relevé ailleurs)",nostores:"Aucun magasin trouvé (service de cartographie indisponible ?)",testim:"Panier estimé (articles sans prix)",tlist:"Articles trouvés",nooffer:"Aucune offre trouvée dans le périmètre",listh:"Liste sans prix : l’appli cherche le meilleur prix de chaque article dans le périmètre choisi à l’étape 3.",impfile:"📂 Importer un ancien fichier (JSON / Excel)",typelist:"Saisir une liste",listph:"Un article par ligne, par ex. :\nlait demi-écrémé\n2 x pâtes spaghetti 1,20",addlist:"Ajouter à la liste",srcs:"Sources de prix :",useop:"Open Prices (prix relevés en magasin)",usebase:"Ma base locale (mes tickets, fichiers importés)",clearlist:"Vider la liste",atstore:"chez",added:(n,l)=>`${n} nouvel(s) article(s) depuis « ${l} ».`},
+srcnote:"Cliquez sur une offre pour la retenir.",nearbest:"Le moins cher à proximité",nonear:"Aucune offre dans le périmètre",outside:"Prix moins chers hors périmètre",viewfar:"Voir",hidefar:"Masquer",remove:"Retirer de la liste",restore:"Remettre",removed:"Article retiré du résultat",noprice:"prix payé inconnu",saveby:"économie",nothing:"Aucun article à comparer. Ajoutez au moins un nom d’article.",impjson:"Importer (JSON)",expxls:"Exporter (Excel)",impxls:"Importer (Excel)",wheretitle:"Où acheter vos articles",stayat:"Rien de moins cher trouvé — rester chez",nitems:n=>n+" article"+(n>1?"s":""),subtotal:"Sous-total",imported:(a,b)=>`${a} ticket(s) importé(s), ${b} déjà présent(s).`,importfail:"Fichier illisible ou format non reconnu.",xlsfail:"Impossible de charger le module Excel (connexion ?).",unknownp:"prix inconnu",printplan:"🖨 Imprimer la liste",printtitle:"Panier Malin — Où acheter",artphoto:"📷 Photographier un article",artread:"Lecture de l’article…",artdone:n=>`Article lu : ${n}. Vérifiez et corrigez si besoin.`,artnone:"Rien reconnu sur la photo. Saisissez l’article à la main.",eanph:"Code-barres (facultatif, recherche exacte)",webcheck:"Chercher le prix sur le site de l’enseigne :",webprice:"Prix vu en ligne",webadd:"Ajouter ce prix",webshop:"Magasin",web:"relevé en ligne",webnote:"Pas de prix dans la base ouverte ? Ouvrez le site de l’enseigne, puis saisissez le prix vu : il est gardé dans votre base locale.",est:"indicatif",estfrom:"prix relevé chez",storesnear:"Magasins dans le périmètre",nonearstores:"Aucun prix relevé pour cet article dans le périmètre. Magasins proches :",contrib:"Peu de prix relevés ici : scannez vos tickets pour enrichir la base.",useest:"Prix indicatifs (même enseigne, relevé ailleurs)",nostores:"Aucun magasin trouvé (service de cartographie indisponible ?)",testim:"Panier estimé (articles sans prix)",tlist:"Articles trouvés",nooffer:"Aucune offre trouvée dans le périmètre",listh:"Liste sans prix : l’appli cherche le meilleur prix de chaque article dans le périmètre choisi à l’étape 3.",impfile:"📂 Importer un ancien fichier (JSON / Excel)",typelist:"Saisir une liste",listph:"Un article par ligne, par ex. :\nlait demi-écrémé\n2 x pâtes spaghetti 1,20",addlist:"Ajouter à la liste",srcs:"Sources de prix :",useop:"Open Prices (prix relevés en magasin)",usebase:"Ma base locale (mes tickets, fichiers importés)",clearlist:"Vider la liste",atstore:"chez",added:(n,l)=>`${n} nouvel(s) article(s) depuis « ${l} ».`},
 en:{s1:"Scan a receipt",s1h:"Combine several sources: a photo of a new receipt, an old shopping file (JSON or Excel), a typed list… Everything is added to the list below, then the search checks the prices again.",photo:"📷 Scan / pick a photo",manual:"Paste text",demo:"Sample receipt",rawph:"Paste the receipt text here…",analyse:"Analyse",
 s2:"Check the items read",store:"Store",date:"Date",item:"Item (receipt)",search:"Search term",qty:"Qty",total:"Total €",addrow:"+ Add an item",searchhint:"Receipt names are often abbreviated: adjust the “search term” (e.g. “semi-skimmed milk”) for better results.",
 s3:"Where to search?",near:"Around me",online:"Online",radius:"Search radius:",geo:"📍 Locate me",addrph:"or type a city / address",find:"Search",keep:"Add this receipt to my local price base (on this device)",compare:"Find the cheapest prices",
@@ -166,7 +178,7 @@ km:"km",m:"m",locok:"Position:",locno:"Position unknown",locfail:"Location denie
 paid:"Paid",none:"No offer found",err:"Network error",cheapest:"Cheapest",same:"Same price",
 tpaid:"Total paid",tbest:"Optimised total",tsave:"Possible saving",tfound:"Cheaper items",online_tag:"Online",mine:"My receipt",away:"at",
 bstat:(n,i)=>`${n} receipt(s), ${i} item(s) saved.`,confirmclear:"Clear the whole local base?",needloc:"Set your location first (or choose Online).",
-srcnote:"Click an offer to select it.",nearbest:"Cheapest nearby",nonear:"No offer within the radius",outside:"Cheaper prices outside the radius",viewfar:"Show",hidefar:"Hide",remove:"Remove from list",restore:"Restore",removed:"Item removed from the result",noprice:"price paid unknown",saveby:"saving",nothing:"No item to compare. Add at least one item name.",impjson:"Import (JSON)",expxls:"Export (Excel)",impxls:"Import (Excel)",wheretitle:"Where to buy your items",stayat:"Nothing cheaper found — stay at",nitems:n=>n+" item"+(n>1?"s":""),subtotal:"Subtotal",imported:(a,b)=>`${a} receipt(s) imported, ${b} already present.`,importfail:"Unreadable file or unknown format.",xlsfail:"Could not load the Excel module (connection?).",unknownp:"price unknown",est:"indicative",estfrom:"price seen at",storesnear:"Stores within the radius",nonearstores:"No price recorded for this item within the radius. Nearby stores:",contrib:"Few prices recorded here: scan your receipts to enrich the base.",useest:"Indicative prices (same chain, seen elsewhere)",nostores:"No store found (map service unavailable?)",testim:"Estimated basket (items without price)",tlist:"Items found",nooffer:"No offer found within the radius",listh:"Price-less list: the app looks for the best price of each item within the radius chosen in step 3.",impfile:"📂 Import an old file (JSON / Excel)",typelist:"Type a list",listph:"One item per line, e.g.:\nsemi-skimmed milk\n2 x spaghetti 1.20",addlist:"Add to the list",srcs:"Price sources:",useop:"Open Prices (in-store prices)",usebase:"My local base (my receipts, imported files)",clearlist:"Clear the list",atstore:"at",added:(n,l)=>`${n} new item(s) from “${l}”.`}};
+srcnote:"Click an offer to select it.",nearbest:"Cheapest nearby",nonear:"No offer within the radius",outside:"Cheaper prices outside the radius",viewfar:"Show",hidefar:"Hide",remove:"Remove from list",restore:"Restore",removed:"Item removed from the result",noprice:"price paid unknown",saveby:"saving",nothing:"No item to compare. Add at least one item name.",impjson:"Import (JSON)",expxls:"Export (Excel)",impxls:"Import (Excel)",wheretitle:"Where to buy your items",stayat:"Nothing cheaper found — stay at",nitems:n=>n+" item"+(n>1?"s":""),subtotal:"Subtotal",imported:(a,b)=>`${a} receipt(s) imported, ${b} already present.`,importfail:"Unreadable file or unknown format.",xlsfail:"Could not load the Excel module (connection?).",unknownp:"price unknown",printplan:"🖨 Print the list",printtitle:"Smart Basket — Where to buy",artphoto:"📷 Photograph an item",artread:"Reading the item…",artdone:n=>`Item read: ${n}. Check it and fix if needed.`,artnone:"Nothing recognised in the photo. Type the item by hand.",eanph:"Barcode (optional, exact search)",webcheck:"Look up the price on the store’s website:",webprice:"Price seen online",webadd:"Add this price",webshop:"Store",web:"seen online",webnote:"No price in the open database? Open the store’s website, then type the price you see: it is kept in your local base.",est:"indicative",estfrom:"price seen at",storesnear:"Stores within the radius",nonearstores:"No price recorded for this item within the radius. Nearby stores:",contrib:"Few prices recorded here: scan your receipts to enrich the base.",useest:"Indicative prices (same chain, seen elsewhere)",nostores:"No store found (map service unavailable?)",testim:"Estimated basket (items without price)",tlist:"Items found",nooffer:"No offer found within the radius",listh:"Price-less list: the app looks for the best price of each item within the radius chosen in step 3.",impfile:"📂 Import an old file (JSON / Excel)",typelist:"Type a list",listph:"One item per line, e.g.:\nsemi-skimmed milk\n2 x spaghetti 1.20",addlist:"Add to the list",srcs:"Price sources:",useop:"Open Prices (in-store prices)",usebase:"My local base (my receipts, imported files)",clearlist:"Clear the list",atstore:"at",added:(n,l)=>`${n} new item(s) from “${l}”.`}};
 let lang=localStorage.getItem('pm_lang')||((navigator.language||'fr').startsWith('en')?'en':'fr');
 const t=k=>T[lang][k];
 function applyLang(){
@@ -311,6 +323,7 @@ function renderRows(){
       inp.oninput=()=>{it[k]=type==='number'?parseFloat(inp.value)||0:inp.value;if(k==='name'&&!it._termEdited)it.term=searchTerm(it.name),tr.children[1].firstChild.value=it.term;if(k==='term')it._termEdited=true;};
       td.appendChild(inp);
       if(k==='name'&&(it.store||it.date)){const sm=document.createElement('div');sm.className='small';sm.textContent=[it.store,it.date].filter(Boolean).join(' · ');td.appendChild(sm);}
+      if(k==='name'){const ci=document.createElement('input');ci.type='text';ci.placeholder=t('eanph');ci.value=it.code||'';ci.style.cssText='margin-top:4px;font-size:12px;padding:3px 6px';ci.oninput=()=>{it.code=ci.value.replace(/\D/g,'');};td.appendChild(ci);}
       return td;};
     tr.append(mk('name','text'),mk('term','text'),mk('qty','number'),mk('total','number'));
     const td=document.createElement('td');const b=document.createElement('button');b.textContent='✕';b.className='s';b.style.padding='4px 8px';b.onclick=()=>{items.splice(i,1);renderRows();};td.appendChild(b);tr.appendChild(td);
@@ -380,8 +393,8 @@ async function fetchPrices(codes,mode,radius,term,size=60){
   });
 }
 const WIDE=100;
-async function fetchOpen(term,mode){
-  const codes=await findCodes(term);
+async function fetchOpen(term,mode,code){
+  const codes=code?[code]:await findCodes(term);
   if(!codes.length)return[];
   if(mode==='online')return fetchPrices(codes,mode,0,term);
   const [a,b]=await Promise.all([fetchPrices(codes,mode,radKm(),term),fetchPrices(codes,mode,Math.max(WIDE,radKm()),term,100)]);
@@ -450,7 +463,7 @@ $('go').onclick=async()=>{
     const it=valid[i],term=(it.term||searchTerm(it.name)).trim();
     const unit=it.total>0?it.total/(it.qty||1):0;
     let offers=[],err=false;
-    if($('useop').checked){try{offers=await fetchOpen(term,mode);}catch{err=true;}}
+    if($('useop').checked){try{offers=await fetchOpen(term,mode,it.code);}catch{err=true;}}
     if($('usebase').checked)offers=offers.concat(fromBase(term,mode).filter(o=>!(o.store===it.store&&o.date===it.date&&Math.abs(o.price-unit)<0.005)));
     if(mode==='near'&&$('useest').checked&&stores.length)offers=offers.concat(estimateOffers(offers,radKm()));
     offers.sort((a,b)=>a.price-b.price);
@@ -478,11 +491,40 @@ function renderStores(mode){
   d.textContent=L.length?`🏬 ${t('storesnear')} (${L.length}) : `+L.slice(0,12).map(x=>`${x.name} ${fd(x.dist)}`).join(' · ')+(L.length>12?' …':''):t('nostores');
   b.appendChild(d);
 }
+const SHOP={carrefour:'https://www.carrefour.fr/s?q=',auchan:'https://www.auchan.fr/recherche?text=',lidl:'https://www.lidl.fr/q/search?q='};
+const shopUrl=(b,term)=>SHOP[b]?SHOP[b]+encodeURIComponent(term):'https://www.google.com/search?q='+encodeURIComponent(term+' prix '+(b||'')+' drive');
+function webBlock(R,r){
+  const w=document.createElement('div');w.className='note';
+  const L=stores.filter(x=>x.dist<=radKm());
+  const brands=[...new Set(L.map(x=>x.brand).filter(Boolean))].slice(0,6);
+  const q=(r.it.code?'':r.term||r.it.name);
+  const lab=document.createElement('div');lab.textContent='🔎 '+t('webcheck');w.appendChild(lab);
+  const row=document.createElement('div');row.className='row';
+  (brands.length?brands:[null]).forEach(b=>{const a=document.createElement('a');a.href=shopUrl(b,r.it.name);a.target='_blank';a.rel='noopener';a.className='tag';a.style.fontSize='13px';a.textContent=b?b.replace(/\b\w/g,c=>c.toUpperCase()):'Web';row.appendChild(a);});
+  w.appendChild(row);
+  if(L.length){
+    const f=document.createElement('div');f.className='row';
+    const sel=document.createElement('select');sel.style.maxWidth='220px';
+    L.slice(0,15).forEach((x,i)=>{const o=document.createElement('option');o.value=i;o.textContent=x.name+' · '+fd(x.dist);sel.appendChild(o);});
+    const inp=document.createElement('input');inp.type='number';inp.step='0.01';inp.min='0';inp.placeholder=t('webprice');inp.style.width='130px';
+    const b=document.createElement('button');b.className='s';b.textContent=t('webadd');
+    b.onclick=()=>{
+      const price=parseFloat(inp.value);if(!(price>0))return;
+      const ns=L[parseInt(sel.value,10)],today=new Date().toISOString().slice(0,10);
+      const base=getBase();base.push({store:ns.name,date:today,lat:ns.lat,lon:ns.lon,items:[{name:r.it.name,qty:1,total:price}]});setBase(base);baseStat();
+      const o={price,store:ns.name,city:'',product:r.it.name,date:today,dist:ns.dist,online:false,src:'mine',web:true};
+      r.near.unshift(o);r.near.sort((a,b)=>a.price-b.price);r.sel=r.near[0];renderResults(R);
+    };
+    f.append(sel,inp,b);w.appendChild(f);
+  }
+  const n=document.createElement('div');n.className='small';n.textContent=t('webnote');w.appendChild(n);
+  return w;
+}
 function offerRow(R,r,o){
   const row=document.createElement('div');row.className='offer'+(o===r.sel?' sel':'');
   const cls=r.unit>0?(o.price<r.unit-0.005?'cheap':(o.price>r.unit+0.005?'dear':'')):'';
   const where=o.online?t('online_tag'):[o.city,fd(o.dist)].filter(Boolean).join(' · ');
-  row.innerHTML=`<span><b>${esc(o.store)}</b>${o.src==='mine'?`<span class="tag">${t('mine')}</span>`:''}${o.est?`<span class="tag">${t('est')}</span>`:''}<br><span class="small">${esc(o.product)}${where?' — '+esc(where):''}${o.date?' — '+esc(o.date):''}${o.est?' — '+esc(t('estfrom'))+' '+esc(o.from):''}</span></span><span class="pr ${cls}">${fmt(o.price)}</span>`;
+  row.innerHTML=`<span><b>${esc(o.store)}</b>${o.src==='mine'?`<span class="tag">${t('mine')}</span>`:''}${o.est?`<span class="tag">${t('est')}</span>`:''}${o.web?`<span class="tag">${t('web')}</span>`:''}<br><span class="small">${esc(o.product)}${where?' — '+esc(where):''}${o.date?' — '+esc(o.date):''}${o.est?' — '+esc(t('estfrom'))+' '+esc(o.from):''}</span></span><span class="pr ${cls}">${fmt(o.price)}</span>`;
   row.onclick=()=>{r.sel=o;renderResults(R);};
   return row;
 }
@@ -504,6 +546,7 @@ function renderResults(R){
       r.near.forEach(o=>d.appendChild(offerRow(R,r,o)));
     }else if(!r.err){const e=document.createElement('div');e.className='small';e.style.marginTop='6px';e.textContent=(r.nstores&&r.nstores.length?t('nonearstores')+' '+r.nstores.map(x=>x.name+' '+fd(x.dist)).join(', ')+'. '+t('contrib'):t('nonear'))+' (« '+r.term+' »)';d.appendChild(e);}
     // outside the radius: only offers strictly cheaper than what was paid (and than the best nearby offer)
+    if(!r.near.length)d.appendChild(webBlock(R,r));
     const nb=r.near[0];
     const ref=Math.min(r.unit>0?r.unit:Infinity,nb?nb.price:Infinity);
     const far=r.far.filter(o=>o.price<ref-0.005);
@@ -529,6 +572,12 @@ function renderResults(R){
   $('summary').innerHTML=`<div class="sum">${tiles}</div><p class="small">${t('srcnote')}</p>`;
   renderPlan(R);
 }
+$('printplan').onclick=()=>{
+  $('printhead').textContent=t('printtitle')+' — '+new Date().toLocaleDateString(lang==='fr'?'fr-FR':'en-GB');
+  document.body.classList.add('printing');
+  setTimeout(()=>{window.print();},50);
+};
+window.addEventListener('afterprint',()=>document.body.classList.remove('printing'));
 function renderPlan(R){
   const G={},store0=$('store').value.trim()||'—';
   R.filter(r=>!r.off).forEach(r=>{
@@ -540,7 +589,7 @@ function renderPlan(R){
     g.rows.push({name:r.it.name,q,price});if(price!=null)g.sum+=price*q;
   });
   const arr=Object.values(G).sort((a,b)=>(a.stay-b.stay)||(b.rows.length-a.rows.length));
-  const box=$('plan');box.innerHTML='';$('plantitle').hidden=!arr.length;
+  const box=$('plan');box.innerHTML='';$('plantitle').hidden=!arr.length;$('printrow').hidden=!arr.length;
   arr.forEach(g=>{
     const d=document.createElement('div');d.className='plan';
     const where=g.stay?'':(g.o.online?t('online_tag'):[g.o.city,fd(g.o.dist)].filter(Boolean).join(' · '));
@@ -600,6 +649,40 @@ async function readFile(f){
   const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});
   return receiptsFromRows(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}));
 }
+const ZX='https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';
+function shrink(f){return new Promise((res,rej)=>{const u=URL.createObjectURL(f),im=new Image();im.onload=()=>{const k=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.9));};im.onerror=rej;im.src=u;});}
+async function detectBarcode(f){
+  const ok=c=>/^\d{8,14}$/.test(c||'');
+  try{if('BarcodeDetector' in window){const bd=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e']});const r=await bd.detect(await createImageBitmap(f));if(r.length&&ok(r[0].rawValue))return r[0].rawValue;}}catch{}
+  try{await loadScript(ZX,'ZXing');const res=await new ZXing.BrowserMultiFormatReader().decodeFromImageUrl(await shrink(f));if(ok(res.getText()))return res.getText();}catch{}
+  return '';
+}
+async function offProduct(code){
+  const r=await fetch('https://world.openfoodfacts.org/api/v2/product/'+code+'.json?fields=product_name,product_name_fr,brands,quantity');
+  const j=await r.json();return j.status===1?j.product:null;
+}
+async function ocrName(f){
+  await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js');
+  const r=await Tesseract.recognize(f,'fra+eng');
+  const L=r.data.text.split(/\r?\n/).map(x=>x.replace(/[^A-Za-zÀ-ÿ0-9' %.,-]/g,' ').replace(/\s+/g,' ').trim()).filter(x=>(x.match(/[A-Za-zÀ-ÿ]/g)||[]).length>=4&&x.length<=40);
+  return L.sort((a,b)=>(b.match(/[A-Za-zÀ-ÿ]/g)||[]).length-(a.match(/[A-Za-zÀ-ÿ]/g)||[]).length).slice(0,2).join(' ');
+}
+async function scanArticle(f){
+  msg(t('artread'));
+  const it={name:'',term:'',qty:1,total:0,store:'',date:'',fresh:false,code:''};
+  const code=await detectBarcode(f);
+  if(code){
+    it.code=code;
+    try{const p=await offProduct(code);if(p){const nm=p.product_name_fr||p.product_name||'';it.name=[nm,(p.brands||'').split(',')[0].trim(),p.quantity||''].filter(Boolean).join(' ');it.term=searchTerm(nm);}}catch{}
+  }
+  if(!it.name){try{it.name=await ocrName(f);}catch{}}
+  if(!it.name&&!it.code){msg(t('artnone'));items=items.filter(i=>i.name.trim());items.push({...it});showCards();return;}
+  if(!it.name)it.name=code;
+  it.term=it.term||searchTerm(it.name)||it.name.toLowerCase();
+  addItems([it],'Photo');
+  msg(t('artdone')(it.name));
+}
+['artfile','artfile2'].forEach(id=>$(id).addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';if(f)scanArticle(f);}));
 $('impbtn').onclick=()=>$('fimp').click();
 $('fimp').onchange=async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
