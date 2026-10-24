@@ -56,6 +56,26 @@ td input{padding:6px 8px}
 .idtop img{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--line);background:var(--card)}
 .score{font-size:12px;color:var(--mute);white-space:nowrap}
 #printhead{display:none}
+.crowd{margin-top:6px;border-top:1px dashed var(--line);padding-top:6px}
+.crowdwarn{color:var(--warn);font-weight:600;font-size:13px}
+.slot{display:inline-flex;gap:4px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:2px 8px;margin:2px 4px 2px 0;font-size:13px}
+.slot button{border:0;background:none;cursor:pointer;color:var(--bad);font-size:14px}
+.dayc{display:inline-flex;align-items:center;gap:2px;font-size:12px;margin-right:6px}
+.draftrow{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;border-top:1px solid var(--line);padding:8px 0}
+.draftrow:first-child{border-top:0}
+#rmap{width:100%;height:340px;border-radius:12px;border:1px solid var(--line);z-index:0}
+#rsvg{width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.pin{background:var(--acc);color:#fff;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45)}
+.pin.home{background:#444}
+#rsteps{padding-left:0;list-style:none;font-size:14px}
+#rsteps li{margin:6px 0}
+body.printing{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body.printing .noprint{display:none!important}
+body.printing.withroute #res>#routebox{display:block;break-before:page}
+body.printing #routebox .noprint,body.printing #routebox #routectl{display:none!important}
+body.printing #rmap{width:680px;height:470px}
+body.printing #rsvg{max-width:680px}
+body.printing .leaflet-control-zoom{display:none}
 body.printing{background:#fff;color:#000}
 body.printing header,body.printing main>section:not(#res){display:none}
 body.printing #res{border:0;padding:0;background:#fff}
@@ -97,6 +117,7 @@ body.printing .plan li span:first-child::before{content:'☐ '}
     <textarea id="rawlist" data-ph="listph"></textarea>
     <div class="row"><button class="p" id="addlist" data-i="addlist"></button></div>
   </div>
+  <details id="draftsbox"><summary class="small" style="cursor:pointer"></summary><div id="drafts"></div></details>
   <div id="chips" class="row"></div>
   <p class="small" id="srcmsg"></p>
   <div id="idbox" class="idbox" hidden>
@@ -116,6 +137,8 @@ body.printing .plan li span:first-child::before{content:'☐ '}
   <table><thead><tr><th data-i="item"></th><th data-i="search"></th><th style="width:56px" data-i="qty"></th><th style="width:84px" data-i="total"></th><th style="width:30px"></th></tr></thead><tbody id="rows"></tbody></table>
   <div class="row"><button class="s" id="addrow" data-i="addrow"></button><label class="s"><span data-i="artphoto"></span><input id="artfile2" type="file" accept="image/*" hidden></label></div>
   <p class="small" data-i="searchhint"></p>
+  <div class="row"><input type="text" id="draftname" class="grow" data-ph="draftnameph"><button class="s" id="dsave" data-i="dsave"></button><button class="s" id="djson" data-i="djson"></button><button class="s" id="dxls" data-i="dxls"></button></div>
+  <p class="small" id="dmsg"></p>
 </section>
 
 <section class="card" id="setcard" hidden>
@@ -138,6 +161,7 @@ body.printing .plan li span:first-child::before{content:'☐ '}
     <label><input type="checkbox" id="useop" checked> <span data-i="useop"></span></label>
     <label><input type="checkbox" id="usebase" checked> <span data-i="usebase"></span></label>
     <label><input type="checkbox" id="useest" checked> <span data-i="useest"></span></label></div>
+  <div class="row"><label class="small" for="planned" data-i="planned"></label><input type="datetime-local" id="planned" style="width:auto"></div>
   <div class="row"><label><input type="checkbox" id="keep" checked> <span data-i="keep"></span></label></div>
   <div class="row"><button class="p" id="go" data-i="compare"></button></div>
 </section>
@@ -151,7 +175,18 @@ body.printing .plan li span:first-child::before{content:'☐ '}
   <div id="list"></div>
   <h2 style="margin-top:18px" id="plantitle" hidden data-i="wheretitle"></h2>
   <div id="plan"></div>
-  <div class="row" id="printrow" hidden><button class="s" id="printplan" data-i="printplan"></button></div>
+  <div id="routebox" hidden>
+    <h2 style="margin-top:18px" data-i="routetitle"></h2>
+    <div class="row" id="routectl"><span class="small" data-i="transport"></span>
+      <select id="transport" style="width:auto"><option value="foot" data-i="tfoot"></option><option value="bike" data-i="tbike"></option><option value="car" data-i="tcar"></option></select>
+      <button class="p" id="routego" data-i="routego"></button></div>
+    <div class="small" id="rmsg"></div>
+    <div id="rmapwrap" hidden><div id="rmap"></div><div id="rsvg" hidden></div></div>
+    <ol id="rsteps"></ol>
+    <div class="row noprint" id="rlinks"></div>
+  </div>
+  <div class="row" id="printrow" hidden><button class="s" id="printplan" data-i="printplan"></button>
+    <label class="small"><input type="checkbox" id="printroute" checked> <span data-i="printroute"></span></label></div>
   <div class="note" data-i="caveat"></div>
 </section>
 
@@ -190,7 +225,9 @@ km:"km",m:"m",locok:"Position :",locno:"Position inconnue",locfail:"Localisation
 paid:"Payé",none:"Aucune offre trouvée",err:"Erreur réseau",cheapest:"Moins cher",same:"Prix équivalent",
 tpaid:"Total payé",tbest:"Total optimisé",tsave:"Économie possible",tfound:"Articles moins chers",online_tag:"En ligne",mine:"Mon ticket",away:"à",
 bstat:(n,i)=>`${n} ticket(s), ${i} article(s) enregistrés.`,confirmclear:"Effacer toute la base locale ?",needloc:"Indiquez d’abord votre position (ou choisissez Internet).",
-srcnote:"Cliquez sur une offre pour la retenir.",nearbest:"Le moins cher à proximité",nonear:"Aucune offre dans le périmètre",outside:"Prix moins chers hors périmètre",viewfar:"Voir",hidefar:"Masquer",remove:"Retirer de la liste",restore:"Remettre",removed:"Article retiré du résultat",noprice:"prix payé inconnu",saveby:"économie",nothing:"Aucun article à comparer. Ajoutez au moins un nom d’article.",impjson:"Importer (JSON)",expxls:"Exporter (Excel)",impxls:"Importer (Excel)",wheretitle:"Où acheter vos articles",stayat:"Rien de moins cher trouvé — rester chez",nitems:n=>n+" article"+(n>1?"s":""),subtotal:"Sous-total",imported:(a,b)=>`${a} ticket(s) importé(s), ${b} déjà présent(s).`,importfail:"Fichier illisible ou format non reconnu.",xlsfail:"Impossible de charger le module Excel (connexion ?).",unknownp:"prix inconnu",printplan:"🖨 Imprimer la liste",printtitle:"Panier Malin — Où acheter",artphoto:"📷 Photographier un article",artread:"Lecture de l’article…",artdone:n=>`Article lu : ${n}. Vérifiez et corrigez si besoin.`,artnone:"Rien reconnu sur la photo. Saisissez l’article à la main.",eanph:"Code-barres (facultatif, recherche exacte)",webcheck:"Chercher le prix sur le site de l’enseigne :",webprice:"Prix vu en ligne",webadd:"Ajouter ce prix",webshop:"Magasin",web:"relevé en ligne",webnote:"Pas de prix dans la base ouverte ? Ouvrez le site de l’enseigne, puis saisissez le prix vu : il est gardé dans votre base locale.",est:"indicatif",estfrom:"prix relevé chez",storesnear:"Magasins dans le périmètre",nonearstores:"Aucun prix relevé pour cet article dans le périmètre. Magasins proches :",contrib:"Peu de prix relevés ici : scannez vos tickets pour enrichir la base.",useest:"Prix indicatifs (même enseigne, relevé ailleurs)",nostores:"Aucun magasin trouvé (service de cartographie indisponible ?)",testim:"Panier estimé (articles sans prix)",tlist:"Articles trouvés",nooffer:"Aucune offre trouvée dans le périmètre",listh:"Liste sans prix : l’appli cherche le meilleur prix de chaque article dans le périmètre choisi à l’étape 3.",impfile:"📂 Importer un ancien fichier (JSON / Excel)",typelist:"Saisir une liste",listph:"Un article par ligne, par ex. :\nlait demi-écrémé\n2 x pâtes spaghetti 1,20",addlist:"Ajouter à la liste",srcs:"Sources de prix :",useop:"Open Prices (prix relevés en magasin)",usebase:"Ma base locale (mes tickets, fichiers importés)",clearlist:"Vider la liste",atstore:"chez",idtitle:"Identification de l’article",idcode:(i,n)=>`Recherche du code-barres… (${i}/${n})`,idlook:"Consultation des bases ouvertes…",idocr:"Lecture du texte",idcands:"Recherche des produits correspondants…",idpick:"Plusieurs possibilités : touchez le bon produit.",idscore:"concordance",idexact:"code-barres exact",idl_code:"Code",idl_text:"Texte lu",idl_qty:"Quantité",idnote:"La concordance compare ce qui est lu sur la photo (code-barres, texte, quantité) aux fiches des bases ouvertes. C’est un indice, pas une probabilité : vérifiez la marque et le format.",idnone:"Rien de fiable reconnu. Essayez une photo plus nette de la face avant ou du code-barres, ou cherchez à la main.",idqph:"Chercher à la main (nom, marque ou code-barres)",idocrtext:"Texte lu sur la photo (non reconnu)",idneterr:"Bases ouvertes injoignables (connexion ?).",aititle:"Identification par IA (optionnel)",aihint:"Active un modèle de vision qui lit la photo de l’article (marque, nom, variante, quantité) : Google Gemini (palier gratuit, clé à créer sur aistudio.google.com) ou Anthropic Claude (payant). Les indices sont recoupés avec les bases ouvertes. Sans clé, l’appli reste sur la lecture classique (code-barres + OCR).",aion:"Utiliser l’analyse visuelle par IA",aikeyph:"Clé API (Gemini : AIza… · Anthropic : sk-ant-…)",aiproxyph:"ou adresse de votre relais sécurisé (sans clé dans le navigateur)",aipriv:"Quand l’option est active, la photo de l’article est envoyée au fournisseur choisi (ou à votre relais). La clé reste uniquement sur cet appareil. Palier gratuit : limites variables et traitement des données selon les conditions du fournisseur, à vérifier ; pour Anthropic, fixez un budget maximal dans la console.",airead:"Analyse visuelle par IA…",aifail:"Analyse IA indisponible (clé, connexion ?) : lecture classique.",idl_ai:"Lecture IA",added:(n,l)=>`${n} nouvel(s) article(s) depuis « ${l} ».`},
+srcnote:"Cliquez sur une offre pour la retenir.",nearbest:"Le moins cher à proximité",nonear:"Aucune offre dans le périmètre",outside:"Prix moins chers hors périmètre",viewfar:"Voir",hidefar:"Masquer",remove:"Retirer de la liste",restore:"Remettre",removed:"Article retiré du résultat",noprice:"prix payé inconnu",saveby:"économie",nothing:"Aucun article à comparer. Ajoutez au moins un nom d’article.",impjson:"Importer (JSON)",expxls:"Exporter (Excel)",impxls:"Importer (Excel)",wheretitle:"Où acheter vos articles",stayat:"Rien de moins cher trouvé — rester chez",nitems:n=>n+" article"+(n>1?"s":""),subtotal:"Sous-total",imported:(a,b)=>`${a} ticket(s) importé(s), ${b} déjà présent(s).`,importfail:"Fichier illisible ou format non reconnu.",xlsfail:"Impossible de charger le module Excel (connexion ?).",unknownp:"prix inconnu",printplan:"🖨 Imprimer la liste",printtitle:"Panier Malin — Où acheter",artphoto:"📷 Photographier un article",artread:"Lecture de l’article…",artdone:n=>`Article lu : ${n}. Vérifiez et corrigez si besoin.`,artnone:"Rien reconnu sur la photo. Saisissez l’article à la main.",eanph:"Code-barres (facultatif, recherche exacte)",webcheck:"Chercher le prix sur le site de l’enseigne :",webprice:"Prix vu en ligne",webadd:"Ajouter ce prix",webshop:"Magasin",web:"relevé en ligne",webnote:"Pas de prix dans la base ouverte ? Ouvrez le site de l’enseigne, puis saisissez le prix vu : il est gardé dans votre base locale.",est:"indicatif",estfrom:"prix relevé chez",storesnear:"Magasins dans le périmètre",nonearstores:"Aucun prix relevé pour cet article dans le périmètre. Magasins proches :",contrib:"Peu de prix relevés ici : scannez vos tickets pour enrichir la base.",useest:"Prix indicatifs (même enseigne, relevé ailleurs)",nostores:"Aucun magasin trouvé (service de cartographie indisponible ?)",testim:"Panier estimé (articles sans prix)",tlist:"Articles trouvés",nooffer:"Aucune offre trouvée dans le périmètre",listh:"Liste sans prix : l’appli cherche le meilleur prix de chaque article dans le périmètre choisi à l’étape 3.",impfile:"📂 Importer un ancien fichier (JSON / Excel)",typelist:"Saisir une liste",listph:"Un article par ligne, par ex. :\nlait demi-écrémé\n2 x pâtes spaghetti 1,20",addlist:"Ajouter à la liste",srcs:"Sources de prix :",useop:"Open Prices (prix relevés en magasin)",usebase:"Ma base locale (mes tickets, fichiers importés)",clearlist:"Vider la liste",atstore:"chez",draftword:"Brouillon",draftlist:"Brouillons enregistrés",dnone:"Aucun brouillon enregistré sur cet appareil.",draftnameph:"Nom du brouillon (facultatif), ex. courses de la semaine",dsave:"💾 Enregistrer le brouillon",djson:"⬇ Brouillon (JSON)",dxls:"⬇ Brouillon (Excel)",dsavedmsg:ti=>`Brouillon enregistré dans ce navigateur : « ${ti} ».`,dempty:"Rien à enregistrer : la liste est vide.",dfull:"Enregistrement impossible (stockage du navigateur plein ou bloqué ?). Téléchargez le brouillon en JSON ou Excel.",dresume:"Reprendre",ddelete:"Supprimer",dloaded:(n,ti)=>`${n} article(s) repris depuis « ${ti} ». Relancez la recherche quand vous voulez.`,dstatus:"Statut",dsaved:"Enregistré le",
+routetitle:"Parcours d’achat",transport:"Déplacement :",tfoot:"À pied",tbike:"À vélo",tcar:"En voiture",routego:"Calculer le parcours",printroute:"Inclure le plan du parcours",start:"Domicile",back:"Retour au domicile",routing:"Calcul du parcours…",birdfly:"Itinéraire routier indisponible : distances estimées à vol d’oiseau (+30 %).",nostops:"Aucun magasin localisable à relier (les articles gardés chez l’enseigne du ticket n’ont pas de position).",needhome:"Indiquez d’abord votre adresse de départ à l’étape 3.",rtotal:(km,mn)=>`Total : ${km} km · environ ${mn} min de trajet (hors temps en magasin)`,rlink1:"Ouvrir dans OpenStreetMap",rlink2:"Ouvrir dans Google Maps",mapfail:"Fond de carte indisponible : schéma simplifié.",
+crowd:"Affluence",crowdnone:"Affluence : non renseignée",crowdedit:"🕒 Renseigner l’affluence",crowdclose:"Fermer",crowdadd:"Ajouter la plage",crowdwarn:"⚠ L’heure prévue tombe pendant une période d’affluence",planned:"Heure prévue des courses (facultatif) :",hours:"Horaires d’ouverture (OSM)",crowdhint:"Aucune source ouverte ne publie l’affluence des magasins : indiquez les heures chargées que vous observez. Elles restent sur cet appareil et sont incluses dans vos brouillons.",crowderr:"L’heure de fin doit suivre l’heure de début.",crowdto:"à",crowdnodays:"Cochez au moins un jour.",idtitle:"Identification de l’article",idcode:(i,n)=>`Recherche du code-barres… (${i}/${n})`,idlook:"Consultation des bases ouvertes…",idocr:"Lecture du texte",idcands:"Recherche des produits correspondants…",idpick:"Plusieurs possibilités : touchez le bon produit.",idscore:"concordance",idexact:"code-barres exact",idl_code:"Code",idl_text:"Texte lu",idl_qty:"Quantité",idnote:"La concordance compare ce qui est lu sur la photo (code-barres, texte, quantité) aux fiches des bases ouvertes. C’est un indice, pas une probabilité : vérifiez la marque et le format.",idnone:"Rien de fiable reconnu. Essayez une photo plus nette de la face avant ou du code-barres, ou cherchez à la main.",idqph:"Chercher à la main (nom, marque ou code-barres)",idocrtext:"Texte lu sur la photo (non reconnu)",idneterr:"Bases ouvertes injoignables (connexion ?).",aititle:"Identification par IA (optionnel)",aihint:"Active un modèle de vision qui lit la photo de l’article (marque, nom, variante, quantité) : Google Gemini (palier gratuit, clé à créer sur aistudio.google.com) ou Anthropic Claude (payant). Les indices sont recoupés avec les bases ouvertes. Sans clé, l’appli reste sur la lecture classique (code-barres + OCR).",aion:"Utiliser l’analyse visuelle par IA",aikeyph:"Clé API (Gemini : AIza… · Anthropic : sk-ant-…)",aiproxyph:"ou adresse de votre relais sécurisé (sans clé dans le navigateur)",aipriv:"Quand l’option est active, la photo de l’article est envoyée au fournisseur choisi (ou à votre relais). La clé reste uniquement sur cet appareil. Palier gratuit : limites variables et traitement des données selon les conditions du fournisseur, à vérifier ; pour Anthropic, fixez un budget maximal dans la console.",airead:"Analyse visuelle par IA…",aifail:"Analyse IA indisponible (clé, connexion ?) : lecture classique.",idl_ai:"Lecture IA",added:(n,l)=>`${n} nouvel(s) article(s) depuis « ${l} ».`},
 en:{s1:"Scan a receipt",s1h:"Combine several sources: a photo of a new receipt, an old shopping file (JSON or Excel), a typed list… Everything is added to the list below, then the search checks the prices again.",photo:"📷 Scan / pick a photo",manual:"Paste text",demo:"Sample receipt",rawph:"Paste the receipt text here…",analyse:"Analyse",
 s2:"Check the items read",store:"Store",date:"Date",item:"Item (receipt)",search:"Search term",qty:"Qty",total:"Total €",addrow:"+ Add an item",searchhint:"Receipt names are often abbreviated: adjust the “search term” (e.g. “semi-skimmed milk”) for better results.",
 s3:"Where to search?",near:"Around me",online:"Online",radius:"Search radius:",geo:"📍 Locate me",addrph:"or type a city / address",find:"Search",keep:"Add this receipt to my local price base (on this device)",compare:"Find the cheapest prices",
@@ -201,7 +238,9 @@ km:"km",m:"m",locok:"Position:",locno:"Position unknown",locfail:"Location denie
 paid:"Paid",none:"No offer found",err:"Network error",cheapest:"Cheapest",same:"Same price",
 tpaid:"Total paid",tbest:"Optimised total",tsave:"Possible saving",tfound:"Cheaper items",online_tag:"Online",mine:"My receipt",away:"at",
 bstat:(n,i)=>`${n} receipt(s), ${i} item(s) saved.`,confirmclear:"Clear the whole local base?",needloc:"Set your location first (or choose Online).",
-srcnote:"Click an offer to select it.",nearbest:"Cheapest nearby",nonear:"No offer within the radius",outside:"Cheaper prices outside the radius",viewfar:"Show",hidefar:"Hide",remove:"Remove from list",restore:"Restore",removed:"Item removed from the result",noprice:"price paid unknown",saveby:"saving",nothing:"No item to compare. Add at least one item name.",impjson:"Import (JSON)",expxls:"Export (Excel)",impxls:"Import (Excel)",wheretitle:"Where to buy your items",stayat:"Nothing cheaper found — stay at",nitems:n=>n+" item"+(n>1?"s":""),subtotal:"Subtotal",imported:(a,b)=>`${a} receipt(s) imported, ${b} already present.`,importfail:"Unreadable file or unknown format.",xlsfail:"Could not load the Excel module (connection?).",unknownp:"price unknown",printplan:"🖨 Print the list",printtitle:"Smart Basket — Where to buy",artphoto:"📷 Photograph an item",artread:"Reading the item…",artdone:n=>`Item read: ${n}. Check it and fix if needed.`,artnone:"Nothing recognised in the photo. Type the item by hand.",eanph:"Barcode (optional, exact search)",webcheck:"Look up the price on the store’s website:",webprice:"Price seen online",webadd:"Add this price",webshop:"Store",web:"seen online",webnote:"No price in the open database? Open the store’s website, then type the price you see: it is kept in your local base.",est:"indicative",estfrom:"price seen at",storesnear:"Stores within the radius",nonearstores:"No price recorded for this item within the radius. Nearby stores:",contrib:"Few prices recorded here: scan your receipts to enrich the base.",useest:"Indicative prices (same chain, seen elsewhere)",nostores:"No store found (map service unavailable?)",testim:"Estimated basket (items without price)",tlist:"Items found",nooffer:"No offer found within the radius",listh:"Price-less list: the app looks for the best price of each item within the radius chosen in step 3.",impfile:"📂 Import an old file (JSON / Excel)",typelist:"Type a list",listph:"One item per line, e.g.:\nsemi-skimmed milk\n2 x spaghetti 1.20",addlist:"Add to the list",srcs:"Price sources:",useop:"Open Prices (in-store prices)",usebase:"My local base (my receipts, imported files)",clearlist:"Clear the list",atstore:"at",idtitle:"Item identification",idcode:(i,n)=>`Looking for the barcode… (${i}/${n})`,idlook:"Checking open databases…",idocr:"Reading text",idcands:"Looking for matching products…",idpick:"Several possibilities: tap the right product.",idscore:"match",idexact:"exact barcode",idl_code:"Code",idl_text:"Text read",idl_qty:"Size",idnote:"The match compares what is read on the photo (barcode, text, size) with open-database records. It is an indication, not a probability: check the brand and size.",idnone:"Nothing reliable recognised. Try a sharper photo of the front or the barcode, or search by hand.",idqph:"Search by hand (name, brand or barcode)",idocrtext:"Text read on the photo (not recognised)",idneterr:"Open databases unreachable (connection?).",aititle:"AI identification (optional)",aihint:"Turns on a vision model that reads the item photo (brand, name, variant, size): Google Gemini (free tier, key from aistudio.google.com) or Anthropic Claude (paid). Clues are cross-checked with open databases. Without a key, the app keeps the classic reading (barcode + OCR).",aion:"Use AI visual analysis",aikeyph:"API key (Gemini: AIza… · Anthropic: sk-ant-…)",aiproxyph:"or your secure relay address (no key in the browser)",aipriv:"When enabled, the item photo is sent to the chosen provider (or to your relay). The key stays on this device only. Free tier: limits vary and data handling follows the provider’s terms, so check them; for Anthropic, set a maximum budget in the console.",airead:"AI visual analysis…",aifail:"AI analysis unavailable (key, connection?): classic reading.",idl_ai:"AI reading",added:(n,l)=>`${n} new item(s) from “${l}”.`}};
+srcnote:"Click an offer to select it.",nearbest:"Cheapest nearby",nonear:"No offer within the radius",outside:"Cheaper prices outside the radius",viewfar:"Show",hidefar:"Hide",remove:"Remove from list",restore:"Restore",removed:"Item removed from the result",noprice:"price paid unknown",saveby:"saving",nothing:"No item to compare. Add at least one item name.",impjson:"Import (JSON)",expxls:"Export (Excel)",impxls:"Import (Excel)",wheretitle:"Where to buy your items",stayat:"Nothing cheaper found — stay at",nitems:n=>n+" item"+(n>1?"s":""),subtotal:"Subtotal",imported:(a,b)=>`${a} receipt(s) imported, ${b} already present.`,importfail:"Unreadable file or unknown format.",xlsfail:"Could not load the Excel module (connection?).",unknownp:"price unknown",printplan:"🖨 Print the list",printtitle:"Smart Basket — Where to buy",artphoto:"📷 Photograph an item",artread:"Reading the item…",artdone:n=>`Item read: ${n}. Check it and fix if needed.`,artnone:"Nothing recognised in the photo. Type the item by hand.",eanph:"Barcode (optional, exact search)",webcheck:"Look up the price on the store’s website:",webprice:"Price seen online",webadd:"Add this price",webshop:"Store",web:"seen online",webnote:"No price in the open database? Open the store’s website, then type the price you see: it is kept in your local base.",est:"indicative",estfrom:"price seen at",storesnear:"Stores within the radius",nonearstores:"No price recorded for this item within the radius. Nearby stores:",contrib:"Few prices recorded here: scan your receipts to enrich the base.",useest:"Indicative prices (same chain, seen elsewhere)",nostores:"No store found (map service unavailable?)",testim:"Estimated basket (items without price)",tlist:"Items found",nooffer:"No offer found within the radius",listh:"Price-less list: the app looks for the best price of each item within the radius chosen in step 3.",impfile:"📂 Import an old file (JSON / Excel)",typelist:"Type a list",listph:"One item per line, e.g.:\nsemi-skimmed milk\n2 x spaghetti 1.20",addlist:"Add to the list",srcs:"Price sources:",useop:"Open Prices (in-store prices)",usebase:"My local base (my receipts, imported files)",clearlist:"Clear the list",atstore:"at",draftword:"Draft",draftlist:"Saved drafts",dnone:"No draft saved on this device.",draftnameph:"Draft name (optional), e.g. weekly shop",dsave:"💾 Save draft",djson:"⬇ Draft (JSON)",dxls:"⬇ Draft (Excel)",dsavedmsg:ti=>`Draft saved in this browser: “${ti}”.`,dempty:"Nothing to save: the list is empty.",dfull:"Could not save (browser storage full or blocked?). Download the draft as JSON or Excel.",dresume:"Resume",ddelete:"Delete",dloaded:(n,ti)=>`${n} item(s) restored from “${ti}”. Run the search whenever you like.`,dstatus:"Status",dsaved:"Saved on",
+routetitle:"Shopping route",transport:"Travel:",tfoot:"On foot",tbike:"By bike",tcar:"By car",routego:"Compute the route",printroute:"Include the route map",start:"Home",back:"Back home",routing:"Computing the route…",birdfly:"Road routing unavailable: straight-line distances estimated (+30%).",nostops:"No locatable store to link (items kept at the receipt’s store have no position).",needhome:"Set your starting address in step 3 first.",rtotal:(km,mn)=>`Total: ${km} km · about ${mn} min of travel (shop time excluded)`,rlink1:"Open in OpenStreetMap",rlink2:"Open in Google Maps",mapfail:"Map tiles unavailable: simplified diagram.",
+crowd:"Busy hours",crowdnone:"Busy hours: not set",crowdedit:"🕒 Set busy hours",crowdclose:"Close",crowdadd:"Add this slot",crowdwarn:"⚠ The planned time falls in a busy period",planned:"Planned shopping time (optional):",hours:"Opening hours (OSM)",crowdhint:"No open source publishes store crowding: enter the busy hours you observe. They stay on this device and are included in your drafts.",crowderr:"End time must be after start time.",crowdto:"to",crowdnodays:"Tick at least one day.",idtitle:"Item identification",idcode:(i,n)=>`Looking for the barcode… (${i}/${n})`,idlook:"Checking open databases…",idocr:"Reading text",idcands:"Looking for matching products…",idpick:"Several possibilities: tap the right product.",idscore:"match",idexact:"exact barcode",idl_code:"Code",idl_text:"Text read",idl_qty:"Size",idnote:"The match compares what is read on the photo (barcode, text, size) with open-database records. It is an indication, not a probability: check the brand and size.",idnone:"Nothing reliable recognised. Try a sharper photo of the front or the barcode, or search by hand.",idqph:"Search by hand (name, brand or barcode)",idocrtext:"Text read on the photo (not recognised)",idneterr:"Open databases unreachable (connection?).",aititle:"AI identification (optional)",aihint:"Turns on a vision model that reads the item photo (brand, name, variant, size): Google Gemini (free tier, key from aistudio.google.com) or Anthropic Claude (paid). Clues are cross-checked with open databases. Without a key, the app keeps the classic reading (barcode + OCR).",aion:"Use AI visual analysis",aikeyph:"API key (Gemini: AIza… · Anthropic: sk-ant-…)",aiproxyph:"or your secure relay address (no key in the browser)",aipriv:"When enabled, the item photo is sent to the chosen provider (or to your relay). The key stays on this device only. Free tier: limits vary and data handling follows the provider’s terms, so check them; for Anthropic, set a maximum budget in the console.",airead:"AI visual analysis…",aifail:"AI analysis unavailable (key, connection?): classic reading.",idl_ai:"AI reading",added:(n,l)=>`${n} new item(s) from “${l}”.`}};
 let lang=localStorage.getItem('pm_lang')||((navigator.language||'fr').startsWith('en')?'en':'fr');
 const t=k=>T[lang][k];
 function applyLang(){
@@ -209,7 +248,7 @@ function applyLang(){
   document.querySelectorAll('[data-i]').forEach(e=>e.textContent=t(e.dataset.i));
   document.querySelectorAll('[data-ph]').forEach(e=>e.placeholder=t(e.dataset.ph));
   bfr.classList.toggle('on',lang==='fr');ben.classList.toggle('on',lang==='en');
-  radLab();locLab();baseStat();if(items.length)renderRows();
+  radLab();locLab();baseStat();if(items.length)renderRows();if(typeof renderDrafts==='function')renderDrafts();
 }
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -414,7 +453,7 @@ async function fetchPrices(codes,mode,radius,term,size=60){
     const L=x.location||{},P=x.product||{};
     const d=(mode==='near'&&L.osm_lat!=null)?hav(loc.lat,loc.lon,L.osm_lat,L.osm_lon):null;
     return{price:x.price,store:L.type==='ONLINE'?(L.website_url||t('online_tag')):(L.osm_name||L.osm_brand||'?'),city:L.osm_address_city||'',
-      product:[P.product_name,P.brands,P.quantity].filter(Boolean).join(' · ')||term,date:x.date||'',dist:d,online:L.type==='ONLINE',src:'op'};
+      product:[P.product_name,P.brands,P.quantity].filter(Boolean).join(' · ')||term,date:x.date||'',dist:d,online:L.type==='ONLINE',src:'op',lat:L.osm_lat??null,lon:L.osm_lon??null};
   });
 }
 const WIDE=100;
@@ -433,7 +472,7 @@ function fromBase(term,mode){
     const dist=hav(loc.lat,loc.lon,rc.lat,rc.lon);if(dist>Math.max(WIDE,radKm()))continue;
     for(const it of rc.items){
       const n=norm(it.name);if(!toks.every(w=>n.includes(w)))continue;
-      out.push({price:it.total/(it.qty||1),store:rc.store||'?',city:'',product:it.name,date:rc.date||'',dist,online:false,src:'mine'});
+      out.push({price:it.total/(it.qty||1),store:rc.store||'?',city:'',product:it.name,date:rc.date||'',dist,online:false,src:'mine',lat:rc.lat,lon:rc.lon});
     }
   }
   return out;
@@ -452,7 +491,7 @@ async function nearbyStores(rkm){
     const tg=e.tags||{},la=e.lat??(e.center&&e.center.lat),lo=e.lon??(e.center&&e.center.lon),name=tg.name||tg.brand;
     if(!name||la==null)return;
     const dist=hav(loc.lat,loc.lon,la,lo),k=norm(name)+'|'+dist.toFixed(2);if(seen.has(k))return;seen.add(k);
-    out.push({name,brand:brandOf(tg.brand)||brandOf(name),dist,lat:la,lon:lo});
+    out.push({name,brand:brandOf(tg.brand)||brandOf(name),dist,lat:la,lon:lo,oh:tg.opening_hours||''});
   });
   out.sort((a,b)=>a.dist-b.dist);stores=out;storeKey=key;return out;
 }
@@ -465,7 +504,7 @@ function estimateOffers(offers,R){
     const cand=offers.filter(o=>o.src==='op'&&!o.est&&brandOf(o.store)===ns.brand);
     if(!cand.length)return;
     const c=cand.reduce((a,b)=>a.price<=b.price?a:b);
-    out.push({price:c.price,store:ns.name,city:'',product:c.product,date:c.date,dist:ns.dist,online:false,src:'op',est:true,from:c.store+(c.city?' ('+c.city+')':'')});
+    out.push({price:c.price,store:ns.name,city:'',product:c.product,date:c.date,dist:ns.dist,online:false,src:'op',est:true,lat:ns.lat,lon:ns.lon,from:c.store+(c.city?' ('+c.city+')':'')});
   });
   return out;
 }
@@ -537,7 +576,7 @@ function webBlock(R,r){
       const price=parseFloat(inp.value);if(!(price>0))return;
       const ns=L[parseInt(sel.value,10)],today=new Date().toISOString().slice(0,10);
       const base=getBase();base.push({store:ns.name,date:today,lat:ns.lat,lon:ns.lon,items:[{name:r.it.name,qty:1,total:price}]});setBase(base);baseStat();
-      const o={price,store:ns.name,city:'',product:r.it.name,date:today,dist:ns.dist,online:false,src:'mine',web:true};
+      const o={price,store:ns.name,city:'',product:r.it.name,date:today,dist:ns.dist,online:false,src:'mine',web:true,lat:ns.lat,lon:ns.lon};
       r.near.unshift(o);r.near.sort((a,b)=>a.price-b.price);r.sel=r.near[0];renderResults(R);
     };
     f.append(sel,inp,b);w.appendChild(f);
@@ -554,7 +593,9 @@ function offerRow(R,r,o){
   return row;
 }
 const isCheaper=r=>r.sel&&r.unit>0&&r.sel.price<r.unit-0.005;
+let lastR=null,lastPlan=[];
 function renderResults(R){
+  lastR=R;
   const L=$('list');L.innerHTML='';
   R.forEach(r=>{
     const d=document.createElement('div');d.className='item';
@@ -597,12 +638,7 @@ function renderResults(R){
   $('summary').innerHTML=`<div class="sum">${tiles}</div><p class="small">${t('srcnote')}</p>`;
   renderPlan(R);
 }
-$('printplan').onclick=()=>{
-  $('printhead').textContent=t('printtitle')+' — '+new Date().toLocaleDateString(lang==='fr'?'fr-FR':'en-GB');
-  document.body.classList.add('printing');
-  setTimeout(()=>{window.print();},50);
-};
-window.addEventListener('afterprint',()=>document.body.classList.remove('printing'));
+window.addEventListener('afterprint',()=>{document.body.classList.remove('printing','withroute');if(rmap){rmap.invalidateSize();fitRoute();}});
 function renderPlan(R){
   const G={},store0=$('store').value.trim()||'—';
   R.filter(r=>!r.off).forEach(r=>{
@@ -614,13 +650,16 @@ function renderPlan(R){
     g.rows.push({name:r.it.name,q,price});if(price!=null)g.sum+=price*q;
   });
   const arr=Object.values(G).sort((a,b)=>(a.stay-b.stay)||(b.rows.length-a.rows.length));
+  lastPlan=arr;
   const box=$('plan');box.innerHTML='';$('plantitle').hidden=!arr.length;$('printrow').hidden=!arr.length;
+  $('routebox').hidden=!planStops().length;if(planKey()!==routeKey)clearRoute();
   arr.forEach(g=>{
     const d=document.createElement('div');d.className='plan';
     const where=g.stay?'':(g.o.online?t('online_tag'):[g.o.city,fd(g.o.dist)].filter(Boolean).join(' · '));
     const title=g.none?esc(t('nooffer')):g.stay?`${t('stayat')} ${esc(g.ss)}`:`🛒 ${esc(g.o.store)}${g.o.est?` <span class="tag">${t('est')}</span>`:''}${where?` <span class="small">— ${esc(where)}</span>`:''}`;
     d.innerHTML=`<h3><span>${title}</span><span class="small">${t('nitems')(g.rows.length)} · ${t('subtotal')} ${fmt(g.sum)}</span></h3><ul>`+
       g.rows.map(x=>`<li><span>${esc(x.name)}${x.q>1?' ×'+x.q:''}</span><b>${x.price!=null?fmt(x.price*x.q):esc(t('unknownp'))}</b></li>`).join('')+'</ul>';
+    if(g.o&&!g.none&&!g.stay)d.appendChild(crowdBlock(g));
     box.appendChild(d);
   });
 }
@@ -998,6 +1037,8 @@ $('idq').addEventListener('keydown',e=>{if(e.key==='Enter')$('idqgo').click();})
 $('impbtn').onclick=()=>$('fimp').click();
 $('fimp').onchange=async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
+  const dr=await readDraft(f);
+  if(dr){restoreDraft(dr);return;}
   let list;
   try{list=(await readFile(f)).map(cleanReceipt).filter(Boolean);if(!list.length)throw new Error('fmt');}
   catch(err){msg(err&&err.message==='net'?t('xlsfail'):t('importfail'));return;}
@@ -1008,6 +1049,289 @@ $('fimp').onchange=async e=>{
   msg(t('added')(n,f.name)+' '+t('imported')(a,d));
   $('review').scrollIntoView({behavior:'smooth'});
 };
+
+/* ============ AFFLUENCE (heures chargées saisies par l’utilisateur) ============ */
+const CK='pm_crowd_v1';
+const getCrowd=()=>{try{return JSON.parse(localStorage.getItem(CK)||'{}')}catch{return{}}};
+const setCrowd=c=>{try{localStorage.setItem(CK,JSON.stringify(c));}catch{}};
+const crowdKey=o=>norm(o.store||'').replace(/[^a-z0-9]+/g,' ').trim()+(o.lat!=null?'@'+Number(o.lat).toFixed(3)+','+Number(o.lon).toFixed(3):'');
+const DAYS={fr:['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'],en:['Mon','Tue','Wed','Thu','Fri','Sat','Sun']};
+function daysLabel(ds){const D=DAYS[lang],a=[...ds].sort((x,y)=>x-y),out=[];let i=0;
+  while(i<a.length){let j=i;while(j+1<a.length&&a[j+1]===a[j]+1)j++;out.push(j-i>=2?D[a[i]-1]+'–'+D[a[j]-1]:a.slice(i,j+1).map(x=>D[x-1]).join(', '));i=j+1;}
+  return out.join(', ');}
+const slotText=x=>daysLabel(x.d)+' '+x.from+'–'+x.to;
+const mins=h=>{const m=String(h).match(/^(\d{1,2}):(\d{2})/);return m?+m[1]*60+ +m[2]:null;};
+const plannedDate=()=>{const v=$('planned').value;if(!v)return null;const d=new Date(v);return isNaN(d)?null:d;};
+function inSlot(x,d){const day=(d.getDay()+6)%7+1,m=d.getHours()*60+d.getMinutes(),a=mins(x.from),b=mins(x.to);return x.d.includes(day)&&a!=null&&b!=null&&m>=a&&m<=b;}
+const storeInfo=o=>(o&&o.lat!=null)?(stores.find(x=>Math.abs(x.lat-o.lat)<0.0007&&Math.abs(x.lon-o.lon)<0.001)||null):null;
+const openCrowd=new Set();
+function crowdBlock(g){
+  const o=g.o,key=crowdKey(o),C=getCrowd(),rec=C[key]||{name:o.store,slots:[]};
+  const box=document.createElement('div');box.className='crowd';
+  const pl=plannedDate();
+  if(pl&&rec.slots.some(x=>inSlot(x,pl))){const w=document.createElement('div');w.className='crowdwarn';w.textContent=t('crowdwarn');box.appendChild(w);}
+  const line=document.createElement('div');line.className='small';
+  line.textContent='🕒 '+(rec.slots.length?t('crowd')+' : '+rec.slots.map(slotText).join(' · '):t('crowdnone'));
+  box.appendChild(line);
+  const si=storeInfo(o);
+  if(si&&si.oh){const h=document.createElement('div');h.className='small';h.textContent='⏰ '+t('hours')+' : '+si.oh;box.appendChild(h);}
+  const ed=document.createElement('div');ed.className='noprint';
+  const tog=document.createElement('button');tog.className='s';tog.style.cssText='font-size:12px;padding:4px 10px;margin-top:4px';
+  const open=openCrowd.has(key);tog.textContent=open?t('crowdclose'):t('crowdedit');
+  tog.onclick=()=>{open?openCrowd.delete(key):openCrowd.add(key);renderPlan(lastR);};
+  ed.appendChild(tog);
+  if(open){
+    const f=document.createElement('div');f.style.marginTop='6px';
+    rec.slots.forEach((x,i)=>{const sp=document.createElement('span');sp.className='slot';sp.append(slotText(x));
+      const del=document.createElement('button');del.textContent='✕';del.onclick=()=>{const c=getCrowd();c[key].slots.splice(i,1);if(!c[key].slots.length)delete c[key];setCrowd(c);renderPlan(lastR);};sp.appendChild(del);f.appendChild(sp);});
+    const dayrow=document.createElement('div');dayrow.style.marginTop='6px';
+    const cbs=DAYS[lang].map((n,i)=>{const l=document.createElement('label');l.className='dayc';const c=document.createElement('input');c.type='checkbox';c.checked=i<5;l.append(c,n);dayrow.appendChild(l);return c;});
+    const tr=document.createElement('div');tr.className='row';
+    const a=document.createElement('input');a.type='time';a.value='17:30';a.style.width='auto';
+    const b=document.createElement('input');b.type='time';b.value='19:30';b.style.width='auto';
+    const add=document.createElement('button');add.className='s';add.textContent=t('crowdadd');
+    const err=document.createElement('span');err.className='err';
+    add.onclick=()=>{
+      const d=cbs.map((c,i)=>c.checked?i+1:0).filter(Boolean);
+      if(!d.length){err.textContent=t('crowdnodays');return;}
+      if(!(mins(a.value)<mins(b.value))){err.textContent=t('crowderr');return;}
+      const c=getCrowd();(c[key]=c[key]||{name:o.store,slots:[]}).slots.push({d,from:a.value,to:b.value});setCrowd(c);renderPlan(lastR);
+    };
+    tr.append(a,t('crowdto'),b,add,err);
+    const hint=document.createElement('div');hint.className='small';hint.textContent=t('crowdhint');
+    f.append(dayrow,tr,hint);ed.appendChild(f);
+  }
+  box.appendChild(ed);return box;
+}
+$('planned').onchange=()=>{if(lastR)renderPlan(lastR);if(routeData)renderSteps();};
+
+/* ============ PARCOURS D’ACHAT (plan imprimable) ============ */
+const LEAF='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js',LEAFCSS='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css';
+let routeData=null,routeKey='',rmap=null,rtiles=null,rbounds=null;
+const planStops=()=>(lastPlan||[]).filter(g=>g.o&&!g.o.online&&g.o.lat!=null&&g.o.lon!=null).map(g=>({name:g.o.store,lat:Number(g.o.lat),lon:Number(g.o.lon),rows:g.rows,o:g.o}));
+const planKey=()=>planStops().map(x=>x.name+x.lat.toFixed(4)+x.lon.toFixed(4)+x.rows.length).join(';')+'|'+(loc?loc.lat.toFixed(4)+loc.lon.toFixed(4):'');
+function clearRoute(){routeData=null;routeKey='';$('rsteps').innerHTML='';$('rmapwrap').hidden=true;$('rlinks').innerHTML='';$('rmsg').textContent='';if(rmap){rmap.remove();rmap=null;}}
+function orderStops(home,S){
+  const n=S.length;if(n<=1)return S.slice();
+  const P=[home,...S],D=P.map(a=>P.map(b=>hav(a.lat,a.lon,b.lat,b.lon)));
+  let best=null,bl=Infinity;
+  if(n<=8){
+    const cur=[];
+    (function rec(rem,last,len){
+      if(len>=bl)return;
+      if(!rem.length){const tot=len+D[last][0];if(tot<bl){bl=tot;best=cur.slice();}return;}
+      for(let k=0;k<rem.length;k++){const x=rem[k];cur.push(x);rec(rem.filter((_,i)=>i!==k),x,len+D[last][x]);cur.pop();}
+    })(S.map((_,i)=>i+1),0,0);
+  }else{
+    const rem=S.map((_,i)=>i+1);best=[];let last=0;
+    while(rem.length){let k=0;rem.forEach((x,i)=>{if(D[last][x]<D[last][rem[k]])k=i;});last=rem.splice(k,1)[0];best.push(last);}
+  }
+  return best.map(i=>P[i]);
+}
+const PROF={foot:'routed-foot',bike:'routed-bike',car:'routed-car'},SPEED={foot:4.8,bike:15,car:25};
+async function fetchRoute(pts,prof){
+  const ac=new AbortController(),to=setTimeout(()=>ac.abort(),12000);
+  try{
+    const c=pts.map(p=>p.lon.toFixed(6)+','+p.lat.toFixed(6)).join(';');
+    const r=await fetch(`https://routing.openstreetmap.de/${PROF[prof]}/route/v1/driving/${c}?overview=full&geometries=geojson`,{signal:ac.signal});
+    if(!r.ok)return null;
+    const j=await r.json(),rt=j.routes&&j.routes[0];if(!rt)return null;
+    return{legs:rt.legs.map(l=>({d:l.distance/1000,s:l.duration})),geo:rt.geometry.coordinates.map(([x,y])=>[y,x]),real:true};
+  }catch{return null;}finally{clearTimeout(to);}
+}
+async function computeRoute(){
+  if(!loc){$('rmsg').textContent=t('needhome');return false;}
+  const S=planStops();if(!S.length){$('rmsg').textContent=t('nostops');return false;}
+  const home={lat:loc.lat,lon:loc.lon,name:t('start')+(loc.label&&loc.label!=='GPS'?' — '+loc.label:'')};
+  const ord=orderStops(home,S),pts=[home,...ord,home],prof=$('transport').value;
+  $('rmsg').textContent=t('routing');
+  let R=await fetchRoute(pts,prof),real=true;
+  if(!R){
+    real=false;
+    R={legs:pts.slice(1).map((q,i)=>{const d=hav(pts[i].lat,pts[i].lon,q.lat,q.lon)*1.3;return{d,s:d/SPEED[prof]*3600};}),geo:pts.map(q=>[q.lat,q.lon])};
+  }
+  routeData={home,ord,pts,legs:R.legs,geo:R.geo,real,prof};routeKey=planKey();
+  $('rmsg').textContent=real?'':t('birdfly');
+  await drawRoute();renderSteps();renderLinks();return true;
+}
+function renderLinks(){
+  const L=$('rlinks');L.innerHTML='';if(!routeData)return;
+  const pts=routeData.pts,eng={foot:'fossgis_osrm_foot',bike:'fossgis_osrm_bike',car:'fossgis_osrm_car'}[routeData.prof];
+  const mk=(h,txt)=>{const a=document.createElement('a');a.href=h;a.target='_blank';a.rel='noopener';a.className='tag';a.style.fontSize='13px';a.textContent=txt;L.appendChild(a);};
+  mk(`https://www.openstreetmap.org/directions?engine=${eng}&route=${pts.map(q=>q.lat.toFixed(5)+'%2C'+q.lon.toFixed(5)).join('%3B')}`,t('rlink1'));
+  const gm={foot:'walking',bike:'bicycling',car:'driving'}[routeData.prof];
+  mk(`https://www.google.com/maps/dir/${pts.map(q=>q.lat.toFixed(5)+','+q.lon.toFixed(5)).join('/')}/?travelmode=${gm}`,t('rlink2'));
+}
+function renderSteps(){
+  const ol=$('rsteps');ol.innerHTML='';if(!routeData)return;
+  const {ord,legs,home}=routeData,fm=m=>m<1?Math.round(m*1000)+' m':m.toFixed(1)+' km',mn=x=>Math.max(1,Math.round(x/60))+' min';
+  const li=h=>{const e=document.createElement('li');e.innerHTML=h;ol.appendChild(e);return e;};
+  li(`🏠 <b>${esc(home.name)}</b>`);
+  const pl=plannedDate(),C=getCrowd();
+  ord.forEach((st,i)=>{
+    const rec=C[crowdKey(st.o)],warn=pl&&rec&&rec.slots.some(x=>inSlot(x,pl));
+    const items=st.rows.map(x=>esc(x.name)+(x.q>1?' ×'+x.q:'')).join(', ');
+    li(`<b>${i+1}. ${esc(st.name)}</b> — ${fm(legs[i].d)} · ${mn(legs[i].s)}<br><span class="small">${t('nitems')(st.rows.length)} : ${items}</span>`+
+      (rec&&rec.slots.length?`<br><span class="small">🕒 ${esc(t('crowd'))} : ${esc(rec.slots.map(slotText).join(' · '))}</span>`:'')+
+      (warn?`<br><span class="crowdwarn">${esc(t('crowdwarn'))}</span>`:''));
+  });
+  const last=legs[legs.length-1];
+  li(`🏠 <b>${esc(t('back'))}</b> — ${fm(last.d)} · ${mn(last.s)}`);
+  const km=legs.reduce((a,l)=>a+l.d,0),sec=legs.reduce((a,l)=>a+l.s,0);
+  const tot=document.createElement('div');tot.className='small';tot.style.marginTop='6px';tot.textContent=t('rtotal')(km.toFixed(1),Math.round(sec/60));
+  ol.appendChild(tot).style.listStyle='none';
+}
+function loadCss(href){return new Promise(res=>{if([...document.styleSheets].some(x=>x.href===href))return res();const l=document.createElement('link');l.rel='stylesheet';l.href=href;l.onload=res;l.onerror=res;document.head.appendChild(l);setTimeout(res,3000);});}
+function fitRoute(){if(rmap&&rbounds)rmap.fitBounds(rbounds,{padding:[30,30],animate:false});}
+async function drawRoute(){
+  $('rmapwrap').hidden=false;
+  try{
+    await loadCss(LEAFCSS);await loadScript(LEAF,'L');
+    if(rmap){rmap.remove();rmap=null;}
+    $('rsvg').hidden=true;$('rmap').hidden=false;
+    rmap=L.map('rmap',{scrollWheelZoom:false});
+    rtiles=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(rmap);
+    const {pts,geo}=routeData;
+    L.polyline(geo,{color:'#1f7a4d',weight:5,opacity:.85}).addTo(rmap);
+    pts.slice(0,-1).forEach((q,i)=>L.marker([q.lat,q.lon],{icon:L.divIcon({className:'',html:`<div class="pin${i?'':' home'}">${i?i:'🏠'}</div>`,iconSize:[26,26],iconAnchor:[13,13]}),title:q.name}).addTo(rmap));
+    rbounds=L.latLngBounds(pts.map(q=>[q.lat,q.lon]).concat(geo.length<400?geo:[]));
+    fitRoute();
+  }catch{
+    if(rmap){rmap.remove();rmap=null;}
+    $('rmap').hidden=true;$('rsvg').hidden=false;drawSvg();
+    $('rmsg').textContent=($('rmsg').textContent+' '+t('mapfail')).trim();
+  }
+}
+function drawSvg(){
+  const {pts,geo}=routeData,W=680,H=440,m=40,la0=pts[0].lat,k=Math.cos(la0*Math.PI/180);
+  const all=pts.concat(geo.map(([a,b])=>({lat:a,lon:b})));
+  const xs=all.map(q=>q.lon*k),ys=all.map(q=>-q.lat),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const sc=Math.min((W-2*m)/Math.max(x1-x0,1e-6),(H-2*m)/Math.max(y1-y0,1e-6));
+  const X=q=>m+(q.lon*k-x0)*sc,Y=q=>m+(-q.lat-y0)*sc;
+  const line=geo.map(([a,b])=>X({lon:b})+','+Y({lat:a})).join(' ');
+  let h=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="100%"><polyline points="${line}" fill="none" stroke="#1f7a4d" stroke-width="4" stroke-dasharray="${routeData.real?'':'8 6'}"/>`;
+  pts.slice(0,-1).forEach((q,i)=>{h+=`<circle cx="${X(q)}" cy="${Y(q)}" r="13" fill="${i?'#1f7a4d':'#444'}" stroke="#fff" stroke-width="2"/><text x="${X(q)}" y="${Y(q)+5}" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">${i?i:'⌂'}</text><text x="${X(q)+17}" y="${Y(q)+4}" font-size="12" fill="currentColor">${esc((q.name||'').slice(0,26))}</text>`;});
+  $('rsvg').innerHTML=h+'</svg>';
+}
+$('routego').onclick=async()=>{$('routego').disabled=true;try{await computeRoute();}finally{$('routego').disabled=false;}};
+$('transport').onchange=()=>{if(routeData)computeRoute();};
+const tilesIdle=()=>new Promise(r=>{if(!rtiles||!rtiles._loading)return r();rtiles.once('load',r);setTimeout(r,4500);});
+$('printplan').onclick=async()=>{
+  const withRoute=$('printroute').checked&&planStops().length&&!!loc;
+  $('printhead').textContent=t('printtitle')+' — '+new Date().toLocaleDateString(lang==='fr'?'fr-FR':'en-GB');
+  if(withRoute&&(!routeData||routeKey!==planKey())){await computeRoute();}
+  document.body.classList.toggle('withroute',!!(withRoute&&routeData));
+  document.body.classList.add('printing');
+  if(withRoute&&rmap){await wait();rmap.invalidateSize();fitRoute();await tilesIdle();}
+  setTimeout(()=>window.print(),60);
+};
+
+/* ============ BROUILLONS DU PANIER ============ */
+const DKEY='pm_drafts_v1';
+const getDrafts=()=>{try{return JSON.parse(localStorage.getItem(DKEY)||'[]')}catch{return[]}};
+const setDrafts=d=>{try{localStorage.setItem(DKEY,JSON.stringify(d));return true;}catch{return false;}};
+const pad2=n=>String(n).padStart(2,'0');
+const dmsg=m=>{$('dmsg').textContent=m;};
+function stampOf(d){
+  const Y=d.getFullYear(),M=pad2(d.getMonth()+1),D=pad2(d.getDate()),h=pad2(d.getHours()),m=pad2(d.getMinutes());
+  return{human:lang==='fr'?`${D}/${M}/${Y} à ${h}:${m}`:`${Y}-${M}-${D} at ${h}:${m}`,file:`${Y}-${M}-${D}-${h}${m}`};
+}
+const slug=x=>norm(x||'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,30);
+function snapshot(){
+  const now=new Date(),st=stampOf(now),name=$('draftname').value.trim();
+  const list=items.filter(i=>(i.name||'').trim()||i.code);
+  return{type:'panier-malin-brouillon',version:1,status:'draft',
+    title:t('draftword')+(name?' '+name:'')+' — '+st.human,name,savedAt:now.toISOString(),fileStamp:st.file,
+    items:list.map(i=>({name:i.name||'',term:i.term||'',qty:i.qty||1,total:i.total||0,store:i.store||'',date:i.date||'',code:i.code||''})),
+    settings:{store:$('store').value,date:$('rdate').value,mode:getMode(),radius:radKm(),loc,useop:$('useop').checked,usebase:$('usebase').checked,useest:$('useest').checked,keep:$('keep').checked,planned:$('planned').value,transport:$('transport').value},
+    crowd:getCrowd()};
+}
+function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);}
+const dFile=(d,ext)=>`brouillon-panier${d.name?'-'+slug(d.name):''}-${d.fileStamp}.${ext}`;
+function applySettings(x){
+  if(!x)return;
+  if(x.store!=null)$('store').value=x.store;if(x.date!=null)$('rdate').value=x.date;
+  if(x.mode){const r=document.querySelector(`input[name=mode][value=${x.mode==='online'?'online':'near'}]`);if(r){r.checked=true;$('nearbox').hidden=x.mode==='online';}}
+  if(x.radius>0){$('radius').value=x.radius;radLab();}
+  if(x.loc&&typeof x.loc.lat==='number'&&typeof x.loc.lon==='number')setLoc(x.loc.lat,x.loc.lon,x.loc.label||'');
+  ['useop','usebase','useest','keep'].forEach(k=>{if(typeof x[k]==='boolean')$(k).checked=x[k];});
+  if(x.planned!=null)$('planned').value=x.planned;
+  if(['foot','bike','car'].includes(x.transport))$('transport').value=x.transport;
+}
+function restoreDraft(d){
+  const wasEmpty=!items.some(i=>(i.name||'').trim());
+  const its=(d.items||[]).map(i=>({name:String(i.name||'').slice(0,100),term:String(i.term||''),qty:Number(i.qty)||1,total:Number(i.total)||0,store:String(i.store||''),date:String(i.date||''),code:String(i.code||'').replace(/\D/g,''),fresh:false})).filter(i=>i.name||i.code);
+  if(!its.length){msg(t('importfail'));return;}
+  its.forEach(i=>{if(!i.term)i.term=searchTerm(i.name)||i.name.toLowerCase();});
+  if(wasEmpty)applySettings(d.settings);
+  if(d.crowd&&typeof d.crowd==='object'){const c=getCrowd();Object.keys(d.crowd).forEach(k=>{if(d.crowd[k]&&Array.isArray(d.crowd[k].slots))c[k]=d.crowd[k];});setCrowd(c);}
+  const n=addItems(its,d.title||t('draftword'));
+  msg(t('dloaded')(its.length,d.title||t('draftword')));$('res').hidden=true;
+  $('review').scrollIntoView({behavior:'smooth'});
+}
+function renderDrafts(){
+  const L=getDrafts().slice().reverse(),b=$('drafts');b.innerHTML='';
+  $('draftsbox').querySelector('summary').textContent='📁 '+t('draftlist')+' ('+L.length+')';
+  if(!L.length){const p=document.createElement('p');p.className='small';p.textContent=t('dnone');b.appendChild(p);return;}
+  L.forEach(d=>{
+    const row=document.createElement('div');row.className='draftrow';
+    const sp=document.createElement('span');sp.innerHTML=`<b>${esc(d.title)}</b> <span class="small">· ${esc(t('nitems')((d.items||[]).length))}</span>`;
+    const act=document.createElement('span');
+    const mk=(txt,fn)=>{const x=document.createElement('button');x.className='s';x.style.cssText='font-size:13px;margin-left:4px';x.textContent=txt;x.onclick=fn;act.appendChild(x);};
+    mk(t('dresume'),()=>restoreDraft(d));
+    mk('JSON',()=>download(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),dFile(d,'json')));
+    mk(t('ddelete'),()=>{setDrafts(getDrafts().filter(x=>x.savedAt!==d.savedAt));renderDrafts();});
+    row.append(sp,act);b.appendChild(row);
+  });
+}
+$('dsave').onclick=()=>{
+  const d=snapshot();if(!d.items.length){dmsg(t('dempty'));return;}
+  const L=getDrafts();L.push(d);while(L.length>25)L.shift();
+  if(setDrafts(L)){dmsg(t('dsavedmsg')(d.title));renderDrafts();$('draftsbox').open=true;}else dmsg(t('dfull'));
+};
+$('djson').onclick=()=>{const d=snapshot();if(!d.items.length){dmsg(t('dempty'));return;}download(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),dFile(d,'json'));dmsg(d.title);};
+$('dxls').onclick=async()=>{
+  const d=snapshot();if(!d.items.length){dmsg(t('dempty'));return;}
+  try{await loadScript(XLS,'XLSX');}catch{dmsg(t('xlsfail'));return;}
+  const fr=lang==='fr',se=d.settings;
+  const A=[[d.title],[t('dstatus'),t('draftword')],[t('dsaved'),d.savedAt],[],
+    fr?['Article','Terme recherché','Quantité','Prix payé (€)','Enseigne','Date','Code-barres']:['Item','Search term','Quantity','Price paid (€)','Store','Date','Barcode'],
+    ...d.items.map(i=>[i.name,i.term,i.qty,i.total||'',i.store,i.date,i.code])];
+  const ws=XLSX.utils.aoa_to_sheet(A);ws['!cols']=[{wch:42},{wch:22},{wch:10},{wch:12},{wch:20},{wch:12},{wch:16}];
+  const S=[['key','value'],['store',se.store],['date',se.date],['mode',se.mode],['radius',se.radius],['lat',se.loc?se.loc.lat:''],['lon',se.loc?se.loc.lon:''],['label',se.loc?se.loc.label:''],['planned',se.planned],['transport',se.transport],['useop',se.useop?1:0],['usebase',se.usebase?1:0],['useest',se.useest?1:0],['keep',se.keep?1:0]];
+  const C=[[fr?'Clé magasin':'Store key',fr?'Magasin':'Store',fr?'Jours (1=lun)':'Days (1=Mon)',fr?'De':'From',fr?'À':'To']];
+  Object.entries(d.crowd||{}).forEach(([k,v])=>(v.slots||[]).forEach(x=>C.push([k,v.name||'',x.d.join(','),x.from,x.to])));
+  const wb=XLSX.utils.book_new();wb.Props={Title:d.title};
+  XLSX.utils.book_append_sheet(wb,ws,fr?'Brouillon':'Draft');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(S),fr?'Paramètres':'Settings');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(C),fr?'Affluence':'Busy hours');
+  XLSX.writeFile(wb,dFile(d,'xlsx'));dmsg(d.title);
+};
+// a draft file (JSON or Excel) is recognised on import; anything else follows the usual receipt import
+async function readDraft(f){
+  try{
+    if(/\.json$/i.test(f.name)){const j=JSON.parse(await f.text());return j&&j.type==='panier-malin-brouillon'?j:null;}
+    if(!/\.xlsx?$/i.test(f.name))return null;
+    await loadScript(XLS,'XLSX');
+    const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});
+    const nm=re=>wb.SheetNames.find(n=>re.test(n));
+    const sn=nm(/^(brouillon|draft)/i);if(!sn)return null;
+    const A=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:''});
+    const hr=A.findIndex(r=>/^(article|item)/i.test(String(r[0]).trim()));if(hr<0)return null;
+    const num=v=>parseFloat(String(v).replace(',','.'))||0;
+    const d={type:'panier-malin-brouillon',title:String(A[0][0]||''),items:A.slice(hr+1).filter(r=>String(r[0]).trim()).map(r=>({name:String(r[0]),term:String(r[1]||''),qty:num(r[2])||1,total:num(r[3]),store:String(r[4]||''),date:xdate(r[5]),code:String(r[6]||'').replace(/\D/g,'')})),settings:{},crowd:{}};
+    const ss=nm(/^(param|setting)/i);
+    if(ss){const o={};XLSX.utils.sheet_to_json(wb.Sheets[ss],{header:1,defval:''}).forEach(r=>{o[String(r[0])]=r[1];});
+      d.settings={store:String(o.store||''),date:String(o.date||''),mode:o.mode==='online'?'online':'near',radius:num(o.radius),planned:String(o.planned||''),transport:String(o.transport||''),
+        loc:(o.lat!==''&&o.lon!==''&&o.lat!==undefined)?{lat:num(o.lat),lon:num(o.lon),label:String(o.label||'')}:null,
+        useop:o.useop!==0&&o.useop!=='0',usebase:o.usebase!==0&&o.usebase!=='0',useest:o.useest!==0&&o.useest!=='0',keep:o.keep!==0&&o.keep!=='0'};}
+    const cs=nm(/^(affluence|busy)/i);
+    if(cs)XLSX.utils.sheet_to_json(wb.Sheets[cs],{header:1,defval:''}).slice(1).forEach(r=>{
+      if(!r[0]||!r[3]||!r[4])return;const e=(d.crowd[r[0]]=d.crowd[r[0]]||{name:String(r[1]||''),slots:[]});
+      e.slots.push({d:String(r[2]).split(',').map(Number).filter(x=>x>=1&&x<=7),from:String(r[3]),to:String(r[4])});});
+    return d;
+  }catch{return null;}
+}
 bfr.onclick=()=>{lang='fr';localStorage.setItem('pm_lang',lang);applyLang();};
 ben.onclick=()=>{lang='en';localStorage.setItem('pm_lang',lang);applyLang();};
 applyLang();
