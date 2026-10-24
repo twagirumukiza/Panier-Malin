@@ -102,6 +102,10 @@ body.printing .plan li span:first-child::before{content:'☐ '}
 .warnt{color:var(--warn);font-size:11px}
 .err{color:var(--bad);font-size:14px}
 tr.sugrow>td{padding:0 4px 8px}
+.acbox{position:fixed;z-index:60;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:280px;overflow:auto}
+.acitem{display:flex;justify-content:space-between;gap:10px;padding:8px 12px;cursor:pointer;font-size:14px}
+.acitem.on,.acitem:hover{background:var(--acc2)}
+.acx{padding:7px 12px;cursor:pointer;border-top:1px solid var(--line)}
 .sugbox{margin-top:2px}
 .sugbox .offer{font-size:13px}
 .sugbox .sbtn{font-size:12px;padding:4px 9px;margin:6px 6px 0 0}
@@ -158,7 +162,7 @@ tr.sugrow>td{padding:0 4px 8px}
   <table><thead><tr><th style="width:42px" data-i="keepcol"></th><th data-i="item"></th><th data-i="search"></th><th style="width:56px" data-i="qty"></th><th style="width:84px" data-i="total"></th><th style="width:30px"></th></tr></thead><tbody id="rows"></tbody></table>
   <div class="row"><button class="s" id="rawshow" data-i="rawshow"></button></div>
   <details id="ignbox" hidden><summary class="small" id="ignsum" style="cursor:pointer"></summary><div id="ignlist"></div></details>
-  <div class="row"><button class="s" id="addrow" data-i="addrow"></button><button class="s" id="autoprice" data-i="autoprice"></button><button class="s" id="suggestall" data-i="suggestall"></button><label class="s"><span data-i="artphoto"></span><input id="artfile2" type="file" accept="image/*" hidden></label></div>
+  <div class="row"><button class="s" id="addrow" data-i="addrow"></button><button class="s" id="autoprice" data-i="autoprice"></button><button class="s" id="suggestall" data-i="suggestall"></button><label class="small" style="display:inline-flex;gap:6px;align-items:center"><input type="checkbox" id="acon"> <span data-i="acon"></span></label><label class="s"><span data-i="artphoto"></span><input id="artfile2" type="file" accept="image/*" hidden></label></div>
   <p class="small" data-i="searchhint"></p>
   <p class="small" id="automsg"></p>
   <div class="row"><input type="text" id="draftname" class="grow" data-ph="draftnameph"><button class="s" id="dsave" data-i="dsave"></button><button class="s" id="djson" data-i="djson"></button><button class="s" id="dxls" data-i="dxls"></button></div>
@@ -249,7 +253,7 @@ km:"km",m:"m",locok:"Position :",locno:"Position inconnue",locfail:"Localisation
 paid:"Payé",none:"Aucune offre trouvée",err:"Erreur réseau",cheapest:"Moins cher",same:"Prix équivalent",
 tpaid:"Total payé",tbest:"Total optimisé",tsave:"Économie possible",tfound:"Articles moins chers",online_tag:"En ligne",mine:"Mon ticket",away:"à",
 bstat:(n,i)=>`${n} ticket(s), ${i} article(s) enregistrés.`,confirmclear:"Effacer toute la base locale ?",needloc:"Indiquez d’abord votre position (ou choisissez Internet).",
-closebox:"Fermer",srcnote:"Cliquez sur une offre pour la retenir.",nearbest:"Le moins cher à proximité",nonear:"Aucune offre dans le périmètre",outside:"Prix moins chers hors périmètre",viewfar:"Voir",hidefar:"Masquer",remove:"Retirer de la liste",restore:"Remettre",removed:"Article retiré du résultat",noprice:"prix payé inconnu",saveby:"économie",nothing:"Aucun article à comparer. Ajoutez au moins un nom d’article.",impjson:"Importer (JSON)",expxls:"Exporter (Excel)",impxls:"Importer (Excel)",wheretitle:"Où acheter vos articles",stayat:"Rien de moins cher trouvé — rester chez",nitems:n=>n+" article"+(n>1?"s":""),subtotal:"Sous-total",imported:(a,b)=>`${a} ticket(s) importé(s), ${b} déjà présent(s).`,importfail:"Fichier illisible ou format non reconnu.",xlsfail:"Impossible de charger le module Excel (connexion ?).",unknownp:"prix inconnu",printplan:"🖨 Imprimer la liste",printtitle:"Panier Malin — Où acheter",artphoto:"📷 Photographier un article",artread:"Lecture de l’article…",artdone:n=>`Article lu : ${n}. Vérifiez et corrigez si besoin.`,artnone:"Rien reconnu sur la photo. Saisissez l’article à la main.",eanph:"Code-barres (facultatif, recherche exacte)",webcheck:"Chercher le prix sur le site de l’enseigne :",webprice:"Prix vu en ligne",webadd:"Ajouter ce prix",webshop:"Magasin",web:"relevé en ligne",webnote:"Pas de prix dans la base ouverte ? Ouvrez le site de l’enseigne, puis saisissez le prix vu : il est gardé dans votre base locale.",est:"indicatif",estfrom:"prix relevé chez",storesnear:"Magasins dans le périmètre",nonearstores:"Aucun prix relevé pour cet article dans le périmètre. Magasins proches :",contrib:"Peu de prix relevés ici : scannez vos tickets pour enrichir la base.",useest:"Prix indicatifs (même enseigne, relevé ailleurs)",nostores:"Aucun magasin trouvé (service de cartographie indisponible ?)",testim:"Panier estimé (articles sans prix)",tlist:"Articles trouvés",nooffer:"Aucune offre trouvée dans le périmètre",listh:"Liste sans prix : l’appli cherche le meilleur prix de chaque article dans le périmètre choisi à l’étape 3.",impfile:"📂 Importer un ancien fichier (JSON / Excel)",typelist:"Saisir une liste",listph:"Un article par ligne, par ex. :\nlait demi-écrémé\n2 x pâtes spaghetti 1,20",addlist:"Ajouter à la liste",srcs:"Sources de prix :",useop:"Open Prices (prix relevés en magasin)",usebase:"Ma base locale (mes tickets, fichiers importés)",clearlist:"Vider la liste",atstore:"chez",keepcol:"Garder",rawshow:"Voir / corriger le texte lu",ignsum:n=>`Lignes écartées (${n}) : adresse, TVA, paiement, fidélité… — touchez « Ajouter » si l’une est un achat`,addline:"Ajouter",unsure:"à vérifier",tailn:n=>`${n} ligne(s) après le total (TVA, paiement, fidélité…) ignorée(s).`,pdfread:"Lecture du PDF…",aireceipt:"Lecture IA du ticket…",aireceiptok:"Ticket lu par l’IA : vérifiez les lignes.",aireceiptfail:"Lecture IA indisponible : lecture classique.",discn:"remise déduite",draftword:"Brouillon",draftlist:"Brouillons enregistrés",dnone:"Aucun brouillon enregistré sur cet appareil.",draftnameph:"Nom du brouillon (facultatif), ex. courses de la semaine",dsave:"💾 Enregistrer le brouillon",djson:"⬇ Brouillon (JSON)",dxls:"⬇ Brouillon (Excel)",dsavedmsg:ti=>`Brouillon enregistré dans ce navigateur : « ${ti} ».`,dempty:"Rien à enregistrer : la liste est vide.",dfull:"Enregistrement impossible (stockage du navigateur plein ou bloqué ?). Téléchargez le brouillon en JSON ou Excel.",dresume:"Reprendre",ddelete:"Supprimer",dloaded:(n,ti)=>`${n} article(s) repris depuis « ${ti} ». Relancez la recherche quand vous voulez.`,dstatus:"Statut",dsaved:"Enregistré le",autoprice:"💶 Remplir les prix automatiquement",autoprog:"Recherche des prix…",autodone:(a,b)=>`${a} prix rempli(s) sur ${b}. Vérifiez-les : ils sont indicatifs.`,autonone:"Aucun article à remplir (tous ont déjà un prix, ou la liste est vide).",autotag:"≈ indicatif",autonote:n=>`Prix indicatif : médiane de ${n} relevé(s) Open Prices / base locale. Modifiez le champ pour saisir le prix réel.`,autofail:"Aucun prix trouvé pour ces articles. Précisez le terme recherché ou le code-barres.",suggestall:"🔎 Proposer les produits",sugtitle:"Quel produit voulez-vous ? Touchez pour choisir.",sughint:"Un « poulet » peut être entier, en filets, pané… : choisir évite de comparer des produits différents.",sugany:x=>`Tout ce qui correspond à « ${x} » (le moins cher parmi tous)`,sugload:"Recherche des produits correspondants…",sugnone:"Aucun produit trouvé : précisez le « terme recherché » (la recherche se relance toute seule) ou saisissez le code-barres.",sugprices:n=>`${n} prix`,sugnoloc:"Localisez-vous à l’étape 3, puis touchez « 🔎 Proposer les produits » pour voir les prix les moins chers du quartier.",sugnop:"aucun prix dans le rayon",sugbest:"le moins cher",sugmore:n=>`Voir plus (${n})`,sugless:"Réduire",sugsort1:"Trier par prix",sugsort2:"Trier par pertinence",
+closebox:"Fermer",sessback:n=>`Session précédente retrouvée : ${n} article${n>1?"s":""}. Lancez la recherche à l’étape 3.`,acon:"Suggestions pour terminer ma saisie",acmine:"mes articles",accat:"catégorie",sugtitled:"Titre de l’article",sugredo:"🔄 Relancer avec ce titre",sugclose:"Fermer les propositions",sugopen:"Voir les propositions",rename:"Modifier le titre",srcnote:"Cliquez sur une offre pour la retenir.",nearbest:"Le moins cher à proximité",nonear:"Aucune offre dans le périmètre",outside:"Prix moins chers hors périmètre",viewfar:"Voir",hidefar:"Masquer",remove:"Retirer de la liste",restore:"Remettre",removed:"Article retiré du résultat",noprice:"prix payé inconnu",saveby:"économie",nothing:"Aucun article à comparer. Ajoutez au moins un nom d’article.",impjson:"Importer (JSON)",expxls:"Exporter (Excel)",impxls:"Importer (Excel)",wheretitle:"Où acheter vos articles",stayat:"Rien de moins cher trouvé — rester chez",nitems:n=>n+" article"+(n>1?"s":""),subtotal:"Sous-total",imported:(a,b)=>`${a} ticket(s) importé(s), ${b} déjà présent(s).`,importfail:"Fichier illisible ou format non reconnu.",xlsfail:"Impossible de charger le module Excel (connexion ?).",unknownp:"prix inconnu",printplan:"🖨 Imprimer la liste",printtitle:"Panier Malin — Où acheter",artphoto:"📷 Photographier un article",artread:"Lecture de l’article…",artdone:n=>`Article lu : ${n}. Vérifiez et corrigez si besoin.`,artnone:"Rien reconnu sur la photo. Saisissez l’article à la main.",eanph:"Code-barres (facultatif, recherche exacte)",webcheck:"Chercher le prix sur le site de l’enseigne :",webprice:"Prix vu en ligne",webadd:"Ajouter ce prix",webshop:"Magasin",web:"relevé en ligne",webnote:"Pas de prix dans la base ouverte ? Ouvrez le site de l’enseigne, puis saisissez le prix vu : il est gardé dans votre base locale.",est:"indicatif",estfrom:"prix relevé chez",storesnear:"Magasins dans le périmètre",nonearstores:"Aucun prix relevé pour cet article dans le périmètre. Magasins proches :",contrib:"Peu de prix relevés ici : scannez vos tickets pour enrichir la base.",useest:"Prix indicatifs (même enseigne, relevé ailleurs)",nostores:"Aucun magasin trouvé (service de cartographie indisponible ?)",testim:"Panier estimé (articles sans prix)",tlist:"Articles trouvés",nooffer:"Aucune offre trouvée dans le périmètre",listh:"Liste sans prix : l’appli cherche le meilleur prix de chaque article dans le périmètre choisi à l’étape 3.",impfile:"📂 Importer un ancien fichier (JSON / Excel)",typelist:"Saisir une liste",listph:"Un article par ligne, par ex. :\nlait demi-écrémé\n2 x pâtes spaghetti 1,20",addlist:"Ajouter à la liste",srcs:"Sources de prix :",useop:"Open Prices (prix relevés en magasin)",usebase:"Ma base locale (mes tickets, fichiers importés)",clearlist:"Vider la liste",atstore:"chez",keepcol:"Garder",rawshow:"Voir / corriger le texte lu",ignsum:n=>`Lignes écartées (${n}) : adresse, TVA, paiement, fidélité… — touchez « Ajouter » si l’une est un achat`,addline:"Ajouter",unsure:"à vérifier",tailn:n=>`${n} ligne(s) après le total (TVA, paiement, fidélité…) ignorée(s).`,pdfread:"Lecture du PDF…",aireceipt:"Lecture IA du ticket…",aireceiptok:"Ticket lu par l’IA : vérifiez les lignes.",aireceiptfail:"Lecture IA indisponible : lecture classique.",discn:"remise déduite",draftword:"Brouillon",draftlist:"Brouillons enregistrés",dnone:"Aucun brouillon enregistré sur cet appareil.",draftnameph:"Nom du brouillon (facultatif), ex. courses de la semaine",dsave:"💾 Enregistrer le brouillon",djson:"⬇ Brouillon (JSON)",dxls:"⬇ Brouillon (Excel)",dsavedmsg:ti=>`Brouillon enregistré dans ce navigateur : « ${ti} ».`,dempty:"Rien à enregistrer : la liste est vide.",dfull:"Enregistrement impossible (stockage du navigateur plein ou bloqué ?). Téléchargez le brouillon en JSON ou Excel.",dresume:"Reprendre",ddelete:"Supprimer",dloaded:(n,ti)=>`${n} article(s) repris depuis « ${ti} ». Relancez la recherche quand vous voulez.`,dstatus:"Statut",dsaved:"Enregistré le",autoprice:"💶 Remplir les prix automatiquement",autoprog:"Recherche des prix…",autodone:(a,b)=>`${a} prix rempli(s) sur ${b}. Vérifiez-les : ils sont indicatifs.`,autonone:"Aucun article à remplir (tous ont déjà un prix, ou la liste est vide).",autotag:"≈ indicatif",autonote:n=>`Prix indicatif : médiane de ${n} relevé(s) Open Prices / base locale. Modifiez le champ pour saisir le prix réel.`,autofail:"Aucun prix trouvé pour ces articles. Précisez le terme recherché ou le code-barres.",suggestall:"🔎 Proposer les produits",sugtitle:"Quel produit voulez-vous ? Touchez pour choisir.",sughint:"Un « poulet » peut être entier, en filets, pané… : choisir évite de comparer des produits différents.",sugany:x=>`Tout ce qui correspond à « ${x} » (le moins cher parmi tous)`,sugload:"Recherche des produits correspondants…",sugnone:"Aucun produit trouvé : précisez le « terme recherché » (la recherche se relance toute seule) ou saisissez le code-barres.",sugprices:n=>`${n} prix`,sugnoloc:"Localisez-vous à l’étape 3, puis touchez « 🔎 Proposer les produits » pour voir les prix les moins chers du quartier.",sugnop:"aucun prix dans le rayon",sugbest:"le moins cher",sugmore:n=>`Voir plus (${n})`,sugless:"Réduire",sugsort1:"Trier par prix",sugsort2:"Trier par pertinence",
 routetitle:"Parcours d’achat",transport:"Déplacement :",tfoot:"À pied",tbike:"À vélo",tcar:"En voiture",routego:"Calculer le parcours",printroute:"Inclure le plan du parcours",start:"Domicile",back:"Retour au domicile",routing:"Calcul du parcours…",birdfly:"Itinéraire routier indisponible : distances estimées à vol d’oiseau (+30 %).",nostops:"Aucun magasin localisable à relier (les articles gardés chez l’enseigne du ticket n’ont pas de position).",needhome:"Indiquez d’abord votre adresse de départ à l’étape 3.",rtotal:(km,mn)=>`Total : ${km} km · environ ${mn} min de trajet (hors temps en magasin)`,rlink1:"Ouvrir dans OpenStreetMap",rlink2:"Ouvrir dans Google Maps",mapfail:"Fond de carte indisponible : schéma simplifié.",
 crowd:"Affluence",crowdnone:"Affluence : non renseignée",crowdedit:"🕒 Renseigner l’affluence",crowdclose:"Fermer",crowdadd:"Ajouter la plage",crowdwarn:"⚠ L’heure prévue tombe pendant une période d’affluence",planned:"Heure prévue des courses (facultatif) :",hours:"Horaires d’ouverture (OSM)",crowdhint:"Aucune source ouverte ne publie l’affluence des magasins : indiquez les heures chargées que vous observez. Elles restent sur cet appareil et sont incluses dans vos brouillons.",crowderr:"L’heure de fin doit suivre l’heure de début.",crowdto:"à",crowdnodays:"Cochez au moins un jour.",idtitle:"Identification de l’article",idcode:(i,n)=>`Recherche du code-barres… (${i}/${n})`,idlook:"Consultation des bases ouvertes…",idocr:"Lecture du texte",idcands:"Recherche des produits correspondants…",idpick:"Plusieurs possibilités : touchez le bon produit.",idscore:"concordance",idexact:"code-barres exact",idl_code:"Code",idl_text:"Texte lu",idl_qty:"Quantité",idnote:"La concordance compare ce qui est lu sur la photo (code-barres, texte, quantité) aux fiches des bases ouvertes. C’est un indice, pas une probabilité : vérifiez la marque et le format.",idnone:"Rien de fiable reconnu. Essayez une photo plus nette de la face avant ou du code-barres, ou cherchez à la main.",idqph:"Chercher à la main (nom, marque ou code-barres)",idocrtext:"Texte lu sur la photo (non reconnu)",idneterr:"Bases ouvertes injoignables (connexion ?).",aititle:"Identification par IA (optionnel)",aihint:"Active un modèle de vision qui lit la photo de l’article (marque, nom, variante, quantité) : Google Gemini (palier gratuit, clé à créer sur aistudio.google.com) ou Anthropic Claude (payant). Les indices sont recoupés avec les bases ouvertes. Sans clé, l’appli reste sur la lecture classique (code-barres + OCR).",aion:"Utiliser l’analyse visuelle par IA",aikeyph:"Clé API (Gemini : AIza… · Anthropic : sk-ant-…)",aiproxyph:"ou adresse de votre relais sécurisé (sans clé dans le navigateur)",aipriv:"Quand l’option est active, la photo de l’article est envoyée au fournisseur choisi (ou à votre relais). La clé reste uniquement sur cet appareil. Palier gratuit : limites variables et traitement des données selon les conditions du fournisseur, à vérifier ; pour Anthropic, fixez un budget maximal dans la console.",airead:"Analyse visuelle par IA…",aifail:"Analyse IA indisponible (clé, connexion ?) : lecture classique.",idl_ai:"Lecture IA",added:(n,l)=>`${n} nouvel(s) article(s) depuis « ${l} ».`},
 en:{s1:"Scan a receipt",s1h:"Combine several sources: a photo of a new receipt, an old shopping file (JSON or Excel), a typed list… Everything is added to the list below, then the search checks the prices again.",photo:"📷 Scan or import a receipt (photo, PDF)",manual:"Paste text",demo:"Sample receipt",rawph:"Paste the receipt text here…",analyse:"Analyse",
@@ -262,7 +266,7 @@ km:"km",m:"m",locok:"Position:",locno:"Position unknown",locfail:"Location denie
 paid:"Paid",none:"No offer found",err:"Network error",cheapest:"Cheapest",same:"Same price",
 tpaid:"Total paid",tbest:"Optimised total",tsave:"Possible saving",tfound:"Cheaper items",online_tag:"Online",mine:"My receipt",away:"at",
 bstat:(n,i)=>`${n} receipt(s), ${i} item(s) saved.`,confirmclear:"Clear the whole local base?",needloc:"Set your location first (or choose Online).",
-closebox:"Close",srcnote:"Click an offer to select it.",nearbest:"Cheapest nearby",nonear:"No offer within the radius",outside:"Cheaper prices outside the radius",viewfar:"Show",hidefar:"Hide",remove:"Remove from list",restore:"Restore",removed:"Item removed from the result",noprice:"price paid unknown",saveby:"saving",nothing:"No item to compare. Add at least one item name.",impjson:"Import (JSON)",expxls:"Export (Excel)",impxls:"Import (Excel)",wheretitle:"Where to buy your items",stayat:"Nothing cheaper found — stay at",nitems:n=>n+" item"+(n>1?"s":""),subtotal:"Subtotal",imported:(a,b)=>`${a} receipt(s) imported, ${b} already present.`,importfail:"Unreadable file or unknown format.",xlsfail:"Could not load the Excel module (connection?).",unknownp:"price unknown",printplan:"🖨 Print the list",printtitle:"Smart Basket — Where to buy",artphoto:"📷 Photograph an item",artread:"Reading the item…",artdone:n=>`Item read: ${n}. Check it and fix if needed.`,artnone:"Nothing recognised in the photo. Type the item by hand.",eanph:"Barcode (optional, exact search)",webcheck:"Look up the price on the store’s website:",webprice:"Price seen online",webadd:"Add this price",webshop:"Store",web:"seen online",webnote:"No price in the open database? Open the store’s website, then type the price you see: it is kept in your local base.",est:"indicative",estfrom:"price seen at",storesnear:"Stores within the radius",nonearstores:"No price recorded for this item within the radius. Nearby stores:",contrib:"Few prices recorded here: scan your receipts to enrich the base.",useest:"Indicative prices (same chain, seen elsewhere)",nostores:"No store found (map service unavailable?)",testim:"Estimated basket (items without price)",tlist:"Items found",nooffer:"No offer found within the radius",listh:"Price-less list: the app looks for the best price of each item within the radius chosen in step 3.",impfile:"📂 Import an old file (JSON / Excel)",typelist:"Type a list",listph:"One item per line, e.g.:\nsemi-skimmed milk\n2 x spaghetti 1.20",addlist:"Add to the list",srcs:"Price sources:",useop:"Open Prices (in-store prices)",usebase:"My local base (my receipts, imported files)",clearlist:"Clear the list",atstore:"at",keepcol:"Keep",rawshow:"Show / fix the text read",ignsum:n=>`Lines set aside (${n}): address, VAT, payment, loyalty… — tap “Add” if one is a purchase`,addline:"Add",unsure:"check",tailn:n=>`${n} line(s) after the total (VAT, payment, loyalty…) ignored.`,pdfread:"Reading the PDF…",aireceipt:"AI reading the receipt…",aireceiptok:"Receipt read by AI: check the lines.",aireceiptfail:"AI reading unavailable: classic reading.",discn:"discount applied",draftword:"Draft",draftlist:"Saved drafts",dnone:"No draft saved on this device.",draftnameph:"Draft name (optional), e.g. weekly shop",dsave:"💾 Save draft",djson:"⬇ Draft (JSON)",dxls:"⬇ Draft (Excel)",dsavedmsg:ti=>`Draft saved in this browser: “${ti}”.`,dempty:"Nothing to save: the list is empty.",dfull:"Could not save (browser storage full or blocked?). Download the draft as JSON or Excel.",dresume:"Resume",ddelete:"Delete",dloaded:(n,ti)=>`${n} item(s) restored from “${ti}”. Run the search whenever you like.`,dstatus:"Status",dsaved:"Saved on",autoprice:"💶 Fill prices automatically",autoprog:"Looking up prices…",autodone:(a,b)=>`${a} price(s) filled out of ${b}. Please check them: they are indicative.`,autonone:"No item to fill (all already have a price, or the list is empty).",autotag:"≈ estimate",autonote:n=>`Indicative price: median of ${n} Open Prices / local base record(s). Edit the field to enter the real price.`,autofail:"No price found for these items. Refine the search term or the barcode.",suggestall:"🔎 Suggest products",sugtitle:"Which product do you mean? Tap to choose.",sughint:"A “chicken” can be whole, fillets, breaded… : choosing avoids comparing different products.",sugany:x=>`Anything matching “${x}” (cheapest of all)`,sugload:"Looking for matching products…",sugnone:"No product found: refine the “search term” (the search restarts by itself) or type the barcode.",sugprices:n=>`${n} price(s)`,sugnoloc:"Locate yourself in step 3, then tap “🔎 Suggest products” to see the cheapest prices nearby.",sugnop:"no price within the radius",sugbest:"cheapest",sugmore:n=>`Show more (${n})`,sugless:"Show less",sugsort1:"Sort by price",sugsort2:"Sort by relevance",
+closebox:"Close",sessback:n=>`Previous session restored: ${n} item${n>1?"s":""}. Run the search in step 3.`,acon:"Suggest completions as I type",acmine:"my items",accat:"category",sugtitled:"Item title",sugredo:"🔄 Search again with this title",sugclose:"Close suggestions",sugopen:"Show suggestions",rename:"Edit title",srcnote:"Click an offer to select it.",nearbest:"Cheapest nearby",nonear:"No offer within the radius",outside:"Cheaper prices outside the radius",viewfar:"Show",hidefar:"Hide",remove:"Remove from list",restore:"Restore",removed:"Item removed from the result",noprice:"price paid unknown",saveby:"saving",nothing:"No item to compare. Add at least one item name.",impjson:"Import (JSON)",expxls:"Export (Excel)",impxls:"Import (Excel)",wheretitle:"Where to buy your items",stayat:"Nothing cheaper found — stay at",nitems:n=>n+" item"+(n>1?"s":""),subtotal:"Subtotal",imported:(a,b)=>`${a} receipt(s) imported, ${b} already present.`,importfail:"Unreadable file or unknown format.",xlsfail:"Could not load the Excel module (connection?).",unknownp:"price unknown",printplan:"🖨 Print the list",printtitle:"Smart Basket — Where to buy",artphoto:"📷 Photograph an item",artread:"Reading the item…",artdone:n=>`Item read: ${n}. Check it and fix if needed.`,artnone:"Nothing recognised in the photo. Type the item by hand.",eanph:"Barcode (optional, exact search)",webcheck:"Look up the price on the store’s website:",webprice:"Price seen online",webadd:"Add this price",webshop:"Store",web:"seen online",webnote:"No price in the open database? Open the store’s website, then type the price you see: it is kept in your local base.",est:"indicative",estfrom:"price seen at",storesnear:"Stores within the radius",nonearstores:"No price recorded for this item within the radius. Nearby stores:",contrib:"Few prices recorded here: scan your receipts to enrich the base.",useest:"Indicative prices (same chain, seen elsewhere)",nostores:"No store found (map service unavailable?)",testim:"Estimated basket (items without price)",tlist:"Items found",nooffer:"No offer found within the radius",listh:"Price-less list: the app looks for the best price of each item within the radius chosen in step 3.",impfile:"📂 Import an old file (JSON / Excel)",typelist:"Type a list",listph:"One item per line, e.g.:\nsemi-skimmed milk\n2 x spaghetti 1.20",addlist:"Add to the list",srcs:"Price sources:",useop:"Open Prices (in-store prices)",usebase:"My local base (my receipts, imported files)",clearlist:"Clear the list",atstore:"at",keepcol:"Keep",rawshow:"Show / fix the text read",ignsum:n=>`Lines set aside (${n}): address, VAT, payment, loyalty… — tap “Add” if one is a purchase`,addline:"Add",unsure:"check",tailn:n=>`${n} line(s) after the total (VAT, payment, loyalty…) ignored.`,pdfread:"Reading the PDF…",aireceipt:"AI reading the receipt…",aireceiptok:"Receipt read by AI: check the lines.",aireceiptfail:"AI reading unavailable: classic reading.",discn:"discount applied",draftword:"Draft",draftlist:"Saved drafts",dnone:"No draft saved on this device.",draftnameph:"Draft name (optional), e.g. weekly shop",dsave:"💾 Save draft",djson:"⬇ Draft (JSON)",dxls:"⬇ Draft (Excel)",dsavedmsg:ti=>`Draft saved in this browser: “${ti}”.`,dempty:"Nothing to save: the list is empty.",dfull:"Could not save (browser storage full or blocked?). Download the draft as JSON or Excel.",dresume:"Resume",ddelete:"Delete",dloaded:(n,ti)=>`${n} item(s) restored from “${ti}”. Run the search whenever you like.`,dstatus:"Status",dsaved:"Saved on",autoprice:"💶 Fill prices automatically",autoprog:"Looking up prices…",autodone:(a,b)=>`${a} price(s) filled out of ${b}. Please check them: they are indicative.`,autonone:"No item to fill (all already have a price, or the list is empty).",autotag:"≈ estimate",autonote:n=>`Indicative price: median of ${n} Open Prices / local base record(s). Edit the field to enter the real price.`,autofail:"No price found for these items. Refine the search term or the barcode.",suggestall:"🔎 Suggest products",sugtitle:"Which product do you mean? Tap to choose.",sughint:"A “chicken” can be whole, fillets, breaded… : choosing avoids comparing different products.",sugany:x=>`Anything matching “${x}” (cheapest of all)`,sugload:"Looking for matching products…",sugnone:"No product found: refine the “search term” (the search restarts by itself) or type the barcode.",sugprices:n=>`${n} price(s)`,sugnoloc:"Locate yourself in step 3, then tap “🔎 Suggest products” to see the cheapest prices nearby.",sugnop:"no price within the radius",sugbest:"cheapest",sugmore:n=>`Show more (${n})`,sugless:"Show less",sugsort1:"Sort by price",sugsort2:"Sort by relevance",
 routetitle:"Shopping route",transport:"Travel:",tfoot:"On foot",tbike:"By bike",tcar:"By car",routego:"Compute the route",printroute:"Include the route map",start:"Home",back:"Back home",routing:"Computing the route…",birdfly:"Road routing unavailable: straight-line distances estimated (+30%).",nostops:"No locatable store to link (items kept at the receipt’s store have no position).",needhome:"Set your starting address in step 3 first.",rtotal:(km,mn)=>`Total: ${km} km · about ${mn} min of travel (shop time excluded)`,rlink1:"Open in OpenStreetMap",rlink2:"Open in Google Maps",mapfail:"Map tiles unavailable: simplified diagram.",
 crowd:"Busy hours",crowdnone:"Busy hours: not set",crowdedit:"🕒 Set busy hours",crowdclose:"Close",crowdadd:"Add this slot",crowdwarn:"⚠ The planned time falls in a busy period",planned:"Planned shopping time (optional):",hours:"Opening hours (OSM)",crowdhint:"No open source publishes store crowding: enter the busy hours you observe. They stay on this device and are included in your drafts.",crowderr:"End time must be after start time.",crowdto:"to",crowdnodays:"Tick at least one day.",idtitle:"Item identification",idcode:(i,n)=>`Looking for the barcode… (${i}/${n})`,idlook:"Checking open databases…",idocr:"Reading text",idcands:"Looking for matching products…",idpick:"Several possibilities: tap the right product.",idscore:"match",idexact:"exact barcode",idl_code:"Code",idl_text:"Text read",idl_qty:"Size",idnote:"The match compares what is read on the photo (barcode, text, size) with open-database records. It is an indication, not a probability: check the brand and size.",idnone:"Nothing reliable recognised. Try a sharper photo of the front or the barcode, or search by hand.",idqph:"Search by hand (name, brand or barcode)",idocrtext:"Text read on the photo (not recognised)",idneterr:"Open databases unreachable (connection?).",aititle:"AI identification (optional)",aihint:"Turns on a vision model that reads the item photo (brand, name, variant, size): Google Gemini (free tier, key from aistudio.google.com) or Anthropic Claude (paid). Clues are cross-checked with open databases. Without a key, the app keeps the classic reading (barcode + OCR).",aion:"Use AI visual analysis",aikeyph:"API key (Gemini: AIza… · Anthropic: sk-ant-…)",aiproxyph:"or your secure relay address (no key in the browser)",aipriv:"When enabled, the item photo is sent to the chosen provider (or to your relay). The key stays on this device only. Free tier: limits vary and data handling follows the provider’s terms, so check them; for Anthropic, set a maximum budget in the console.",airead:"AI visual analysis…",aifail:"AI analysis unavailable (key, connection?): classic reading.",idl_ai:"AI reading",added:(n,l)=>`${n} new item(s) from “${l}”.`}};
 let lang=localStorage.getItem('pm_lang')||((navigator.language||'fr').startsWith('en')?'en':'fr');
@@ -549,10 +553,11 @@ function renderRows(){
       inp.oninput=()=>{it[k]=type==='number'?parseFloat(inp.value)||0:inp.value;if(k==='name'&&!it._termEdited)it.term=searchTerm(it.name),tr.children[2].firstChild.value=it.term;if(k==='term')it._termEdited=true;if(k==='total'&&it.auto){it.auto=false;it.fresh=!!it._wasFresh;const n=td.querySelector('.autonote');if(n)n.remove();}if(k==='qty'&&it.auto&&it.unitAuto>0){it.total=r2(it.unitAuto*(it.qty||1));tr.children[4].firstChild.value=it.total;}};
       td.appendChild(inp);
       if(k==='term')inp.onchange=()=>{if(!it.code&&(it.name||'').trim())suggestFor(it);};
+      if(k==='name')attachAC(inp,it);
       if(k==='total'&&it.auto){const an=document.createElement('div');an.className='small autonote';an.textContent=t('autotag');an.title=t('autonote')(it.autoN||0);td.appendChild(an);}
       if(k==='name'&&(it.disc||it.detail)){const dd=document.createElement('div');dd.className='small';dd.textContent=[it.detail,it.disc?'−'+it.disc.toFixed(2)+' € ('+t('discn')+')':''].filter(Boolean).join(' · ');td.appendChild(dd);}
       if(k==='name'&&(it.store||it.date)){const sm=document.createElement('div');sm.className='small';sm.textContent=[it.store,it.date].filter(Boolean).join(' · ');td.appendChild(sm);}
-      if(k==='name'){const ci=document.createElement('input');ci.type='text';ci.placeholder=t('eanph');ci.value=it.code||'';ci.style.cssText='margin-top:4px;font-size:12px;padding:3px 6px';ci.oninput=()=>{it.code=ci.value.replace(/\D/g,'');};td.appendChild(ci);}
+      if(k==='name'){const ci=document.createElement('input');ci.type='text';ci.placeholder=t('eanph');ci.value=it.code||'';ci.style.cssText='margin-top:4px;font-size:12px;padding:3px 6px';ci.oninput=()=>{it.code=ci.value.replace(/\D/g,'');};td.appendChild(ci);const sb=document.createElement('button');sb.className='s';sb.textContent='💡';sb.title=t('sugopen');sb.style.cssText='margin-top:4px;padding:2px 8px;font-size:12px';sb.onclick=()=>{if((it.name||'').trim())suggestFor(it);};td.appendChild(sb);}
       return td;};
     const kt=document.createElement('td'),kc=document.createElement('input');kc.type='checkbox';kc.checked=!it.skip;kc.style.width='auto';
     kc.onchange=()=>{it.skip=!kc.checked;tr.classList.toggle('dim',it.skip);};kt.appendChild(kc);
@@ -747,10 +752,34 @@ function pickProduct(it,c){
   if(it._tr){const ins=it._tr.children[1].querySelectorAll('input');if(ins.length>1){ins[0].value=it.name;ins[ins.length-1].value=it.code;}}
   renderSug(it);
 }
+function sugEditor(it){
+  const w=document.createElement('div');w.style.cssText='display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:2px 0 6px';
+  const lab=document.createElement('span');lab.className='small';lab.textContent='✏️ '+t('sugtitled');
+  const inp=document.createElement('input');inp.type='text';inp.value=it.name||'';inp.style.cssText='flex:1 1 200px;width:auto;min-width:0';
+  const mk=(txt,fn)=>{const b=document.createElement('button');b.className='s';b.style.cssText='font-size:13px;padding:6px 10px';b.textContent=txt;b.onclick=fn;return b;};
+  inp.oninput=()=>{
+    it.name=inp.value;const tr=it._tr;
+    if(tr){const ni=tr.children[1].querySelector('input');if(ni)ni.value=it.name;}
+    if(!it._termEdited){it.term=searchTerm(it.name)||it.name.toLowerCase();const ti=tr&&tr.children[2]&&tr.children[2].firstChild;if(ti)ti.value=it.term;}
+  };
+  const redo=mk(t('sugredo'),()=>{
+    const v=(it.name||'').trim();if(!v)return;
+    it.term=searchTerm(v)||v.toLowerCase();it._termEdited=false;it._origName=null;
+    const ti=it._tr&&it._tr.children[2]&&it._tr.children[2].firstChild;if(ti)ti.value=it.term;
+    suggestFor(it);
+  });
+  inp.onkeydown=e=>{if(e.key==='Enter')redo.click();};
+  w.append(lab,inp,redo,mk('✕ '+t('sugclose'),()=>{it.sug=null;renderSug(it);}));
+  return w;
+}
 function renderSug(it){
   const td=it._sugTd;if(!td||!td.isConnected)return;
-  const s=it.sug;td.innerHTML='';td.parentNode.hidden=!s;
-  if(!s)return;
+  const s=it.sug;
+  td.querySelectorAll('.sugbox').forEach(x=>x.remove());
+  td.parentNode.hidden=!s;
+  if(!s){if(it._sugEd){it._sugEd.remove();it._sugEd=null;}return;}
+  if(!it._sugEd||it._sugEd.parentNode!==td){it._sugEd=sugEditor(it);td.prepend(it._sugEd);}
+  {const ei=it._sugEd.querySelector('input');if(ei&&document.activeElement!==ei)ei.value=it.name||'';}
   const box=document.createElement('div');box.className='idbox sugbox';td.appendChild(box);
   const line=h=>{const d=document.createElement('div');d.className='small';d.innerHTML=h;box.appendChild(d);return d;};
   if(s.loading){line(esc(t('sugload')));return;}
@@ -784,6 +813,75 @@ function queueSuggest(){
   queueSuggest.t=setTimeout(()=>{items.filter(i=>(i.name||'').trim()&&!i.code&&!(i.total>0)&&!i.skip&&!i._sugDone).forEach(i=>suggestFor(i));},400);
 }
 $('suggestall').onclick=()=>{items.filter(i=>(i.name||'').trim()&&!i.code&&!i.skip).forEach(i=>suggestFor(i));};
+
+/* ============ SUGGESTIONS POUR TERMINER LA SAISIE (option) ============ */
+const acOn=()=>localStorage.getItem('pm_ac')==='1';
+const acCache=new Map();
+let acClose=null;
+window.addEventListener('scroll',()=>{if(acClose)acClose();},true);
+function acLocal(q){
+  const k=norm(q),out=[],seen=new Set();
+  const add=n=>{const nn=norm(n||'');if(!nn||!nn.includes(k)||nn===k||seen.has(nn))return;seen.add(nn);out.push({text:n,src:t('acmine')});};
+  items.forEach(i=>add(i.name));
+  try{getBase().forEach(rc=>rc.items.forEach(i=>add(i.name)));}catch{}
+  return out.slice(0,4);
+}
+async function acRemote(q){
+  const key=lang+'|'+norm(q);if(acCache.has(key))return acCache.get(key);
+  const p=new URLSearchParams({tagtype:'categories',string:q,lc:lang==='en'?'en':'fr',limit:'8'});
+  const r=await fetch('https://world.openfoodfacts.org/api/v3/taxonomy_suggestions?'+p);
+  if(!r.ok)throw new Error(r.status);
+  const v=((await r.json()).suggestions||[]).map(x=>({text:String(x),src:t('accat')}));
+  acCache.set(key,v);return v;
+}
+function attachAC(inp,it){
+  let box=null,sel=-1,list=[],tm=null,seq=0;
+  const close=()=>{if(box){box.remove();box=null;}sel=-1;list=[];if(acClose===close)acClose=null;};
+  const apply=c=>{
+    it.name=c.text;inp.value=c.text;
+    if(!it._termEdited){it.term=searchTerm(it.name)||it.name.toLowerCase();const ti=it._tr&&it._tr.children[2]&&it._tr.children[2].firstChild;if(ti)ti.value=it.term;}
+    close();
+    if(!it.code)suggestFor(it);
+  };
+  const draw=()=>{
+    if(box){box.remove();box=null;}
+    if(!list.length)return;
+    box=document.createElement('div');box.className='acbox';
+    const r=inp.getBoundingClientRect();
+    box.style.left=r.left+'px';box.style.top=(r.bottom+2)+'px';box.style.width=Math.max(r.width,230)+'px';
+    list.forEach((c,i)=>{
+      const row=document.createElement('div');row.className='acitem'+(i===sel?' on':'');
+      row.innerHTML=`<span>${esc(c.text)}</span><span class="small">${esc(c.src)}</span>`;
+      row.onmousedown=e=>{e.preventDefault();apply(c);};box.appendChild(row);
+    });
+    const x=document.createElement('div');x.className='acx small';x.textContent='✕ '+t('closebox');
+    x.onmousedown=e=>{e.preventDefault();close();};box.appendChild(x);
+    document.body.appendChild(box);acClose=close;
+  };
+  inp.addEventListener('input',()=>{
+    clearTimeout(tm);
+    const q=inp.value.trim(),my=++seq;
+    if(!acOn()||q.length<2){close();return;}
+    tm=setTimeout(async()=>{
+      list=acLocal(q);draw();
+      try{
+        const rem=await acRemote(q);if(my!==seq)return;
+        const seen=new Set(list.map(c=>norm(c.text)));
+        list=list.concat(rem.filter(c=>!seen.has(norm(c.text))&&norm(c.text)!==norm(q))).slice(0,8);draw();
+      }catch{}
+    },250);
+  });
+  inp.addEventListener('keydown',e=>{
+    if(!box)return;
+    if(e.key==='ArrowDown'){sel=Math.min(list.length-1,sel+1);draw();e.preventDefault();}
+    else if(e.key==='ArrowUp'){sel=Math.max(-1,sel-1);draw();e.preventDefault();}
+    else if(e.key==='Enter'&&sel>=0){apply(list[sel]);e.preventDefault();}
+    else if(e.key==='Escape')close();
+  });
+  inp.addEventListener('blur',()=>setTimeout(close,150));
+}
+$('acon').checked=acOn();
+$('acon').onchange=()=>{try{localStorage.setItem('pm_ac',$('acon').checked?'1':'0');}catch{}};
 
 /* ============ REMPLISSAGE AUTOMATIQUE DES PRIX ============ */
 const medianOf=a=>{const v=a.slice().sort((x,y)=>x-y),m=v.length>>1;return v.length%2?v[m]:(v[m-1]+v[m])/2;};
@@ -913,7 +1011,16 @@ function renderResults(R){
     h.innerHTML=`<span>${esc(r.it.name)} ${r.it.qty>1?'×'+r.it.qty:''}<br><span class="paid">${paid}</span></span>`;
     const btn=document.createElement('button');btn.className='s';btn.style.fontSize='13px';btn.textContent=r.off?t('restore'):t('remove');
     btn.onclick=()=>{r.off=!r.off;renderResults(R);};
-    h.appendChild(btn);d.appendChild(h);
+    const ed=document.createElement('button');ed.className='s';ed.style.fontSize='13px';ed.textContent='✏️';ed.title=t('rename');
+    ed.onclick=()=>{
+      const sp=h.firstChild,inp=document.createElement('input');inp.type='text';inp.value=r.it.name;inp.style.minWidth='0';
+      sp.replaceChildren(inp);inp.focus();inp.select();
+      let done=false;const fin=ok=>{if(done)return;done=true;const v=inp.value.trim();if(ok&&v)r.it.name=v;renderResults(R);};
+      inp.onkeydown=e=>{if(e.key==='Enter')fin(true);else if(e.key==='Escape')fin(false);};
+      inp.onblur=()=>fin(true);
+    };
+    const bw=document.createElement('span');bw.style.cssText='display:flex;gap:6px;flex:0 0 auto';bw.append(ed,btn);
+    h.appendChild(bw);d.appendChild(h);
     if(r.off){d.style.opacity='.5';const e=document.createElement('div');e.className='small';e.textContent=t('removed');d.appendChild(e);L.appendChild(d);return;}
     if(r.err&&!r.near.length&&!r.far.length){const e=document.createElement('div');e.className='err';e.textContent=t('err');d.appendChild(e);}
     if(r.near.length){
@@ -1641,6 +1748,39 @@ async function readDraft(f){
     return d;
   }catch{return null;}
 }
+/* ============ PERSISTANCE : la session de travail est sauvegardée automatiquement et retrouvée à la réouverture ============ */
+const SKEY='pm_session_v1';
+function sessionState(){
+  const keep=['name','term','qty','total','store','date','fresh','code','skip','auto','autoN','_wasFresh','_termEdited','unsure','disc','detail','_origName'];
+  return{v:1,
+    items:items.filter(i=>(i.name||'').trim()||i.code).map(i=>{const o={};keep.forEach(k=>{if(i[k]!==undefined&&i[k]!==null&&i[k]!=='')o[k]=i[k];});return o;}),
+    sources:sources.map(x=>({label:String(x.label),n:Number(x.n)||0})),
+    settings:{store:$('store').value,date:$('rdate').value,mode:getMode(),radius:radKm(),loc,useop:$('useop').checked,usebase:$('usebase').checked,useest:$('useest').checked,keep:$('keep').checked,planned:$('planned').value,transport:$('transport').value},
+    addr:$('addr').value,draftname:$('draftname').value};
+}
+let lastSess='';
+function saveSession(){
+  try{const s=JSON.stringify(sessionState());if(s===lastSess)return;localStorage.setItem(SKEY,s);lastSess=s;}catch{}
+}
+function restoreSession(){
+  let S=null;try{S=JSON.parse(localStorage.getItem(SKEY)||'null');}catch{}
+  if(!S||!Array.isArray(S.items))return;
+  const num=v=>Number.isFinite(+v)?+v:0;
+  items=S.items.map(i=>({...i,name:String(i.name||'').slice(0,100),term:String(i.term||''),qty:num(i.qty)||1,total:num(i.total),store:String(i.store||''),date:String(i.date||''),code:String(i.code||'').replace(/\D/g,''),_sugDone:true}))
+    .filter(i=>i.name.trim()||i.code);
+  items.forEach(i=>{if(!i.term)i.term=searchTerm(i.name)||i.name.toLowerCase();});
+  sources=Array.isArray(S.sources)?S.sources.filter(x=>x&&typeof x.label==='string'):[];
+  applySettings(S.settings);
+  if(typeof S.addr==='string')$('addr').value=S.addr;
+  if(typeof S.draftname==='string')$('draftname').value=S.draftname;
+  if(items.length){showCards();renderChips();msg(t('sessback')(items.length));}
+}
+restoreSession();
+lastSess=JSON.stringify(sessionState());
+setInterval(saveSession,1500);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)saveSession();});
+window.addEventListener('pagehide',saveSession);
+
 bfr.onclick=()=>{lang='fr';localStorage.setItem('pm_lang',lang);applyLang();};
 ben.onclick=()=>{lang='en';localStorage.setItem('pm_lang',lang);applyLang();};
 applyLang();
