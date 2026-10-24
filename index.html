@@ -47,6 +47,10 @@ td input{padding:6px 8px}
 .sum b{display:block;font-size:20px}
 .sum .save b{color:var(--good)}
 .note{border-left:3px solid var(--warn);padding:6px 10px;color:var(--mute);font-size:13px;margin-top:10px}
+.plan{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px}
+.plan h3{margin:0 0 6px;font-size:15px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.plan li{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:2px 0;list-style:none}
+.plan ul{margin:0;padding:0}
 .err{color:var(--bad);font-size:14px}
 [hidden]{display:none!important}
 </style>
@@ -109,13 +113,17 @@ td input{padding:6px 8px}
   <div class="bar" id="rbar"><i id="rbari"></i></div>
   <div id="summary"></div>
   <div id="list"></div>
+  <h2 style="margin-top:18px" id="plantitle" hidden data-i="wheretitle"></h2>
+  <div id="plan"></div>
   <div class="note" data-i="caveat"></div>
 </section>
 
 <section class="card">
   <h2 data-i="basetitle"></h2>
   <p class="small" id="basestat"></p>
-  <div class="row"><button class="s" id="exp" data-i="export"></button><button class="s" id="clr" data-i="clear"></button></div>
+  <div class="row"><button class="s" id="exp" data-i="export"></button><button class="s" id="impj" data-i="impjson"></button><button class="s" id="expx" data-i="expxls"></button><button class="s" id="impx" data-i="impxls"></button><button class="s" id="clr" data-i="clear"></button></div>
+  <input type="file" id="fjson" accept=".json,application/json" hidden><input type="file" id="fxls" accept=".xlsx,.xls,.csv" hidden>
+  <p class="small" id="basemsg"></p>
   <p class="small" data-i="privacy"></p>
 </section>
 </main>
@@ -131,9 +139,9 @@ basetitle:"Ma base de prix locale",export:"Exporter (JSON)",clear:"Tout effacer"
 reading:"Lecture du ticket…",loadocr:"Chargement du moteur de lecture…",ocrfail:"Lecture impossible. Collez le texte du ticket à la place.",noitems:"Aucun article reconnu. Ajoutez-les à la main.",
 km:"km",m:"m",locok:"Position :",locno:"Position inconnue",locfail:"Localisation refusée ou indisponible.",geofail:"Adresse introuvable.",
 paid:"Payé",none:"Aucune offre trouvée",err:"Erreur réseau",cheapest:"Moins cher",same:"Prix équivalent",
-tpaid:"Total payé",tbest:"Total optimisé",tsave:"Économie possible",tfound:"Articles comparés",online_tag:"En ligne",mine:"Mon ticket",away:"à",
+tpaid:"Total payé",tbest:"Total optimisé",tsave:"Économie possible",tfound:"Articles moins chers",online_tag:"En ligne",mine:"Mon ticket",away:"à",
 bstat:(n,i)=>`${n} ticket(s), ${i} article(s) enregistrés.`,confirmclear:"Effacer toute la base locale ?",needloc:"Indiquez d’abord votre position (ou choisissez Internet).",
-srcnote:"Cliquez sur une offre pour la retenir.",nearbest:"Le moins cher à proximité",nonear:"Aucune offre dans le périmètre",outside:"Prix moins chers hors périmètre",viewfar:"Voir",hidefar:"Masquer",remove:"Retirer de la liste",restore:"Remettre",removed:"Article retiré du résultat",noprice:"prix payé inconnu",saveby:"économie",nothing:"Aucun article à comparer. Ajoutez au moins un nom d’article."},
+srcnote:"Cliquez sur une offre pour la retenir.",nearbest:"Le moins cher à proximité",nonear:"Aucune offre dans le périmètre",outside:"Prix moins chers hors périmètre",viewfar:"Voir",hidefar:"Masquer",remove:"Retirer de la liste",restore:"Remettre",removed:"Article retiré du résultat",noprice:"prix payé inconnu",saveby:"économie",nothing:"Aucun article à comparer. Ajoutez au moins un nom d’article.",impjson:"Importer (JSON)",expxls:"Exporter (Excel)",impxls:"Importer (Excel)",wheretitle:"Où acheter vos articles",stayat:"Rien de moins cher trouvé — rester chez",nitems:n=>n+" article"+(n>1?"s":""),subtotal:"Sous-total",imported:(a,b)=>`${a} ticket(s) importé(s), ${b} déjà présent(s).`,importfail:"Fichier illisible ou format non reconnu.",xlsfail:"Impossible de charger le module Excel (connexion ?).",unknownp:"prix inconnu"},
 en:{s1:"Scan a receipt",s1h:"Take a photo of a receipt you already paid: the app reads the store, the items and the prices paid.",photo:"📷 Scan / pick a photo",manual:"Paste text",demo:"Sample receipt",rawph:"Paste the receipt text here…",analyse:"Analyse",
 s2:"Check the items read",store:"Store",date:"Date",item:"Item (receipt)",search:"Search term",qty:"Qty",total:"Total €",addrow:"+ Add an item",searchhint:"Receipt names are often abbreviated: adjust the “search term” (e.g. “semi-skimmed milk”) for better results.",
 s3:"Where to search?",near:"Around me",online:"Online",radius:"Search radius:",geo:"📍 Locate me",addrph:"or type a city / address",find:"Search",keep:"Add this receipt to my local price base (on this device)",compare:"Find the cheapest prices",
@@ -142,9 +150,9 @@ basetitle:"My local price base",export:"Export (JSON)",clear:"Clear all",privacy
 reading:"Reading receipt…",loadocr:"Loading the reading engine…",ocrfail:"Could not read it. Paste the receipt text instead.",noitems:"No item recognised. Add them by hand.",
 km:"km",m:"m",locok:"Position:",locno:"Position unknown",locfail:"Location denied or unavailable.",geofail:"Address not found.",
 paid:"Paid",none:"No offer found",err:"Network error",cheapest:"Cheapest",same:"Same price",
-tpaid:"Total paid",tbest:"Optimised total",tsave:"Possible saving",tfound:"Items compared",online_tag:"Online",mine:"My receipt",away:"at",
+tpaid:"Total paid",tbest:"Optimised total",tsave:"Possible saving",tfound:"Cheaper items",online_tag:"Online",mine:"My receipt",away:"at",
 bstat:(n,i)=>`${n} receipt(s), ${i} item(s) saved.`,confirmclear:"Clear the whole local base?",needloc:"Set your location first (or choose Online).",
-srcnote:"Click an offer to select it.",nearbest:"Cheapest nearby",nonear:"No offer within the radius",outside:"Cheaper prices outside the radius",viewfar:"Show",hidefar:"Hide",remove:"Remove from list",restore:"Restore",removed:"Item removed from the result",noprice:"price paid unknown",saveby:"saving",nothing:"No item to compare. Add at least one item name."}};
+srcnote:"Click an offer to select it.",nearbest:"Cheapest nearby",nonear:"No offer within the radius",outside:"Cheaper prices outside the radius",viewfar:"Show",hidefar:"Hide",remove:"Remove from list",restore:"Restore",removed:"Item removed from the result",noprice:"price paid unknown",saveby:"saving",nothing:"No item to compare. Add at least one item name.",impjson:"Import (JSON)",expxls:"Export (Excel)",impxls:"Import (Excel)",wheretitle:"Where to buy your items",stayat:"Nothing cheaper found — stay at",nitems:n=>n+" item"+(n>1?"s":""),subtotal:"Subtotal",imported:(a,b)=>`${a} receipt(s) imported, ${b} already present.`,importfail:"Unreadable file or unknown format.",xlsfail:"Could not load the Excel module (connection?).",unknownp:"price unknown"}};
 let lang=localStorage.getItem('pm_lang')||((navigator.language||'fr').startsWith('en')?'en':'fr');
 const t=k=>T[lang][k];
 function applyLang(){
@@ -227,7 +235,7 @@ const setBase=b=>localStorage.setItem(baseKey,JSON.stringify(b));
 function baseStat(){const b=getBase();$('basestat').textContent=t('bstat')(b.length,b.reduce((a,r)=>a+r.items.length,0));}
 
 /* ============ SCAN ============ */
-function loadScript(src){return new Promise((res,rej)=>{if(window.Tesseract)return res();const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+function loadScript(src,g='Tesseract'){return new Promise((res,rej)=>{if(window[g])return res();const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 $('file').addEventListener('change',async e=>{
   const f=e.target.files[0];if(!f)return;
   $('ocrbox').hidden=false;$('ocrmsg').textContent=t('loadocr');$('ocrbar').style.width='3%';
@@ -378,6 +386,7 @@ function offerRow(R,r,o){
   row.onclick=()=>{r.sel=o;renderResults(R);};
   return row;
 }
+const isCheaper=r=>r.sel&&r.unit>0&&r.sel.price<r.unit-0.005;
 function renderResults(R){
   const L=$('list');L.innerHTML='';
   R.forEach(r=>{
@@ -394,30 +403,110 @@ function renderResults(R){
       const lab=document.createElement('div');lab.className='small';lab.style.marginTop='6px';lab.textContent=t('nearbest');d.appendChild(lab);
       r.near.forEach(o=>d.appendChild(offerRow(R,r,o)));
     }else if(!r.err){const e=document.createElement('div');e.className='small';e.style.marginTop='6px';e.textContent=t('nonear')+' (« '+r.term+' »)';d.appendChild(e);}
-    const fb=r.far[0],nb=r.near[0];
-    if(fb&&(!nb||fb.price<nb.price-0.005)){
+    // outside the radius: only offers strictly cheaper than what was paid (and than the best nearby offer)
+    const nb=r.near[0];
+    const ref=Math.min(r.unit>0?r.unit:Infinity,nb?nb.price:Infinity);
+    const far=r.far.filter(o=>o.price<ref-0.005);
+    if(far.length){
+      const fb=far[0];
       const w=document.createElement('div');w.className='note';
-      const diff=nb?` (−${fmt(nb.price-fb.price)})`:'';
+      const diff=r.unit>0?` (−${fmt(r.unit-fb.price)})`:'';
       w.innerHTML=`⚠ ${esc(t('outside'))} : <b>${fmt(fb.price)}</b> — ${esc(fb.store)}${fb.dist!=null?' · '+fd(fb.dist):''}${diff} `;
       const tb=document.createElement('button');tb.className='s';tb.style.fontSize='13px';tb.textContent=r.showFar?t('hidefar'):t('viewfar');
       tb.onclick=()=>{r.showFar=!r.showFar;renderResults(R);};w.appendChild(tb);d.appendChild(w);
-      if(r.showFar)r.far.forEach(o=>d.appendChild(offerRow(R,r,o)));
+      if(r.showFar)far.forEach(o=>d.appendChild(offerRow(R,r,o)));
     }
     L.appendChild(d);
   });
-  let paid=0,best=0,n=0;
+  let paid=0,best=0;
   R.forEach(r=>{
     if(r.off||!(r.it.total>0))return;
     const q=r.it.qty||1;paid+=r.it.total;
-    if(r.sel){n++;best+=Math.min(r.sel.price,r.unit)*q;}else best+=r.it.total;
+    best+=isCheaper(r)?r.sel.price*q:r.it.total;
   });
-  const act=R.filter(r=>!r.off).length;
-  $('summary').innerHTML=`<div class="sum"><div><span class="small">${t('tpaid')}</span><b>${fmt(paid)}</b></div><div><span class="small">${t('tbest')}</span><b>${fmt(best)}</b></div><div class="save"><span class="small">${t('tsave')}</span><b>${fmt(paid-best)}</b></div><div><span class="small">${t('tfound')}</span><b>${R.filter(r=>!r.off&&r.sel).length}/${act}</b></div></div><p class="small">${t('srcnote')}</p>`;
+  const act=R.filter(r=>!r.off).length,cheap=R.filter(r=>!r.off&&isCheaper(r)).length;
+  $('summary').innerHTML=`<div class="sum"><div><span class="small">${t('tpaid')}</span><b>${fmt(paid)}</b></div><div><span class="small">${t('tbest')}</span><b>${fmt(best)}</b></div><div class="save"><span class="small">${t('tsave')}</span><b>${fmt(paid-best)}</b></div><div><span class="small">${t('tfound')}</span><b>${cheap}/${act}</b></div></div><p class="small">${t('srcnote')}</p>`;
+  renderPlan(R);
+}
+function renderPlan(R){
+  const G={},store0=$('store').value.trim()||'—';
+  R.filter(r=>!r.off).forEach(r=>{
+    const o=(isCheaper(r)||(r.unit<=0&&r.sel))?r.sel:null;
+    const key=o?[o.store,o.city,o.dist!=null?o.dist.toFixed(2):'',o.online].join('|'):'__stay';
+    const g=G[key]||(G[key]={o,stay:!o,rows:[],sum:0});
+    const q=r.it.qty||1,price=o?o.price:(r.unit>0?r.unit:null);
+    g.rows.push({name:r.it.name,q,price});if(price!=null)g.sum+=price*q;
+  });
+  const arr=Object.values(G).sort((a,b)=>(a.stay-b.stay)||(b.rows.length-a.rows.length));
+  const box=$('plan');box.innerHTML='';$('plantitle').hidden=!arr.length;
+  arr.forEach(g=>{
+    const d=document.createElement('div');d.className='plan';
+    const where=g.stay?'':(g.o.online?t('online_tag'):[g.o.city,fd(g.o.dist)].filter(Boolean).join(' · '));
+    const title=g.stay?`${t('stayat')} ${esc(store0)}`:`🛒 ${esc(g.o.store)}${where?` <span class="small">— ${esc(where)}</span>`:''}`;
+    d.innerHTML=`<h3><span>${title}</span><span class="small">${t('nitems')(g.rows.length)} · ${t('subtotal')} ${fmt(g.sum)}</span></h3><ul>`+
+      g.rows.map(x=>`<li><span>${esc(x.name)}${x.q>1?' ×'+x.q:''}</span><b>${x.price!=null?fmt(x.price*x.q):esc(t('unknownp'))}</b></li>`).join('')+'</ul>';
+    box.appendChild(d);
+  });
 }
 
 /* ============ BASE ============ */
 $('exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(getBase(),null,2)],{type:'application/json'}));a.download='panier-malin-base.json';a.click();};
 $('clr').onclick=()=>{if(confirm(t('confirmclear'))){setBase([]);baseStat();}};
+const msg=m=>{$('basemsg').textContent=m;};
+function cleanReceipt(r){
+  if(!r||!Array.isArray(r.items))return null;
+  const items=r.items.map(i=>({name:String(i.name??'').slice(0,80),qty:Number(i.qty)||1,total:Number(String(i.total).replace(',','.'))||0})).filter(i=>i.name&&i.total>0);
+  if(!items.length)return null;
+  const num=v=>(v===null||v===''||v===undefined||isNaN(Number(v)))?null:Number(v);
+  return{store:String(r.store??'').slice(0,60),date:String(r.date??'').slice(0,10),lat:num(r.lat),lon:num(r.lon),items};
+}
+function mergeBase(list){
+  const base=getBase(),keys=new Set(base.map(r=>JSON.stringify([r.store,r.date,r.items])));
+  let add=0,dup=0;
+  list.map(cleanReceipt).filter(Boolean).forEach(r=>{const k=JSON.stringify([r.store,r.date,r.items]);if(keys.has(k))dup++;else{keys.add(k);base.push(r);add++;}});
+  setBase(base);baseStat();msg(t('imported')(add,dup));
+}
+$('impj').onclick=()=>$('fjson').click();
+$('fjson').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{let j=JSON.parse(await f.text());if(!Array.isArray(j))j=j.receipts||j.tickets||[];if(!Array.isArray(j))throw 0;mergeBase(j);}catch{msg(t('importfail'));}
+};
+const XLS='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+$('expx').onclick=async()=>{
+  try{await loadScript(XLS,'XLSX');}catch{msg(t('xlsfail'));return;}
+  const rows=[];
+  getBase().forEach(r=>r.items.forEach(i=>rows.push({Store:r.store,Date:r.date,Latitude:r.lat,Longitude:r.lon,Item:i.name,Quantity:i.qty,'Total EUR':i.total})));
+  const ws=XLSX.utils.json_to_sheet(rows.length?rows:[{Store:'',Date:'',Latitude:'',Longitude:'',Item:'',Quantity:'','Total EUR':''}]);
+  ws['!cols']=[{wch:22},{wch:12},{wch:10},{wch:10},{wch:36},{wch:9},{wch:10}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Tickets');
+  XLSX.writeFile(wb,'panier-malin-base.xlsx');
+};
+$('impx').onclick=()=>$('fxls').click();
+const xdate=v=>{if(typeof v==='number'&&v>20000){const d=new Date(Math.round((v-25569)*86400000));return d.toISOString().slice(0,10);}
+  const m=String(v).match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/);return m?`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`:String(v||'').slice(0,10);};
+$('fxls').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{await loadScript(XLS,'XLSX');}catch{msg(t('xlsfail'));return;}
+  try{
+    const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
+    if(!rows.length)throw 0;
+    const col=(row,re)=>{const k=Object.keys(row).find(k=>re.test(k.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase()));return k?row[k]:'';};
+    const G=new Map();
+    rows.forEach(row=>{
+      const name=String(col(row,/^(article|item|produit|product)/)).trim();
+      const total=parseFloat(String(col(row,/^(total|prix|price)/)).replace(',','.'));
+      if(!name||!(total>0))return;
+      const store=String(col(row,/^(enseigne|store|magasin)/)),date=xdate(col(row,/^date/));
+      const lat=col(row,/^lat/),lon=col(row,/^lon/);
+      const k=[store,date,lat,lon].join('|');
+      if(!G.has(k))G.set(k,{store,date,lat,lon,items:[]});
+      G.get(k).items.push({name,qty:parseFloat(String(col(row,/^(qt|qty|quant)/)).replace(',','.'))||1,total});
+    });
+    if(!G.size)throw 0;
+    mergeBase([...G.values()]);
+  }catch{msg(t('importfail'));}
+};
 bfr.onclick=()=>{lang='fr';localStorage.setItem('pm_lang',lang);applyLang();};
 ben.onclick=()=>{lang='en';localStorage.setItem('pm_lang',lang);applyLang();};
 applyLang();
