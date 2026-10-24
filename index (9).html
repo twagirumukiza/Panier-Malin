@@ -1,0 +1,1533 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panier Malin — Smart Basket</title>
+<style>
+:root{--bg:#f6f7f4;--card:#fff;--ink:#1d2a22;--mute:#667269;--line:#e0e5de;--acc:#1f7a4d;--acc2:#e8f3ec;--warn:#b4531a;--good:#137a3a;--bad:#b3261e}
+@media(prefers-color-scheme:dark){:root{--bg:#121714;--card:#1b231e;--ink:#e8efe9;--mute:#9aa89e;--line:#2c3830;--acc:#4cc38a;--acc2:#1f2f26;--warn:#e59a63;--good:#5fd68b;--bad:#ff8a80}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;max-width:860px;margin:0 auto}
+header h1{font-size:20px;margin:0;letter-spacing:-.2px}
+header h1 span{color:var(--acc)}
+.lang button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:6px 11px;cursor:pointer;font-weight:600}
+.lang button:first-child{border-radius:8px 0 0 8px}.lang button:last-child{border-radius:0 8px 8px 0;border-left:0}
+.lang button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+main{max-width:860px;margin:0 auto;padding:0 16px 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:0 0 14px}
+.card h2{font-size:16px;margin:0 0 10px;display:flex;gap:8px;align-items:center}
+.num{background:var(--acc);color:#fff;border-radius:50%;width:24px;height:24px;display:inline-grid;place-items:center;font-size:13px}
+.hint,.small{color:var(--mute);font-size:13px}
+button.p,label.p{background:var(--acc);color:#fff;border:0;border-radius:10px;padding:10px 16px;font-size:15px;font-weight:600;cursor:pointer;display:inline-block}
+button.s,label.s{display:inline-block;background:var(--acc2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:14px;cursor:pointer}
+button:disabled{opacity:.5;cursor:default}
+input[type=text],input[type=number],textarea,select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+textarea{min-height:90px;font-family:ui-monospace,Menlo,monospace;font-size:13px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.row>*{flex:0 0 auto}.row .grow{flex:1 1 180px}
+.bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--acc);width:0;transition:width .2s}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;color:var(--mute);font-weight:600;font-size:12px;padding:4px}
+td{padding:4px;vertical-align:middle}
+td input{padding:6px 8px}
+.item{border-top:1px solid var(--line);padding:12px 0}
+.item:first-child{border-top:0}
+.ihead{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-weight:600}
+.paid{color:var(--mute);font-weight:400;font-size:13px}
+.offer{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:7px 10px;border:1px solid var(--line);border-radius:9px;margin-top:6px;cursor:pointer;font-size:14px}
+.offer.sel{border-color:var(--acc);background:var(--acc2)}
+.offer .pr{font-weight:700;white-space:nowrap}
+.offer .pr.cheap{color:var(--good)}.offer .pr.dear{color:var(--bad)}
+.tag{font-size:11px;background:var(--line);border-radius:5px;padding:1px 6px;margin-left:6px;color:var(--mute)}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:6px}
+.sum div{background:var(--acc2);border-radius:10px;padding:10px 12px}
+.sum b{display:block;font-size:20px}
+.sum .save b{color:var(--good)}
+.note{border-left:3px solid var(--warn);padding:6px 10px;color:var(--mute);font-size:13px;margin-top:10px}
+.plan{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px}
+.plan h3{margin:0 0 6px;font-size:15px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.plan li{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:2px 0;list-style:none}
+.plan ul{margin:0;padding:0}
+.idbox{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px;background:var(--bg)}
+.idtop{display:flex;gap:12px;align-items:center;margin-bottom:8px}
+.idtop img{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--line);background:var(--card)}
+.score{font-size:12px;color:var(--mute);white-space:nowrap}
+#printhead{display:none}
+.crowd{margin-top:6px;border-top:1px dashed var(--line);padding-top:6px}
+.crowdwarn{color:var(--warn);font-weight:600;font-size:13px}
+.slot{display:inline-flex;gap:4px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:2px 8px;margin:2px 4px 2px 0;font-size:13px}
+.slot button{border:0;background:none;cursor:pointer;color:var(--bad);font-size:14px}
+.dayc{display:inline-flex;align-items:center;gap:2px;font-size:12px;margin-right:6px}
+.draftrow{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;border-top:1px solid var(--line);padding:8px 0}
+.draftrow:first-child{border-top:0}
+#rmap{width:100%;height:340px;border-radius:12px;border:1px solid var(--line);z-index:0}
+#rsvg{width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.pin{background:var(--acc);color:#fff;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45)}
+.pin.home{background:#444}
+#rsteps{padding-left:0;list-style:none;font-size:14px}
+#rsteps li{margin:6px 0}
+body.printing{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body.printing .noprint{display:none!important}
+body.printing.withroute #res>#routebox{display:block;break-before:page}
+body.printing #routebox .noprint,body.printing #routebox #routectl{display:none!important}
+body.printing #rmap{width:680px;height:470px}
+body.printing #rsvg{max-width:680px}
+body.printing .leaflet-control-zoom{display:none}
+body.printing{background:#fff;color:#000}
+body.printing header,body.printing main>section:not(#res){display:none}
+body.printing #res{border:0;padding:0;background:#fff}
+body.printing #res>*{display:none}
+body.printing #res>#printhead,body.printing #res>#plantitle,body.printing #res>#plan{display:block}
+body.printing #printhead{font-weight:700;font-size:20px;margin-bottom:10px}
+body.printing .plan{break-inside:avoid;border-color:#999}
+body.printing .plan li span:first-child::before{content:'☐ '}
+.dim{opacity:.5}
+@media(max-width:640px){
+  #review thead{display:none}
+  #review table,#review tbody{display:block}
+  #review tr{display:grid;grid-template-columns:44px 1fr 64px 92px 36px;gap:6px;border-top:1px solid var(--line);padding:10px 0;align-items:start}
+  #review td{padding:0;min-width:0}
+  #review td:nth-child(1){grid-column:1;grid-row:1}
+  #review td:nth-child(2){grid-column:2/6;grid-row:1}
+  #review td:nth-child(3){grid-column:2;grid-row:2}
+  #review td:nth-child(4){grid-column:3;grid-row:2}
+  #review td:nth-child(5){grid-column:4;grid-row:2}
+  #review td:nth-child(6){grid-column:5;grid-row:2}
+  #review td input{width:100%}
+}
+.ign{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:13px;border-top:1px solid var(--line);padding:4px 0;font-family:ui-monospace,Menlo,monospace}
+.warnt{color:var(--warn);font-size:11px}
+.err{color:var(--bad);font-size:14px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <h1>Panier <span>Malin</span></h1>
+  <div class="lang"><button id="bfr">FR</button><button id="ben">EN</button></div>
+</header>
+<main>
+
+<section class="card">
+  <h2><span class="num">1</span><span data-i="s1"></span></h2>
+  <p class="hint" data-i="s1h"></p>
+  <div class="row">
+    <label class="p"><span data-i="photo"></span><input id="file" type="file" accept="image/*,application/pdf,.pdf,.txt,text/plain" hidden></label>
+    <button class="s" id="impbtn" data-i="impfile"></button>
+    <button class="s" id="listbtn" data-i="typelist"></button>
+    <label class="s"><span data-i="artphoto"></span><input id="artfile" type="file" accept="image/*" hidden></label>
+    <button class="s" id="paste" data-i="manual"></button>
+    <button class="s" id="demo" data-i="demo"></button>
+  </div>
+  <input type="file" id="fimp" accept=".json,.xlsx,.xls,.csv,application/json" hidden>
+  <div id="ocrbox" hidden><div class="small" id="ocrmsg"></div><div class="bar"><i id="ocrbar"></i></div></div>
+  <div id="pastebox" hidden>
+    <textarea id="rawtxt" data-ph="rawph"></textarea>
+    <div class="row"><button class="p" id="parse" data-i="analyse"></button></div>
+  </div>
+  <div id="listbox" hidden>
+    <p class="small" data-i="listh"></p>
+    <textarea id="rawlist" data-ph="listph"></textarea>
+    <div class="row"><button class="p" id="addlist" data-i="addlist"></button></div>
+  </div>
+  <details id="draftsbox"><summary class="small" style="cursor:pointer"></summary><div id="drafts"></div></details>
+  <div id="chips" class="row"></div>
+  <p class="small" id="srcmsg"></p>
+  <div id="idbox" class="idbox" hidden>
+    <div class="idtop"><img id="idthumb" alt=""><div><b data-i="idtitle"></b><div class="small" id="idmsg"></div><div class="small" id="idcues"></div></div></div>
+    <div id="idcands"></div>
+    <div class="row"><input type="text" id="idq" class="grow" data-ph="idqph"><button class="s" id="idqgo" data-i="find"></button></div>
+    <p class="small" data-i="idnote"></p>
+  </div>
+</section>
+
+<section class="card" id="review" hidden>
+  <h2><span class="num">2</span><span data-i="s2"></span></h2>
+  <div class="row">
+    <div class="grow"><label class="small" data-i="store"></label><input type="text" id="store"></div>
+    <div><label class="small" data-i="date"></label><input type="text" id="rdate" style="width:130px"></div>
+  </div>
+  <table><thead><tr><th style="width:42px" data-i="keepcol"></th><th data-i="item"></th><th data-i="search"></th><th style="width:56px" data-i="qty"></th><th style="width:84px" data-i="total"></th><th style="width:30px"></th></tr></thead><tbody id="rows"></tbody></table>
+  <div class="row"><button class="s" id="rawshow" data-i="rawshow"></button></div>
+  <details id="ignbox" hidden><summary class="small" id="ignsum" style="cursor:pointer"></summary><div id="ignlist"></div></details>
+  <div class="row"><button class="s" id="addrow" data-i="addrow"></button><button class="s" id="autoprice" data-i="autoprice"></button><label class="s"><span data-i="artphoto"></span><input id="artfile2" type="file" accept="image/*" hidden></label></div>
+  <p class="small" data-i="searchhint"></p>
+  <p class="small" id="automsg"></p>
+  <div class="row"><input type="text" id="draftname" class="grow" data-ph="draftnameph"><button class="s" id="dsave" data-i="dsave"></button><button class="s" id="djson" data-i="djson"></button><button class="s" id="dxls" data-i="dxls"></button></div>
+  <p class="small" id="dmsg"></p>
+</section>
+
+<section class="card" id="setcard" hidden>
+  <h2><span class="num">3</span><span data-i="s3"></span></h2>
+  <div class="row">
+    <label><input type="radio" name="mode" value="near" checked> <span data-i="near"></span></label>
+    <label><input type="radio" name="mode" value="online"> <span data-i="online"></span></label>
+  </div>
+  <div id="nearbox">
+    <div class="row"><span data-i="radius"></span> <b id="rlab"></b></div>
+    <input type="range" id="radius" min="0.5" max="50" step="0.5" value="2" style="width:100%">
+    <div class="row">
+      <button class="s" id="geo" data-i="geo"></button>
+      <input type="text" id="addr" class="grow" data-ph="addrph">
+      <button class="s" id="addrgo" data-i="find"></button>
+    </div>
+    <div class="small" id="locmsg"></div>
+  </div>
+  <div class="row"><span class="small" data-i="srcs"></span>
+    <label><input type="checkbox" id="useop" checked> <span data-i="useop"></span></label>
+    <label><input type="checkbox" id="usebase" checked> <span data-i="usebase"></span></label>
+    <label><input type="checkbox" id="useest" checked> <span data-i="useest"></span></label></div>
+  <div class="row"><label class="small" for="planned" data-i="planned"></label><input type="datetime-local" id="planned" style="width:auto"></div>
+  <div class="row"><label><input type="checkbox" id="keep" checked> <span data-i="keep"></span></label></div>
+  <div class="row"><button class="p" id="go" data-i="compare"></button></div>
+</section>
+
+<section class="card" id="res" hidden>
+  <div id="printhead"></div>
+  <h2><span class="num">4</span><span data-i="s4"></span></h2>
+  <div class="bar" id="rbar"><i id="rbari"></i></div>
+  <div id="stores"></div>
+  <div id="summary"></div>
+  <div id="list"></div>
+  <h2 style="margin-top:18px" id="plantitle" hidden data-i="wheretitle"></h2>
+  <div id="plan"></div>
+  <div id="routebox" hidden>
+    <h2 style="margin-top:18px" data-i="routetitle"></h2>
+    <div class="row" id="routectl"><span class="small" data-i="transport"></span>
+      <select id="transport" style="width:auto"><option value="foot" data-i="tfoot"></option><option value="bike" data-i="tbike"></option><option value="car" data-i="tcar"></option></select>
+      <button class="p" id="routego" data-i="routego"></button></div>
+    <div class="small" id="rmsg"></div>
+    <div id="rmapwrap" hidden><div id="rmap"></div><div id="rsvg" hidden></div></div>
+    <ol id="rsteps"></ol>
+    <div class="row noprint" id="rlinks"></div>
+  </div>
+  <div class="row" id="printrow" hidden><button class="s" id="printplan" data-i="printplan"></button>
+    <label class="small"><input type="checkbox" id="printroute" checked> <span data-i="printroute"></span></label></div>
+  <div class="note" data-i="caveat"></div>
+</section>
+
+<section class="card">
+  <h2 data-i="aititle"></h2>
+  <p class="small" data-i="aihint"></p>
+  <label><input type="checkbox" id="aion"> <span data-i="aion"></span></label>
+  <div id="aibox" hidden>
+    <div class="row"><select id="aiprov" style="width:auto"><option value="gemini">Google Gemini (gratuit)</option><option value="anthropic">Anthropic Claude (payant)</option></select>
+      <select id="aimodel" style="width:auto"></select></div>
+    <div class="row"><input type="password" id="aikey" class="grow" data-ph="aikeyph" autocomplete="off"></div>
+    <input type="text" id="aiproxy" data-ph="aiproxyph">
+    <p class="small" data-i="aipriv"></p>
+  </div>
+</section>
+
+<section class="card">
+  <h2 data-i="basetitle"></h2>
+  <p class="small" id="basestat"></p>
+  <div class="row"><button class="s" id="exp" data-i="export"></button><button class="s" id="expx" data-i="expxls"></button><button class="s" id="clr" data-i="clear"></button></div>
+  
+  <p class="small" data-i="privacy"></p>
+</section>
+</main>
+
+<script>
+/* ============ i18n ============ */
+const T={
+fr:{s1:"Scanner un ticket de caisse",s1h:"Combinez plusieurs sources : photo d’un nouveau ticket, ancien fichier de courses (JSON ou Excel), liste saisie… Tout s’ajoute à la liste ci-dessous, puis la recherche relance les prix.",photo:"📷 Scanner ou importer un ticket (photo, PDF)",manual:"Coller le texte",demo:"Exemple de ticket",rawph:"Collez ici le texte du ticket…",analyse:"Analyser",
+s2:"Vérifier les articles lus",store:"Enseigne",date:"Date",item:"Article (ticket)",search:"Terme recherché",qty:"Qté",total:"Total €",addrow:"+ Ajouter un article",searchhint:"Les noms de ticket sont souvent abrégés : ajustez le « terme recherché » (ex. « lait demi-écrémé ») pour de meilleurs résultats.",
+s3:"Où chercher ?",near:"Autour de moi",online:"Sur Internet",radius:"Rayon de recherche :",geo:"📍 Me localiser",addrph:"ou saisir une ville / adresse",find:"Chercher",keep:"Ajouter ce ticket à ma base de prix locale (sur cet appareil)",compare:"Trouver les prix les moins chers",
+s4:"Résultats",caveat:"Les prix proviennent de la base collaborative Open Prices et de vos propres tickets. Ils sont relevés par des contributeurs : vérifiez le format (poids, marque) et la date avant de vous déplacer.",
+basetitle:"Ma base de prix locale",export:"Exporter (JSON)",clear:"Tout effacer",privacy:"Vos tickets restent sur cet appareil. Seuls les termes recherchés et la zone de recherche sont envoyés à Open Prices ; l’adresse saisie est envoyée à OpenStreetMap (Nominatim).",
+reading:"Lecture du ticket…",loadocr:"Chargement du moteur de lecture…",ocrfail:"Lecture impossible. Collez le texte du ticket à la place.",noitems:"Aucun article reconnu. Ajoutez-les à la main.",
+km:"km",m:"m",locok:"Position :",locno:"Position inconnue",locfail:"Localisation refusée ou indisponible.",geofail:"Adresse introuvable.",
+paid:"Payé",none:"Aucune offre trouvée",err:"Erreur réseau",cheapest:"Moins cher",same:"Prix équivalent",
+tpaid:"Total payé",tbest:"Total optimisé",tsave:"Économie possible",tfound:"Articles moins chers",online_tag:"En ligne",mine:"Mon ticket",away:"à",
+bstat:(n,i)=>`${n} ticket(s), ${i} article(s) enregistrés.`,confirmclear:"Effacer toute la base locale ?",needloc:"Indiquez d’abord votre position (ou choisissez Internet).",
+srcnote:"Cliquez sur une offre pour la retenir.",nearbest:"Le moins cher à proximité",nonear:"Aucune offre dans le périmètre",outside:"Prix moins chers hors périmètre",viewfar:"Voir",hidefar:"Masquer",remove:"Retirer de la liste",restore:"Remettre",removed:"Article retiré du résultat",noprice:"prix payé inconnu",saveby:"économie",nothing:"Aucun article à comparer. Ajoutez au moins un nom d’article.",impjson:"Importer (JSON)",expxls:"Exporter (Excel)",impxls:"Importer (Excel)",wheretitle:"Où acheter vos articles",stayat:"Rien de moins cher trouvé — rester chez",nitems:n=>n+" article"+(n>1?"s":""),subtotal:"Sous-total",imported:(a,b)=>`${a} ticket(s) importé(s), ${b} déjà présent(s).`,importfail:"Fichier illisible ou format non reconnu.",xlsfail:"Impossible de charger le module Excel (connexion ?).",unknownp:"prix inconnu",printplan:"🖨 Imprimer la liste",printtitle:"Panier Malin — Où acheter",artphoto:"📷 Photographier un article",artread:"Lecture de l’article…",artdone:n=>`Article lu : ${n}. Vérifiez et corrigez si besoin.`,artnone:"Rien reconnu sur la photo. Saisissez l’article à la main.",eanph:"Code-barres (facultatif, recherche exacte)",webcheck:"Chercher le prix sur le site de l’enseigne :",webprice:"Prix vu en ligne",webadd:"Ajouter ce prix",webshop:"Magasin",web:"relevé en ligne",webnote:"Pas de prix dans la base ouverte ? Ouvrez le site de l’enseigne, puis saisissez le prix vu : il est gardé dans votre base locale.",est:"indicatif",estfrom:"prix relevé chez",storesnear:"Magasins dans le périmètre",nonearstores:"Aucun prix relevé pour cet article dans le périmètre. Magasins proches :",contrib:"Peu de prix relevés ici : scannez vos tickets pour enrichir la base.",useest:"Prix indicatifs (même enseigne, relevé ailleurs)",nostores:"Aucun magasin trouvé (service de cartographie indisponible ?)",testim:"Panier estimé (articles sans prix)",tlist:"Articles trouvés",nooffer:"Aucune offre trouvée dans le périmètre",listh:"Liste sans prix : l’appli cherche le meilleur prix de chaque article dans le périmètre choisi à l’étape 3.",impfile:"📂 Importer un ancien fichier (JSON / Excel)",typelist:"Saisir une liste",listph:"Un article par ligne, par ex. :\nlait demi-écrémé\n2 x pâtes spaghetti 1,20",addlist:"Ajouter à la liste",srcs:"Sources de prix :",useop:"Open Prices (prix relevés en magasin)",usebase:"Ma base locale (mes tickets, fichiers importés)",clearlist:"Vider la liste",atstore:"chez",keepcol:"Garder",rawshow:"Voir / corriger le texte lu",ignsum:n=>`Lignes écartées (${n}) : adresse, TVA, paiement, fidélité… — touchez « Ajouter » si l’une est un achat`,addline:"Ajouter",unsure:"à vérifier",tailn:n=>`${n} ligne(s) après le total (TVA, paiement, fidélité…) ignorée(s).`,pdfread:"Lecture du PDF…",aireceipt:"Lecture IA du ticket…",aireceiptok:"Ticket lu par l’IA : vérifiez les lignes.",aireceiptfail:"Lecture IA indisponible : lecture classique.",discn:"remise déduite",draftword:"Brouillon",draftlist:"Brouillons enregistrés",dnone:"Aucun brouillon enregistré sur cet appareil.",draftnameph:"Nom du brouillon (facultatif), ex. courses de la semaine",dsave:"💾 Enregistrer le brouillon",djson:"⬇ Brouillon (JSON)",dxls:"⬇ Brouillon (Excel)",dsavedmsg:ti=>`Brouillon enregistré dans ce navigateur : « ${ti} ».`,dempty:"Rien à enregistrer : la liste est vide.",dfull:"Enregistrement impossible (stockage du navigateur plein ou bloqué ?). Téléchargez le brouillon en JSON ou Excel.",dresume:"Reprendre",ddelete:"Supprimer",dloaded:(n,ti)=>`${n} article(s) repris depuis « ${ti} ». Relancez la recherche quand vous voulez.`,dstatus:"Statut",dsaved:"Enregistré le",autoprice:"💶 Remplir les prix automatiquement",autoprog:"Recherche des prix…",autodone:(a,b)=>`${a} prix rempli(s) sur ${b}. Vérifiez-les : ils sont indicatifs.`,autonone:"Aucun article à remplir (tous ont déjà un prix, ou la liste est vide).",autotag:"≈ indicatif",autonote:n=>`Prix indicatif : médiane de ${n} relevé(s) Open Prices / base locale. Modifiez le champ pour saisir le prix réel.`,autofail:"Aucun prix trouvé pour ces articles. Précisez le terme recherché ou le code-barres.",
+routetitle:"Parcours d’achat",transport:"Déplacement :",tfoot:"À pied",tbike:"À vélo",tcar:"En voiture",routego:"Calculer le parcours",printroute:"Inclure le plan du parcours",start:"Domicile",back:"Retour au domicile",routing:"Calcul du parcours…",birdfly:"Itinéraire routier indisponible : distances estimées à vol d’oiseau (+30 %).",nostops:"Aucun magasin localisable à relier (les articles gardés chez l’enseigne du ticket n’ont pas de position).",needhome:"Indiquez d’abord votre adresse de départ à l’étape 3.",rtotal:(km,mn)=>`Total : ${km} km · environ ${mn} min de trajet (hors temps en magasin)`,rlink1:"Ouvrir dans OpenStreetMap",rlink2:"Ouvrir dans Google Maps",mapfail:"Fond de carte indisponible : schéma simplifié.",
+crowd:"Affluence",crowdnone:"Affluence : non renseignée",crowdedit:"🕒 Renseigner l’affluence",crowdclose:"Fermer",crowdadd:"Ajouter la plage",crowdwarn:"⚠ L’heure prévue tombe pendant une période d’affluence",planned:"Heure prévue des courses (facultatif) :",hours:"Horaires d’ouverture (OSM)",crowdhint:"Aucune source ouverte ne publie l’affluence des magasins : indiquez les heures chargées que vous observez. Elles restent sur cet appareil et sont incluses dans vos brouillons.",crowderr:"L’heure de fin doit suivre l’heure de début.",crowdto:"à",crowdnodays:"Cochez au moins un jour.",idtitle:"Identification de l’article",idcode:(i,n)=>`Recherche du code-barres… (${i}/${n})`,idlook:"Consultation des bases ouvertes…",idocr:"Lecture du texte",idcands:"Recherche des produits correspondants…",idpick:"Plusieurs possibilités : touchez le bon produit.",idscore:"concordance",idexact:"code-barres exact",idl_code:"Code",idl_text:"Texte lu",idl_qty:"Quantité",idnote:"La concordance compare ce qui est lu sur la photo (code-barres, texte, quantité) aux fiches des bases ouvertes. C’est un indice, pas une probabilité : vérifiez la marque et le format.",idnone:"Rien de fiable reconnu. Essayez une photo plus nette de la face avant ou du code-barres, ou cherchez à la main.",idqph:"Chercher à la main (nom, marque ou code-barres)",idocrtext:"Texte lu sur la photo (non reconnu)",idneterr:"Bases ouvertes injoignables (connexion ?).",aititle:"Identification par IA (optionnel)",aihint:"Active un modèle de vision qui lit la photo de l’article (marque, nom, variante, quantité) : Google Gemini (palier gratuit, clé à créer sur aistudio.google.com) ou Anthropic Claude (payant). Les indices sont recoupés avec les bases ouvertes. Sans clé, l’appli reste sur la lecture classique (code-barres + OCR).",aion:"Utiliser l’analyse visuelle par IA",aikeyph:"Clé API (Gemini : AIza… · Anthropic : sk-ant-…)",aiproxyph:"ou adresse de votre relais sécurisé (sans clé dans le navigateur)",aipriv:"Quand l’option est active, la photo de l’article est envoyée au fournisseur choisi (ou à votre relais). La clé reste uniquement sur cet appareil. Palier gratuit : limites variables et traitement des données selon les conditions du fournisseur, à vérifier ; pour Anthropic, fixez un budget maximal dans la console.",airead:"Analyse visuelle par IA…",aifail:"Analyse IA indisponible (clé, connexion ?) : lecture classique.",idl_ai:"Lecture IA",added:(n,l)=>`${n} nouvel(s) article(s) depuis « ${l} ».`},
+en:{s1:"Scan a receipt",s1h:"Combine several sources: a photo of a new receipt, an old shopping file (JSON or Excel), a typed list… Everything is added to the list below, then the search checks the prices again.",photo:"📷 Scan or import a receipt (photo, PDF)",manual:"Paste text",demo:"Sample receipt",rawph:"Paste the receipt text here…",analyse:"Analyse",
+s2:"Check the items read",store:"Store",date:"Date",item:"Item (receipt)",search:"Search term",qty:"Qty",total:"Total €",addrow:"+ Add an item",searchhint:"Receipt names are often abbreviated: adjust the “search term” (e.g. “semi-skimmed milk”) for better results.",
+s3:"Where to search?",near:"Around me",online:"Online",radius:"Search radius:",geo:"📍 Locate me",addrph:"or type a city / address",find:"Search",keep:"Add this receipt to my local price base (on this device)",compare:"Find the cheapest prices",
+s4:"Results",caveat:"Prices come from the community database Open Prices and from your own receipts. They are contributed by people: check the size, brand and date before travelling.",
+basetitle:"My local price base",export:"Export (JSON)",clear:"Clear all",privacy:"Your receipts stay on this device. Only search terms and the search area are sent to Open Prices; a typed address is sent to OpenStreetMap (Nominatim).",
+reading:"Reading receipt…",loadocr:"Loading the reading engine…",ocrfail:"Could not read it. Paste the receipt text instead.",noitems:"No item recognised. Add them by hand.",
+km:"km",m:"m",locok:"Position:",locno:"Position unknown",locfail:"Location denied or unavailable.",geofail:"Address not found.",
+paid:"Paid",none:"No offer found",err:"Network error",cheapest:"Cheapest",same:"Same price",
+tpaid:"Total paid",tbest:"Optimised total",tsave:"Possible saving",tfound:"Cheaper items",online_tag:"Online",mine:"My receipt",away:"at",
+bstat:(n,i)=>`${n} receipt(s), ${i} item(s) saved.`,confirmclear:"Clear the whole local base?",needloc:"Set your location first (or choose Online).",
+srcnote:"Click an offer to select it.",nearbest:"Cheapest nearby",nonear:"No offer within the radius",outside:"Cheaper prices outside the radius",viewfar:"Show",hidefar:"Hide",remove:"Remove from list",restore:"Restore",removed:"Item removed from the result",noprice:"price paid unknown",saveby:"saving",nothing:"No item to compare. Add at least one item name.",impjson:"Import (JSON)",expxls:"Export (Excel)",impxls:"Import (Excel)",wheretitle:"Where to buy your items",stayat:"Nothing cheaper found — stay at",nitems:n=>n+" item"+(n>1?"s":""),subtotal:"Subtotal",imported:(a,b)=>`${a} receipt(s) imported, ${b} already present.`,importfail:"Unreadable file or unknown format.",xlsfail:"Could not load the Excel module (connection?).",unknownp:"price unknown",printplan:"🖨 Print the list",printtitle:"Smart Basket — Where to buy",artphoto:"📷 Photograph an item",artread:"Reading the item…",artdone:n=>`Item read: ${n}. Check it and fix if needed.`,artnone:"Nothing recognised in the photo. Type the item by hand.",eanph:"Barcode (optional, exact search)",webcheck:"Look up the price on the store’s website:",webprice:"Price seen online",webadd:"Add this price",webshop:"Store",web:"seen online",webnote:"No price in the open database? Open the store’s website, then type the price you see: it is kept in your local base.",est:"indicative",estfrom:"price seen at",storesnear:"Stores within the radius",nonearstores:"No price recorded for this item within the radius. Nearby stores:",contrib:"Few prices recorded here: scan your receipts to enrich the base.",useest:"Indicative prices (same chain, seen elsewhere)",nostores:"No store found (map service unavailable?)",testim:"Estimated basket (items without price)",tlist:"Items found",nooffer:"No offer found within the radius",listh:"Price-less list: the app looks for the best price of each item within the radius chosen in step 3.",impfile:"📂 Import an old file (JSON / Excel)",typelist:"Type a list",listph:"One item per line, e.g.:\nsemi-skimmed milk\n2 x spaghetti 1.20",addlist:"Add to the list",srcs:"Price sources:",useop:"Open Prices (in-store prices)",usebase:"My local base (my receipts, imported files)",clearlist:"Clear the list",atstore:"at",keepcol:"Keep",rawshow:"Show / fix the text read",ignsum:n=>`Lines set aside (${n}): address, VAT, payment, loyalty… — tap “Add” if one is a purchase`,addline:"Add",unsure:"check",tailn:n=>`${n} line(s) after the total (VAT, payment, loyalty…) ignored.`,pdfread:"Reading the PDF…",aireceipt:"AI reading the receipt…",aireceiptok:"Receipt read by AI: check the lines.",aireceiptfail:"AI reading unavailable: classic reading.",discn:"discount applied",draftword:"Draft",draftlist:"Saved drafts",dnone:"No draft saved on this device.",draftnameph:"Draft name (optional), e.g. weekly shop",dsave:"💾 Save draft",djson:"⬇ Draft (JSON)",dxls:"⬇ Draft (Excel)",dsavedmsg:ti=>`Draft saved in this browser: “${ti}”.`,dempty:"Nothing to save: the list is empty.",dfull:"Could not save (browser storage full or blocked?). Download the draft as JSON or Excel.",dresume:"Resume",ddelete:"Delete",dloaded:(n,ti)=>`${n} item(s) restored from “${ti}”. Run the search whenever you like.`,dstatus:"Status",dsaved:"Saved on",autoprice:"💶 Fill prices automatically",autoprog:"Looking up prices…",autodone:(a,b)=>`${a} price(s) filled out of ${b}. Please check them: they are indicative.`,autonone:"No item to fill (all already have a price, or the list is empty).",autotag:"≈ estimate",autonote:n=>`Indicative price: median of ${n} Open Prices / local base record(s). Edit the field to enter the real price.`,autofail:"No price found for these items. Refine the search term or the barcode.",
+routetitle:"Shopping route",transport:"Travel:",tfoot:"On foot",tbike:"By bike",tcar:"By car",routego:"Compute the route",printroute:"Include the route map",start:"Home",back:"Back home",routing:"Computing the route…",birdfly:"Road routing unavailable: straight-line distances estimated (+30%).",nostops:"No locatable store to link (items kept at the receipt’s store have no position).",needhome:"Set your starting address in step 3 first.",rtotal:(km,mn)=>`Total: ${km} km · about ${mn} min of travel (shop time excluded)`,rlink1:"Open in OpenStreetMap",rlink2:"Open in Google Maps",mapfail:"Map tiles unavailable: simplified diagram.",
+crowd:"Busy hours",crowdnone:"Busy hours: not set",crowdedit:"🕒 Set busy hours",crowdclose:"Close",crowdadd:"Add this slot",crowdwarn:"⚠ The planned time falls in a busy period",planned:"Planned shopping time (optional):",hours:"Opening hours (OSM)",crowdhint:"No open source publishes store crowding: enter the busy hours you observe. They stay on this device and are included in your drafts.",crowderr:"End time must be after start time.",crowdto:"to",crowdnodays:"Tick at least one day.",idtitle:"Item identification",idcode:(i,n)=>`Looking for the barcode… (${i}/${n})`,idlook:"Checking open databases…",idocr:"Reading text",idcands:"Looking for matching products…",idpick:"Several possibilities: tap the right product.",idscore:"match",idexact:"exact barcode",idl_code:"Code",idl_text:"Text read",idl_qty:"Size",idnote:"The match compares what is read on the photo (barcode, text, size) with open-database records. It is an indication, not a probability: check the brand and size.",idnone:"Nothing reliable recognised. Try a sharper photo of the front or the barcode, or search by hand.",idqph:"Search by hand (name, brand or barcode)",idocrtext:"Text read on the photo (not recognised)",idneterr:"Open databases unreachable (connection?).",aititle:"AI identification (optional)",aihint:"Turns on a vision model that reads the item photo (brand, name, variant, size): Google Gemini (free tier, key from aistudio.google.com) or Anthropic Claude (paid). Clues are cross-checked with open databases. Without a key, the app keeps the classic reading (barcode + OCR).",aion:"Use AI visual analysis",aikeyph:"API key (Gemini: AIza… · Anthropic: sk-ant-…)",aiproxyph:"or your secure relay address (no key in the browser)",aipriv:"When enabled, the item photo is sent to the chosen provider (or to your relay). The key stays on this device only. Free tier: limits vary and data handling follows the provider’s terms, so check them; for Anthropic, set a maximum budget in the console.",airead:"AI visual analysis…",aifail:"AI analysis unavailable (key, connection?): classic reading.",idl_ai:"AI reading",added:(n,l)=>`${n} new item(s) from “${l}”.`}};
+let lang=localStorage.getItem('pm_lang')||((navigator.language||'fr').startsWith('en')?'en':'fr');
+const t=k=>T[lang][k];
+function applyLang(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll('[data-i]').forEach(e=>e.textContent=t(e.dataset.i));
+  document.querySelectorAll('[data-ph]').forEach(e=>e.placeholder=t(e.dataset.ph));
+  bfr.classList.toggle('on',lang==='fr');ben.classList.toggle('on',lang==='en');
+  radLab();locLab();baseStat();if(items.length)renderRows();if(typeof renderDrafts==='function')renderDrafts();
+}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ============ PARSER ============ */
+const STORES=['carrefour','leclerc','auchan','lidl','aldi','intermarch','monoprix','casino','franprix','super u','hyper u','u express','picard','biocoop','naturalia','cora','match','netto','grand frais','tesco','sainsbury','asda','walmart','kroger','costco','target','whole foods','mercadona','dia','colruyt','delhaize','spar','g20','simply market','carrefour city','carrefour market'];
+const SKIP=/(\bsous[- ]?total|\bsubtotal|^\W*total\s+(rayon|cat[eé]g|famille|g[eé]n[eé]ral|articles?|achats?|remises?|[ée]conom|avantages?|points?|tva|ht|ttc|net|marchandises?)|\btva\b|\bvat\b|\btax\b|\bttc\b|\btaux\b|\bcarte\b|\bcard\b|\bcb\b|\bvisa\b|mastercard|contactless|sans contact|esp[eè]ces|\bcash\b|\brendu\b|monnaie|merci|thank|bonne (journ|soir)|[àa] bient[oô]t|fid[eé]lit|\bpoints?\b|cagnotte|net [àa] payer|[àa] payer|paiement|payment|r[eè]glement|siret|siren|\brcs\b|\bape\b|capital de|\bt[eé]l\b|t[eé]l[eé]phone|www\.|https?:|@|\bcaisse\b|caissi|h[oô]te|\bticket\b|facture|\bnb\b|nombre d|articles?\s*:|\bavoir\b|\bdate\b|\bheure\b|\bclient\b|\bn[°o]\s?\d|transaction|autorisation|terminal|\baid\b|porteur|[ée]conomis|avantage|cumul|retrouvez|service client|horaires|\*{4,})/i;
+const PRICE_END=/^(.*?)[\s.]*(-?\d{1,4}[.,]\s?\d{2})\s*(?:€|eur)?\s*[A-Z*]?\s*$/i;
+const PRICE_ONLY=/^\s*(-?\d{1,4}[.,]\s?\d{2})\s*(?:€|eur)?\s*[A-Z*]?\s*$/i;
+const TOTALRX=/^\W*(total|net [àa] payer|montant (?:total|d[uû]|ttc)|[àa] payer|amount due|grand total|balance due)(\s+(ttc|eur|euros?|€|[àa] payer|du|dû|ticket|achats?|carte))*\s*[:.\-]*\s*(?:-?\d{1,5}[.,]\s?\d{2})?\s*(?:€|eur)?\s*$/i;
+const PAYRX=/^\W*(cb|carte|cart|esp[eè]ces|cash|ch[eè]que|paiement|r[eè]glement|payment|tva|taux|dont tva|mastercard|visa)\b/i;
+const DISCRX=/^\W*(remise|promo|promotion|r[eé]duc|rabais|coupon|bon d|offre|avantage|fid[eé]lit|discount|-\s*\d+\s*%)/i;
+const QTYLINE=/^\W*(?:qt[eé]?\.?\s*)?(\d{1,3})\s*[x×*]\s*(\d{1,4}[.,]\d{2})\s*(?:€|eur)?\s*(?:(\d{1,4}[.,]\d{2})\s*(?:€|eur)?)?\s*[A-Z*]?\s*$/i;
+const WEIGHTLINE=/^\W*(\d{1,3}[.,]\d{1,3})\s*(kg|g)\b.*?(\d{1,4}[.,]\d{2})\s*(?:€|eur)?\s*\/?\s*(?:kg)?\s*(?:(\d{1,4}[.,]\d{2})\s*(?:€|eur)?)?\s*[A-Z*]?\s*$/i;
+const HEADER=/(\b\d{5}\b|\brue\b|\bavenue\b|\bav\.|\bbd\b|boulevard|\bplace\b|\bzone\b|\bcentre\b|\d{2}[ .]\d{2}[ .]\d{2}[ .]\d{2}|\d{1,2}[\/.\-]\d{1,2}[\/.\-]\d{2,4}|\d{1,2}[:h]\d{2})/i;
+const num=v=>parseFloat(String(v).replace(/\s/g,'').replace(',','.'));
+const r2=x=>Math.round(x*100)/100;
+const nLetters=x=>(x.match(/[A-Za-zÀ-ÿ]/g)||[]).length;
+// Receipt → purchased items only. Everything outside the items zone (header, totals, VAT, payment, loyalty…) is set aside.
+function parseReceipt(text){
+  const lines=text.split(/\r?\n/).map(l=>l.replace(/\s+/g,' ').trim()).filter(Boolean);
+  if(!lines.some(l=>PRICE_END.test(l)||PRICE_ONLY.test(l))){ // no price anywhere: a plain list, not a receipt
+    return{store:'',date:'',items:lines.filter(l=>nLetters(l)>=2&&l.length<=60).map(l=>({name:l.replace(/[\s.*,;-]+$/,''),term:searchTerm(l)||l.toLowerCase(),qty:1,total:0,code:''})),ignored:[],tail:0};
+  }
+  let store='',date='';
+  const head=lines.slice(0,8).join(' ').toLowerCase();
+  for(const s of STORES){if(head.includes(s)){store=s.replace(/\b\w/g,c=>c.toUpperCase());if(s==='intermarch')store='Intermarché';break;}}
+  if(!store&&lines[0]&&!/\d{2}[.,]\d{2}/.test(lines[0])&&!SKIP.test(lines[0]))store=lines[0].slice(0,40);
+  const dm=text.match(/(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/);
+  if(dm){let y=dm[3].length===2?'20'+dm[3]:dm[3];date=`${y}-${dm[2].padStart(2,'0')}-${dm[1].padStart(2,'0')}`;}
+  // items zone stops at the TOTAL line (or the first payment / VAT line)
+  let end=lines.findIndex(l=>TOTALRX.test(l));
+  if(end<0)end=lines.findIndex((l,i)=>i>2&&PAYRX.test(l));
+  if(end<0)end=lines.length;
+  const zone=lines.slice(0,end),tail=lines.length-end;
+  const ignored=[],out=[],prices=[],low=store.toLowerCase();
+  const rej=l=>{if(!ignored.includes(l)&&ignored.length<40)ignored.push(l);};
+  let last=null,anyPrice=false;
+  for(const ln of zone){
+    if(SKIP.test(ln)){rej(ln);continue;}
+    let m;
+    if((m=ln.match(QTYLINE))&&last){const n=parseInt(m[1],10),u=num(m[2]);last.qty=n;last.total=m[3]?num(m[3]):r2(u*n);last.pend=false;anyPrice=true;continue;}
+    if((m=ln.match(WEIGHTLINE))&&last){
+      const w=num(m[1])*(/^g$/i.test(m[2])?.001:1),up=num(m[3]);
+      if(m[4])last.total=num(m[4]);else if(!(last.total>0))last.total=r2(w*up);
+      last.pend=false;last.detail=ln;anyPrice=true;continue;}
+    if((m=ln.match(PRICE_ONLY))){
+      const v=num(m[1]);
+      if(v<0){if(last&&last.total>-v+.004){last.total=r2(last.total+v);last.disc=(last.disc||0)-v;}else rej(ln);continue;}
+      if(v>0&&v<1000)prices.push(v);continue;}
+    m=ln.match(PRICE_END);
+    if(m&&(DISCRX.test(ln)||num(m[2])<0)){
+      const v=Math.abs(num(m[2]));
+      if(last&&last.total>v+.004){last.total=r2(last.total-v);last.disc=(last.disc||0)+v;}else rej(ln);continue;}
+    if(DISCRX.test(ln)){rej(ln);continue;}
+    let name,price=0;
+    if(m){
+      name=m[1].trim();price=num(m[2]);
+      if(!(price>0)||price>999){rej(ln);continue;}
+      anyPrice=true;
+    }else{
+      if(HEADER.test(ln)||(low&&ln.toLowerCase().includes(low))||ln===lines[0]){rej(ln);continue;}
+      name=ln.trim();
+    }
+    let qty=1,code='';
+    const q=name.match(/^(\d{1,2})\s*[x×*]\s*(.*)$/i);if(q){qty=parseInt(q[1],10);name=q[2];}
+    name=name.replace(/\s*\d+\s*[x×]\s*\d+[.,]\d{2}\s*$/i,'');
+    const e1=name.match(/^(\d{8,14})\s+(.*)$/),e2=name.match(/^(.*?)\s+(\d{8,14})$/);
+    if(e1&&gtinOk(e1[1])){code=e1[1];name=e1[2];}else if(e2&&gtinOk(e2[2])){code=e2[2];name=e2[1];}
+    name=name.replace(/[\s.*]+$/,'').trim();
+    if(nLetters(name)<3||name.length>60||nLetters(name)/name.length<.45){rej(ln);continue;}
+    const it={name,term:searchTerm(name),qty,total:price,code,pend:!price};
+    out.push(it);last=it;
+  }
+  // column layout (names on some lines, prices on others): pair the LAST names with the prices, in order
+  const pend=out.filter(i=>i.pend);
+  if(pend.length&&prices.length){
+    const k=Math.min(pend.length,prices.length),names=pend.slice(pend.length-k);
+    names.forEach((it,i)=>{it.total=prices[i];it.pend=false;});
+    pend.slice(0,pend.length-k).forEach(it=>{it.skip=true;it.unsure=true;});
+  }else if(pend.length&&anyPrice){pend.forEach(it=>{it.skip=true;it.unsure=true;});}
+  out.forEach(it=>{
+    const L=it.name.replace(/[^A-Za-zÀ-ÿ]/g,'');
+    if(!it.skip&&(L.length<4||!/[aeiouyàâéèêëîïôùû]/i.test(L)||it.total>300)){it.skip=true;it.unsure=true;}
+    delete it.pend;
+  });
+  return{store,date,items:out,ignored,tail};
+}
+const UNITS=/^(g|kg|l|cl|ml|x|pce|pcs|pc|la|le|les|de|du|des|et|bte|sach|bio|u|uht|pk|lot)$/i;
+function searchTerm(name){
+  return name.toLowerCase().replace(/[^a-zà-ÿ0-9\s']/g,' ').split(/\s+/)
+    .filter(w=>w.length>=3&&!/^\d/.test(w)&&!UNITS.test(w)).slice(0,3).join(' ');
+}
+const DEMO=`CARREFOUR MARKET
+12 RUE DE LA PAIX 75002 PARIS
+Tel : 01 23 45 67 89
+SIRET 123 456 789 00012
+24/10/2026 10:32  Caisse 04  Hôtesse : Marie
+Ticket n° 004512
+LAIT DEMI ECREME 1L        1,15
+2 x PATES SPAGHETTI 500G   1,98
+YAOURT NATURE X8           2,45
+BEURRE DOUX 250G           2,39
+  REMISE IMMEDIATE        -0,40
+POMMES GALA
+  1,012 kg x 2,99 EUR/kg   3,03
+3017620422003 NUTELLA 400G 3,59
+CAFE MOULU 250G            3,29
+SOUS-TOTAL                16,48
+TOTAL EUR                 16,48
+CB VISA ************1234  16,48
+TVA 5,5%  HT 12,10  TVA 0,67
+Carte fidélité 4930 1234 5678
+Vous avez cumulé 16 points
+MERCI DE VOTRE VISITE
+www.carrefour.fr`;
+
+/* ============ STATE ============ */
+let items=[],baseKey='pm_base_v1';
+let loc=JSON.parse(localStorage.getItem('pm_loc')||'null');
+const getBase=()=>{try{return JSON.parse(localStorage.getItem(baseKey)||'[]')}catch{return[]}};
+const setBase=b=>localStorage.setItem(baseKey,JSON.stringify(b));
+function baseStat(){const b=getBase();$('basestat').textContent=t('bstat')(b.length,b.reduce((a,r)=>a+r.items.length,0));}
+
+/* ============ SCAN ============ */
+function loadScript(src,g='Tesseract'){return new Promise((res,rej)=>{if(window[g])return res();const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+const PDFJS='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',PDFW='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+async function pdfDoc(f){
+  await loadScript(PDFJS,'pdfjsLib');
+  if(!pdfjsLib.GlobalWorkerOptions.workerSrc){const code=await (await fetch(PDFW)).text();pdfjsLib.GlobalWorkerOptions.workerSrc=URL.createObjectURL(new Blob([code],{type:'application/javascript'}));}
+  return pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;
+}
+async function pdfText(doc){
+  const out=[];
+  for(let p=1;p<=Math.min(doc.numPages,6);p++){
+    const tc=await (await doc.getPage(p)).getTextContent(),rows=new Map();
+    tc.items.forEach(x=>{if(!String(x.str).trim())return;const y=Math.round(x.transform[5]/3),r=rows.get(y)||[];r.push({x:x.transform[4],s:x.str});rows.set(y,r);});
+    [...rows.entries()].sort((a,b)=>b[0]-a[0]).forEach(([,r])=>out.push(r.sort((a,b)=>a.x-b.x).map(z=>z.s).join(' ')));
+  }
+  return out.join('\n');
+}
+async function pdfCanvases(doc){
+  const out=[];
+  for(let p=1;p<=Math.min(doc.numPages,3);p++){const pg=await doc.getPage(p),vp=pg.getViewport({scale:2.4}),c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;await pg.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;out.push(c);}
+  return out;
+}
+const AI_RECEIPT=`Tu lis la photo d’un ticket de caisse. Réponds UNIQUEMENT par un objet JSON, sans texte autour ni balises :
+{"store":"enseigne","date":"AAAA-MM-JJ","items":[{"name":"libellé du produit","qty":1,"total":0.00}]}
+"items" ne contient QUE les produits réellement achetés, une entrée par produit : "total" est le montant payé pour la ligne, en euros (nombre décimal), après déduction de la remise qui s’y rapporte ; "qty" est la quantité (1 si inconnue).
+EXCLURE : adresse, téléphone, SIRET, date et heure, numéro de ticket, caisse et caissier, sous-total, total, TVA, moyens de paiement, rendu monnaie, carte de fidélité, points, messages publicitaires, remerciements, codes-barres.
+N’invente rien : recopie les libellés tels qu’imprimés. Laisse "store" ou "date" vides s’ils sont illisibles.`;
+async function visionReceipt(im){
+  const c=aiCfg(),data=cv(im,{max:2200}).toDataURL('image/jpeg',.88).split(',')[1];
+  const h={'content-type':'application/json'};let url,body;
+  if(c.prov==='gemini'){
+    url=c.proxy||`https://generativelanguage.googleapis.com/v1beta/models/${c.model}:generateContent`;
+    if(!c.proxy)h['x-goog-api-key']=c.key;
+    body={systemInstruction:{parts:[{text:AI_RECEIPT}]},contents:[{role:'user',parts:[{inlineData:{mimeType:'image/jpeg',data}},{text:'Lis ce ticket.'}]}],generationConfig:{temperature:0,maxOutputTokens:4000,responseMimeType:'application/json'}};
+  }else{
+    url=c.proxy||'https://api.anthropic.com/v1/messages';
+    if(!c.proxy){h['x-api-key']=c.key;h['anthropic-version']='2023-06-01';h['anthropic-dangerous-direct-browser-access']='true';}
+    body={model:c.model,max_tokens:3000,system:AI_RECEIPT,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data}},{type:'text',text:'Lis ce ticket.'}]}]};
+  }
+  const ac=new AbortController(),to=setTimeout(()=>ac.abort(),45000);
+  let j;
+  try{const r=await fetch(url,{method:'POST',headers:h,signal:ac.signal,body:JSON.stringify(body)});if(!r.ok)throw new Error(r.status);j=await r.json();}finally{clearTimeout(to);}
+  const txt=c.prov==='gemini'?(((j.candidates||[])[0]||{}).content||{parts:[]}).parts.filter(x=>!x.thought).map(x=>x.text||'').join(''):(j.content||[]).map(x=>x.text||'').join('');
+  const m=txt.match(/\{[\s\S]*\}/);if(!m)throw new Error('json');
+  const o=JSON.parse(m[0]),items=(Array.isArray(o.items)?o.items:[]).map(x=>({name:String(x.name||'').trim().slice(0,80),qty:Math.max(1,Math.round(Number(x.qty)||1)),total:Math.max(0,r2(num(x.total)||0))})).filter(x=>x.name);
+  items.forEach(x=>{x.term=searchTerm(x.name)||x.name.toLowerCase();});
+  if(!items.length)throw new Error('empty');
+  return{store:String(o.store||'').slice(0,40),date:/^\d{4}-\d{2}-\d{2}$/.test(o.date||'')?o.date:'',items,ignored:[],tail:0};
+}
+async function ocrImage(src,label){
+  await loadScript(TESS);
+  const r=await Tesseract.recognize(src,'fra+eng',{logger:m=>{if(m.status==='recognizing text'){$('ocrmsg').textContent=label||t('reading');$('ocrbar').style.width=Math.round(m.progress*100)+'%';}}});
+  return r.data.text;
+}
+$('file').addEventListener('change',async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  $('ocrbox').hidden=false;$('ocrmsg').textContent=t('loadocr');$('ocrbar').style.width='3%';
+  try{
+    const isPdf=f.type==='application/pdf'||/\.pdf$/i.test(f.name),isTxt=f.type==='text/plain'||/\.txt$/i.test(f.name);
+    let text='';
+    if(isTxt)text=await f.text();
+    else if(isPdf){
+      $('ocrmsg').textContent=t('pdfread');
+      const doc=await pdfDoc(f);text=await pdfText(doc);
+      if(nLetters(text)<20){const cs=await pdfCanvases(doc);text='';for(const c of cs)text+=await ocrImage(c)+'\n';}
+    }else{
+      const L=await loadImg(f);
+      if(aiReady()){
+        try{$('ocrmsg').textContent=t('aireceipt');$('ocrbar').style.width='40%';
+          const r=await visionReceipt(L.im);URL.revokeObjectURL(L.u);$('ocrbox').hidden=true;
+          handleParsed(r,'Ticket (IA)',t('aireceiptok'));return;
+        }catch{$('ocrmsg').textContent=t('aireceiptfail');}
+      }
+      text=await ocrImage(cv(L.im,{max:2400,up:2,mode:'gray'}));URL.revokeObjectURL(L.u);
+    }
+    $('ocrbox').hidden=true;$('rawtxt').value=text;
+    handleText(text,isPdf?'Ticket PDF':isTxt?'Ticket texte':'Ticket photo');
+  }catch(err){$('ocrmsg').textContent=t('ocrfail');$('pastebox').hidden=false;}
+});
+$('paste').onclick=()=>{$('pastebox').hidden=false;$('rawtxt').focus();};
+$('demo').onclick=()=>{$('pastebox').hidden=false;$('rawtxt').value=DEMO;handleText(DEMO,'Exemple');};
+$('parse').onclick=()=>handleText($('rawtxt').value,'Ticket (texte)');
+let sources=[];
+function showCards(){$('review').hidden=false;$('setcard').hidden=false;renderRows();}
+function renderChips(){
+  const c=$('chips');c.innerHTML='';
+  sources.forEach(x=>{const e=document.createElement('span');e.className='tag';e.textContent=x.label+' · '+x.n;c.appendChild(e);});
+  if(sources.length){const b=document.createElement('button');b.className='s';b.style.fontSize='13px';b.textContent=t('clearlist');b.onclick=()=>{items=[];sources=[];renderChips();renderRows();msg('');};c.appendChild(b);}
+}
+function addItems(arr,label){
+  items=items.filter(i=>i.name.trim());
+  let n=0;
+  arr.forEach(x=>{
+    const k=norm(x.name),ex=items.find(i=>norm(i.name)===k);
+    if(!ex){items.push(x);n++;}
+    else if(x.total>0&&(!(ex.total>0)||(x.date||'')>(ex.date||'')))Object.assign(ex,{total:x.total,qty:x.qty,store:x.store,date:x.date,fresh:x.fresh});
+  });
+  sources.push({label,n});
+  showCards();renderChips();return n;
+}
+function renderIgnored(r){
+  const box=$('ignbox'),L=$('ignlist');L.innerHTML='';
+  const ig=(r&&r.ignored)||[];box.hidden=!ig.length;if(!ig.length)return;
+  $('ignsum').textContent=t('ignsum')(ig.length);
+  ig.forEach(ln=>{
+    const row=document.createElement('div');row.className='ign';
+    const sp=document.createElement('span');sp.textContent=ln;
+    const b=document.createElement('button');b.className='s';b.style.cssText='font-size:12px;padding:3px 8px';b.textContent=t('addline');
+    b.onclick=()=>{
+      const m=ln.match(PRICE_END);let name=(m?m[1]:ln).replace(/[\s.*]+$/,'').trim(),total=m?Math.abs(num(m[2])):0;
+      items=items.filter(i=>i.name.trim());
+      items.push({name,term:searchTerm(name)||name.toLowerCase(),qty:1,total,store:$('store').value,date:$('rdate').value,fresh:true});
+      row.remove();renderRows();
+    };
+    row.append(sp,b);L.appendChild(row);
+  });
+}
+function handleParsed(r,label,note){
+  if(r.store)$('store').value=r.store;if(r.date)$('rdate').value=r.date;
+  const st=$('store').value,dt=$('rdate').value;
+  const its=r.items.map(i=>({...i,store:st,date:dt,fresh:true}));
+  renderIgnored(r);
+  if(!its.length){msg(t('noitems'));if(!items.length)items=[{name:'',term:'',qty:1,total:0,store:st,date:dt,fresh:true}];showCards();return;}
+  const n=addItems(its,label);
+  msg([t('added')(n,label),note||'',r.tail?t('tailn')(r.tail):''].filter(Boolean).join(' '));
+  $('review').scrollIntoView({behavior:'smooth'});
+}
+function handleText(txt,label){handleParsed(parseReceipt(txt),label);}
+$('rawshow').onclick=()=>{const b=$('pastebox');b.hidden=!b.hidden;if(!b.hidden){b.scrollIntoView({behavior:'smooth'});$('rawtxt').focus();}};
+$('store').oninput=()=>items.forEach(i=>{if(i.fresh)i.store=$('store').value;});
+$('rdate').oninput=()=>items.forEach(i=>{if(i.fresh)i.date=$('rdate').value;});
+$('listbtn').onclick=()=>{$('listbox').hidden=false;$('rawlist').focus();};
+function parseList(text){
+  return text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(ln=>{
+    let name=ln,total=0,qty=1;
+    const m=ln.match(PRICE_END);if(m){name=m[1].trim();total=parseFloat(m[2].replace(/\s/,'').replace(',','.'))||0;}
+    const q=name.match(/^(\d{1,2})\s*[x×*]\s*(.*)$/i);if(q){qty=parseInt(q[1],10);name=q[2];}
+    name=name.replace(/[\s.*,;-]+$/,'');
+    return name.length>=2?{name,term:searchTerm(name)||name.toLowerCase(),qty,total,store:'',date:'',fresh:false}:null;
+  }).filter(Boolean);
+}
+$('addlist').onclick=()=>{const its=parseList($('rawlist').value);if(!its.length)return;const n=addItems(its,'Liste');$('rawlist').value='';msg(t('added')(n,'Liste'));};
+function renderRows(){
+  const tb=$('rows');tb.innerHTML='';
+  items.forEach((it,i)=>{
+    const tr=document.createElement('tr');if(it.skip)tr.className='dim';
+    const mk=(k,type,w)=>{const td=document.createElement('td');const inp=document.createElement('input');inp.type=type;inp.value=it[k];inp.placeholder={term:t('search'),qty:t('qty'),total:t('total')}[k]||'';if(type==='number'){inp.step='0.01';inp.min='0';}
+      inp.oninput=()=>{it[k]=type==='number'?parseFloat(inp.value)||0:inp.value;if(k==='name'&&!it._termEdited)it.term=searchTerm(it.name),tr.children[2].firstChild.value=it.term;if(k==='term')it._termEdited=true;if(k==='total'&&it.auto){it.auto=false;it.fresh=!!it._wasFresh;const n=td.querySelector('.autonote');if(n)n.remove();}if(k==='qty'&&it.auto&&it.unitAuto>0){it.total=r2(it.unitAuto*(it.qty||1));tr.children[4].firstChild.value=it.total;}};
+      td.appendChild(inp);
+      if(k==='total'&&it.auto){const an=document.createElement('div');an.className='small autonote';an.textContent=t('autotag');an.title=t('autonote')(it.autoN||0);td.appendChild(an);}
+      if(k==='name'&&(it.disc||it.detail)){const dd=document.createElement('div');dd.className='small';dd.textContent=[it.detail,it.disc?'−'+it.disc.toFixed(2)+' € ('+t('discn')+')':''].filter(Boolean).join(' · ');td.appendChild(dd);}
+      if(k==='name'&&(it.store||it.date)){const sm=document.createElement('div');sm.className='small';sm.textContent=[it.store,it.date].filter(Boolean).join(' · ');td.appendChild(sm);}
+      if(k==='name'){const ci=document.createElement('input');ci.type='text';ci.placeholder=t('eanph');ci.value=it.code||'';ci.style.cssText='margin-top:4px;font-size:12px;padding:3px 6px';ci.oninput=()=>{it.code=ci.value.replace(/\D/g,'');};td.appendChild(ci);}
+      return td;};
+    const kt=document.createElement('td'),kc=document.createElement('input');kc.type='checkbox';kc.checked=!it.skip;kc.style.width='auto';
+    kc.onchange=()=>{it.skip=!kc.checked;tr.classList.toggle('dim',it.skip);};kt.appendChild(kc);
+    if(it.unsure){const w=document.createElement('div');w.className='warnt';w.textContent=t('unsure');kt.appendChild(w);}
+    tr.append(kt,mk('name','text'),mk('term','text'),mk('qty','number'),mk('total','number'));
+    const td=document.createElement('td');const b=document.createElement('button');b.textContent='✕';b.className='s';b.style.padding='4px 8px';b.onclick=()=>{items.splice(i,1);renderRows();};td.appendChild(b);tr.appendChild(td);
+    tb.appendChild(tr);
+  });
+}
+$('addrow').onclick=()=>{items.push({name:'',term:'',qty:1,total:0,store:$('store').value,date:$('rdate').value,fresh:true});renderRows();};
+
+/* ============ SETTINGS ============ */
+const radKm=()=>parseFloat($('radius').value);
+function radLab(){const r=radKm();$('rlab').textContent=r<1?Math.round(r*1000)+' '+t('m'):r+' '+t('km');}
+function locLab(){$('locmsg').textContent=loc?`${t('locok')} ${loc.label||''} (${loc.lat.toFixed(3)}, ${loc.lon.toFixed(3)})`:t('locno');}
+$('radius').oninput=radLab;
+document.querySelectorAll('input[name=mode]').forEach(r=>r.onchange=()=>{$('nearbox').hidden=getMode()==='online';});
+const getMode=()=>document.querySelector('input[name=mode]:checked').value;
+function setLoc(lat,lon,label){loc={lat,lon,label};localStorage.setItem('pm_loc',JSON.stringify(loc));locLab();}
+$('geo').onclick=()=>{
+  if(!navigator.geolocation){$('locmsg').textContent=t('locfail');return;}
+  navigator.geolocation.getCurrentPosition(p=>setLoc(p.coords.latitude,p.coords.longitude,'GPS'),()=>{$('locmsg').textContent=t('locfail');},{timeout:10000});
+};
+$('addrgo').onclick=async()=>{
+  const q=$('addr').value.trim();if(!q)return;
+  try{const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language='+lang+'&q='+encodeURIComponent(q));
+    const j=await r.json();if(!j.length){$('locmsg').textContent=t('geofail');return;}
+    setLoc(parseFloat(j[0].lat),parseFloat(j[0].lon),(j[0].display_name||q).split(',').slice(0,2).join(','));
+  }catch{$('locmsg').textContent=t('geofail');}
+};
+
+/* ============ COMPARE ============ */
+const hav=(a,b,c,d)=>{const R=6371,r=x=>x*Math.PI/180,dl=r(c-a),dn=r(d-b);const h=Math.sin(dl/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h));};
+const norm=s=>s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+const fmt=n=>n.toLocaleString(lang==='fr'?'fr-FR':'en-GB',{style:'currency',currency:'EUR'});
+
+const ACC={ecreme:'écrémé',ecremé:'écrémé',pates:'pâtes',pate:'pâte',cafe:'café',the:'thé',creme:'crème',fraiche:'fraîche',oeufs:'œufs',oeuf:'œuf',boeuf:'bœuf',epinards:'épinards',legumes:'légumes',cereales:'céréales',melange:'mélange',menage:'ménage',sucre:'sucré',sale:'salé',fume:'fumé',chevre:'chèvre',gruyere:'gruyère',ble:'blé',bebe:'bébé',poelee:'poêlée',specialite:'spécialité',deshydrate:'déshydraté',degraisse:'dégraissé'};
+const sing=w=>w.length>4&&w.endsWith('s')?w.slice(0,-1):w;
+async function codesFor(q){
+  const p=new URLSearchParams({product_name__like:q,order_by:'-price_count',size:'25'});
+  const r=await fetch('https://prices.openfoodfacts.org/api/v1/products?'+p);
+  if(!r.ok)throw new Error(r.status);
+  return((await r.json()).items||[]).map(x=>x.code);
+}
+async function findCodes(term){
+  // several spellings of the search term, from most to least specific; results are merged
+  const words=term.split(/\s+/).filter(Boolean),V=[];
+  for(let n=words.length;n>=1;n--)V.push(words.slice(0,n).join(' '));
+  const acc=words.map(w=>ACC[w]||w);
+  for(let n=acc.length;n>=1;n--)V.push(acc.slice(0,n).join(' '));
+  V.push(words.map(sing).join(' '));
+  if(words.length>1)V.push(sing(words[words.length-1]));
+  const uniq=[...new Set(V.filter(Boolean))].slice(0,6);
+  const res=await Promise.all(uniq.map(q=>codesFor(q).catch(()=>[])));
+  const out=[];res.forEach(l=>l.forEach(c=>{if(!out.includes(c))out.push(c);}));
+  return out.slice(0,40);
+}
+async function fetchPrices(codes,mode,radius,term,size=60){
+  const p=new URLSearchParams({product_code__in:codes.join(','),currency:'EUR',order_by:'price',size:String(size)});
+  if(mode==='online')p.set('location__type','ONLINE');
+  else{p.set('lat',loc.lat);p.set('lon',loc.lon);p.set('radius_km',radius);}
+  const r=await fetch('https://prices.openfoodfacts.org/api/v1/prices?'+p);
+  if(!r.ok)throw new Error(r.status);
+  const j=await r.json();
+  return(j.items||[]).filter(x=>x.price>0).map(x=>{
+    const L=x.location||{},P=x.product||{};
+    const d=(mode==='near'&&L.osm_lat!=null)?hav(loc.lat,loc.lon,L.osm_lat,L.osm_lon):null;
+    return{price:x.price,store:L.type==='ONLINE'?(L.website_url||t('online_tag')):(L.osm_name||L.osm_brand||'?'),city:L.osm_address_city||'',
+      product:[P.product_name,P.brands,P.quantity].filter(Boolean).join(' · ')||term,date:x.date||'',dist:d,online:L.type==='ONLINE',src:'op',lat:L.osm_lat??null,lon:L.osm_lon??null};
+  });
+}
+const WIDE=100;
+async function fetchOpen(term,mode,code){
+  const codes=code?[code]:await findCodes(term);
+  if(!codes.length)return[];
+  if(mode==='online')return fetchPrices(codes,mode,0,term);
+  const [a,b]=await Promise.all([fetchPrices(codes,mode,radKm(),term),fetchPrices(codes,mode,Math.max(WIDE,radKm()),term,100)]);
+  return a.concat(b);
+}
+function fromBase(term,mode){
+  const toks=norm(term).split(/\s+/).filter(Boolean);if(!toks.length||mode!=='near')return[];
+  const out=[];
+  for(const rc of getBase()){
+    if(rc.lat==null)continue;
+    const dist=hav(loc.lat,loc.lon,rc.lat,rc.lon);if(dist>Math.max(WIDE,radKm()))continue;
+    for(const it of rc.items){
+      const n=norm(it.name);if(!toks.every(w=>n.includes(w)))continue;
+      out.push({price:it.total/(it.qty||1),store:rc.store||'?',city:'',product:it.name,date:rc.date||'',dist,online:false,src:'mine',lat:rc.lat,lon:rc.lon});
+    }
+  }
+  return out;
+}
+const BRANDS=['carrefour','leclerc','auchan','lidl','aldi','intermarche','monoprix','franprix','casino','picard','biocoop','naturalia','cora','match','netto','grand frais','super u','hyper u','marche u','simply','g20','spar','colruyt','delhaize','leader price','supeco','thiriet','bio c bon','tesco','sainsbury','asda','walmart','kroger','costco','mercadona'];
+const brandOf=n=>{const x=' '+norm(n||'').replace(/[^a-z0-9]+/g,' ')+' ';for(const b of BRANDS)if(x.includes(' '+b+' '))return b;return null;};
+let stores=[],storeKey='';
+async function nearbyStores(rkm){
+  const key=[loc.lat.toFixed(3),loc.lon.toFixed(3),rkm].join('|');
+  if(key===storeKey)return stores;
+  const q=`[out:json][timeout:25];nwr["shop"~"^(supermarket|convenience|frozen_food|greengrocer|department_store|wholesale)$"](around:${Math.round(rkm*1000)},${loc.lat},${loc.lon});out center tags 250;`;
+  const r=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'data='+encodeURIComponent(q)});
+  if(!r.ok)throw new Error(r.status);
+  const j=await r.json(),seen=new Set(),out=[];
+  (j.elements||[]).forEach(e=>{
+    const tg=e.tags||{},la=e.lat??(e.center&&e.center.lat),lo=e.lon??(e.center&&e.center.lon),name=tg.name||tg.brand;
+    if(!name||la==null)return;
+    const dist=hav(loc.lat,loc.lon,la,lo),k=norm(name)+'|'+dist.toFixed(2);if(seen.has(k))return;seen.add(k);
+    out.push({name,brand:brandOf(tg.brand)||brandOf(name),dist,lat:la,lon:lo,oh:tg.opening_hours||''});
+  });
+  out.sort((a,b)=>a.dist-b.dist);stores=out;storeKey=key;return out;
+}
+// A price seen at a store of a chain is used as an indication for the nearby stores of the same chain
+function estimateOffers(offers,R){
+  const out=[];
+  stores.filter(x=>x.brand&&x.dist<=R).forEach(ns=>{
+    const real=offers.some(o=>o.src==='op'&&!o.est&&o.dist!=null&&Math.abs(o.dist-ns.dist)<0.3&&brandOf(o.store)===ns.brand);
+    if(real)return;
+    const cand=offers.filter(o=>o.src==='op'&&!o.est&&brandOf(o.store)===ns.brand);
+    if(!cand.length)return;
+    const c=cand.reduce((a,b)=>a.price<=b.price?a:b);
+    out.push({price:c.price,store:ns.name,city:'',product:c.product,date:c.date,dist:ns.dist,online:false,src:'op',est:true,lat:ns.lat,lon:ns.lon,from:c.store+(c.city?' ('+c.city+')':'')});
+  });
+  return out;
+}
+const fd=d=>d==null?'':(d<1?Math.round(d*1000)+' m':d.toFixed(1)+' km');
+/* ============ REMPLISSAGE AUTOMATIQUE DES PRIX ============ */
+const medianOf=a=>{const v=a.slice().sort((x,y)=>x-y),m=v.length>>1;return v.length%2?v[m]:(v[m-1]+v[m])/2;};
+$('autoprice').onclick=async()=>{
+  const mode=getMode(),am=$('automsg'),btn=$('autoprice');
+  const todo=items.filter(i=>(i.name||'').trim()&&!i.skip&&!(i.total>0));
+  if(!todo.length){am.textContent=t('autonone');return;}
+  if(mode==='near'&&!loc){am.textContent=t('needloc');$('nearbox').scrollIntoView({behavior:'smooth'});return;}
+  btn.disabled=true;am.textContent=t('autoprog');
+  const R=radKm(),limit=new Date(Date.now()-365*864e5).toISOString().slice(0,10);
+  let ok=0;
+  const work=async it=>{
+    const term=(it.term||searchTerm(it.name)||it.name).trim();
+    let offers=[];
+    if($('useop').checked){try{offers=await fetchOpen(term,mode,it.code);}catch{}}
+    if($('usebase').checked)offers=offers.concat(fromBase(term,mode));
+    const seen=new Set();
+    offers=offers.filter(o=>{const k=o.store+'|'+o.product+'|'+o.price+'|'+(o.date||'');if(seen.has(k))return false;seen.add(k);return true;});
+    let pool=offers.filter(o=>mode==='online'||o.dist==null||o.dist<=R);
+    if(!pool.length)pool=offers;
+    const recent=pool.filter(o=>!o.date||o.date>=limit);
+    if(recent.length)pool=recent;
+    if(!pool.length)return;
+    const unit=r2(medianOf(pool.map(o=>o.price)));
+    if(!(unit>0))return;
+    it._wasFresh=it.fresh;it.fresh=false;it.auto=true;it.unitAuto=unit;it.autoN=pool.length;
+    it.total=r2(unit*(it.qty||1));ok++;
+  };
+  const q=todo.slice();
+  try{await Promise.all([0,1,2].map(async()=>{while(q.length)await work(q.shift());}));}
+  finally{btn.disabled=false;}
+  renderRows();
+  am.textContent=ok?t('autodone')(ok,todo.length):t('autofail');
+};
+$('go').onclick=async()=>{
+  const mode=getMode();
+  if(mode==='near'&&!loc){$('locmsg').textContent=t('needloc');$('nearbox').scrollIntoView({behavior:'smooth'});return;}
+  const valid=items.filter(i=>i.name.trim()&&!i.skip);
+  $('res').hidden=false;$('list').innerHTML='';$('summary').innerHTML='';$('rbari').style.width='0';
+  $('res').scrollIntoView({behavior:'smooth'});
+  if(!valid.length){$('list').innerHTML='<p class="err">'+esc(t('nothing'))+'</p>';return;}
+  const store=$('store').value.trim(),date=$('rdate').value.trim();
+  const baseBefore=getBase();
+  $('go').disabled=true;
+  stores=[];storeKey='';
+  if(mode==='near'){try{await nearbyStores(Math.min(radKm(),8));}catch{}}
+  renderStores(mode);
+  const results=new Array(valid.length);let done=0;
+  const work=async(i)=>{
+    const it=valid[i],term=(it.term||searchTerm(it.name)).trim();
+    const unit=it.total>0&&!it.auto?it.total/(it.qty||1):0;
+    let offers=[],err=false;
+    if($('useop').checked){try{offers=await fetchOpen(term,mode,it.code);}catch{err=true;}}
+    if($('usebase').checked)offers=offers.concat(fromBase(term,mode).filter(o=>!(o.store===it.store&&o.date===it.date&&Math.abs(o.price-unit)<0.005)));
+    if(mode==='near'&&$('useest').checked&&stores.length)offers=offers.concat(estimateOffers(offers,radKm()));
+    offers.sort((a,b)=>a.price-b.price);
+    const seen=new Set();offers=offers.filter(o=>{const k=o.store+'|'+o.product+'|'+o.price+'|'+(o.dist!=null?o.dist.toFixed(1):'')+'|'+(o.est?1:0);if(seen.has(k))return false;seen.add(k);return true;});
+    const R=radKm();
+    const isNear=o=>mode==='online'||o.dist==null||o.dist<=R;
+    const near=offers.filter(isNear).slice(0,5),far=offers.filter(o=>!isNear(o)).slice(0,5);
+    results[i]={it,unit,term,near,far,nstores:stores.filter(x=>x.dist<=radKm()).slice(0,4),sel:near[0]||null,showFar:false,off:false,err};
+    $('rbari').style.width=Math.round(++done/valid.length*100)+'%';
+  };
+  const q=valid.map((_,i)=>i);
+  try{await Promise.all([0,1,2].map(async()=>{while(q.length)await work(q.shift());}));}
+  finally{$('go').disabled=false;}
+  renderResults(results);
+  if($('keep').checked){
+    const fresh=valid.filter(i=>i.fresh&&i.total>0&&!i.auto),g={};
+    fresh.forEach(i=>{const k=(i.store||store)+'|'+(i.date||date);(g[k]=g[k]||{store:i.store||store,date:i.date||date,lat:loc?loc.lat:null,lon:loc?loc.lon:null,items:[]}).items.push({name:i.name,qty:i.qty||1,total:i.total});i.fresh=false;});
+    if(fresh.length){Object.values(g).forEach(r=>baseBefore.push(r));setBase(baseBefore);baseStat();}
+  }
+};
+function renderStores(mode){
+  const b=$('stores');b.innerHTML='';if(mode!=='near')return;
+  const R=radKm(),L=stores.filter(x=>x.dist<=R);
+  const d=document.createElement('div');d.className='small';d.style.margin='6px 0';
+  d.textContent=L.length?`🏬 ${t('storesnear')} (${L.length}) : `+L.slice(0,12).map(x=>`${x.name} ${fd(x.dist)}`).join(' · ')+(L.length>12?' …':''):t('nostores');
+  b.appendChild(d);
+}
+const SHOP={carrefour:'https://www.carrefour.fr/s?q=',auchan:'https://www.auchan.fr/recherche?text=',lidl:'https://www.lidl.fr/q/search?q='};
+const shopUrl=(b,term)=>SHOP[b]?SHOP[b]+encodeURIComponent(term):'https://www.google.com/search?q='+encodeURIComponent(term+' prix '+(b||'')+' drive');
+function webBlock(R,r){
+  const w=document.createElement('div');w.className='note';
+  const L=stores.filter(x=>x.dist<=radKm());
+  const brands=[...new Set(L.map(x=>x.brand).filter(Boolean))].slice(0,6);
+  const q=(r.it.code?'':r.term||r.it.name);
+  const lab=document.createElement('div');lab.textContent='🔎 '+t('webcheck');w.appendChild(lab);
+  const row=document.createElement('div');row.className='row';
+  (brands.length?brands:[null]).forEach(b=>{const a=document.createElement('a');a.href=shopUrl(b,r.it.name);a.target='_blank';a.rel='noopener';a.className='tag';a.style.fontSize='13px';a.textContent=b?b.replace(/\b\w/g,c=>c.toUpperCase()):'Web';row.appendChild(a);});
+  w.appendChild(row);
+  if(L.length){
+    const f=document.createElement('div');f.className='row';
+    const sel=document.createElement('select');sel.style.maxWidth='220px';
+    L.slice(0,15).forEach((x,i)=>{const o=document.createElement('option');o.value=i;o.textContent=x.name+' · '+fd(x.dist);sel.appendChild(o);});
+    const inp=document.createElement('input');inp.type='number';inp.step='0.01';inp.min='0';inp.placeholder=t('webprice');inp.style.width='130px';
+    const b=document.createElement('button');b.className='s';b.textContent=t('webadd');
+    b.onclick=()=>{
+      const price=parseFloat(inp.value);if(!(price>0))return;
+      const ns=L[parseInt(sel.value,10)],today=new Date().toISOString().slice(0,10);
+      const base=getBase();base.push({store:ns.name,date:today,lat:ns.lat,lon:ns.lon,items:[{name:r.it.name,qty:1,total:price}]});setBase(base);baseStat();
+      const o={price,store:ns.name,city:'',product:r.it.name,date:today,dist:ns.dist,online:false,src:'mine',web:true,lat:ns.lat,lon:ns.lon};
+      r.near.unshift(o);r.near.sort((a,b)=>a.price-b.price);r.sel=r.near[0];renderResults(R);
+    };
+    f.append(sel,inp,b);w.appendChild(f);
+  }
+  const n=document.createElement('div');n.className='small';n.textContent=t('webnote');w.appendChild(n);
+  return w;
+}
+function offerRow(R,r,o){
+  const row=document.createElement('div');row.className='offer'+(o===r.sel?' sel':'');
+  const cls=r.unit>0?(o.price<r.unit-0.005?'cheap':(o.price>r.unit+0.005?'dear':'')):'';
+  const where=o.online?t('online_tag'):[o.city,fd(o.dist)].filter(Boolean).join(' · ');
+  row.innerHTML=`<span><b>${esc(o.store)}</b>${o.src==='mine'?`<span class="tag">${t('mine')}</span>`:''}${o.est?`<span class="tag">${t('est')}</span>`:''}${o.web?`<span class="tag">${t('web')}</span>`:''}<br><span class="small">${esc(o.product)}${where?' — '+esc(where):''}${o.date?' — '+esc(o.date):''}${o.est?' — '+esc(t('estfrom'))+' '+esc(o.from):''}</span></span><span class="pr ${cls}">${fmt(o.price)}</span>`;
+  row.onclick=()=>{r.sel=o;renderResults(R);};
+  return row;
+}
+const isCheaper=r=>r.sel&&r.unit>0&&r.sel.price<r.unit-0.005;
+let lastR=null,lastPlan=[];
+function renderResults(R){
+  lastR=R;
+  const L=$('list');L.innerHTML='';
+  R.forEach(r=>{
+    const d=document.createElement('div');d.className='item';
+    const h=document.createElement('div');h.className='ihead';
+    const paid=r.unit>0?`${t('paid')} : ${fmt(r.unit)}${r.it.qty>1?' /u':''}${r.it.store?' '+esc(t('atstore'))+' '+esc(r.it.store):''}${r.it.date?' ('+esc(r.it.date)+')':''}`:t('noprice');
+    h.innerHTML=`<span>${esc(r.it.name)} ${r.it.qty>1?'×'+r.it.qty:''}<br><span class="paid">${paid}</span></span>`;
+    const btn=document.createElement('button');btn.className='s';btn.style.fontSize='13px';btn.textContent=r.off?t('restore'):t('remove');
+    btn.onclick=()=>{r.off=!r.off;renderResults(R);};
+    h.appendChild(btn);d.appendChild(h);
+    if(r.off){d.style.opacity='.5';const e=document.createElement('div');e.className='small';e.textContent=t('removed');d.appendChild(e);L.appendChild(d);return;}
+    if(r.err&&!r.near.length&&!r.far.length){const e=document.createElement('div');e.className='err';e.textContent=t('err');d.appendChild(e);}
+    if(r.near.length){
+      const lab=document.createElement('div');lab.className='small';lab.style.marginTop='6px';lab.textContent=t('nearbest');d.appendChild(lab);
+      r.near.forEach(o=>d.appendChild(offerRow(R,r,o)));
+    }else if(!r.err){const e=document.createElement('div');e.className='small';e.style.marginTop='6px';e.textContent=(r.nstores&&r.nstores.length?t('nonearstores')+' '+r.nstores.map(x=>x.name+' '+fd(x.dist)).join(', ')+'. '+t('contrib'):t('nonear'))+' (« '+r.term+' »)';d.appendChild(e);}
+    // outside the radius: only offers strictly cheaper than what was paid (and than the best nearby offer)
+    if(!r.near.length)d.appendChild(webBlock(R,r));
+    const nb=r.near[0];
+    const ref=Math.min(r.unit>0?r.unit:Infinity,nb?nb.price:Infinity);
+    const far=r.far.filter(o=>o.price<ref-0.005);
+    if(far.length){
+      const fb=far[0];
+      const w=document.createElement('div');w.className='note';
+      const diff=r.unit>0?` (−${fmt(r.unit-fb.price)})`:'';
+      w.innerHTML=`⚠ ${esc(t('outside'))} : <b>${fmt(fb.price)}</b> — ${esc(fb.store)}${fb.dist!=null?' · '+fd(fb.dist):''}${diff} `;
+      const tb=document.createElement('button');tb.className='s';tb.style.fontSize='13px';tb.textContent=r.showFar?t('hidefar'):t('viewfar');
+      tb.onclick=()=>{r.showFar=!r.showFar;renderResults(R);};w.appendChild(tb);d.appendChild(w);
+      if(r.showFar)far.forEach(o=>d.appendChild(offerRow(R,r,o)));
+    }
+    L.appendChild(d);
+  });
+  let paid=0,best=0,est=0;
+  const act=R.filter(r=>!r.off),priced=act.filter(r=>r.it.total>0&&!r.it.auto),unpriced=act.filter(r=>!(r.it.total>0&&!r.it.auto));
+  priced.forEach(r=>{const q=r.it.qty||1;paid+=r.it.total;best+=isCheaper(r)?r.sel.price*q:r.it.total;});
+  unpriced.forEach(r=>{if(r.sel)est+=r.sel.price*(r.it.qty||1);});
+  const tile=(l,v,c)=>`<div${c?` class="${c}"`:''}><span class="small">${l}</span><b>${v}</b></div>`;
+  let tiles='';
+  if(priced.length)tiles+=tile(t('tpaid'),fmt(paid))+tile(t('tbest'),fmt(best))+tile(t('tsave'),fmt(paid-best),'save')+tile(t('tfound'),`${priced.filter(isCheaper).length}/${priced.length}`);
+  if(unpriced.length)tiles+=tile(t('testim'),fmt(est))+tile(t('tlist'),`${unpriced.filter(r=>r.sel).length}/${unpriced.length}`);
+  $('summary').innerHTML=`<div class="sum">${tiles}</div><p class="small">${t('srcnote')}</p>`;
+  renderPlan(R);
+}
+window.addEventListener('afterprint',()=>{document.body.classList.remove('printing','withroute');if(rmap){rmap.invalidateSize();fitRoute();}});
+function renderPlan(R){
+  const G={},store0=$('store').value.trim()||'—';
+  R.filter(r=>!r.off).forEach(r=>{
+    const o=(isCheaper(r)||(r.unit<=0&&r.sel))?r.sel:null;
+    const none=!o&&!(r.unit>0);
+    const key=o?[o.store,o.city,o.dist!=null?o.dist.toFixed(2):'',o.online].join('|'):(none?'__none':'__stay|'+(r.it.store||store0));
+    const g=G[key]||(G[key]={o,stay:!o,none,ss:o?null:(r.it.store||store0),rows:[],sum:0});
+    const q=r.it.qty||1,price=o?o.price:(r.unit>0?r.unit:null);
+    g.rows.push({name:r.it.name,q,price});if(price!=null)g.sum+=price*q;
+  });
+  const arr=Object.values(G).sort((a,b)=>(a.stay-b.stay)||(b.rows.length-a.rows.length));
+  lastPlan=arr;
+  const box=$('plan');box.innerHTML='';$('plantitle').hidden=!arr.length;$('printrow').hidden=!arr.length;
+  $('routebox').hidden=!planStops().length;if(planKey()!==routeKey)clearRoute();
+  arr.forEach(g=>{
+    const d=document.createElement('div');d.className='plan';
+    const where=g.stay?'':(g.o.online?t('online_tag'):[g.o.city,fd(g.o.dist)].filter(Boolean).join(' · '));
+    const title=g.none?esc(t('nooffer')):g.stay?`${t('stayat')} ${esc(g.ss)}`:`🛒 ${esc(g.o.store)}${g.o.est?` <span class="tag">${t('est')}</span>`:''}${where?` <span class="small">— ${esc(where)}</span>`:''}`;
+    d.innerHTML=`<h3><span>${title}</span><span class="small">${t('nitems')(g.rows.length)} · ${t('subtotal')} ${fmt(g.sum)}</span></h3><ul>`+
+      g.rows.map(x=>`<li><span>${esc(x.name)}${x.q>1?' ×'+x.q:''}</span><b>${x.price!=null?fmt(x.price*x.q):esc(t('unknownp'))}</b></li>`).join('')+'</ul>';
+    if(g.o&&!g.none&&!g.stay)d.appendChild(crowdBlock(g));
+    box.appendChild(d);
+  });
+}
+
+/* ============ BASE ============ */
+$('exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(getBase(),null,2)],{type:'application/json'}));a.download='panier-malin-base.json';a.click();};
+$('clr').onclick=()=>{if(confirm(t('confirmclear'))){setBase([]);baseStat();}};
+const msg=m=>{$('srcmsg').textContent=m;};
+function cleanReceipt(r){
+  if(!r||!Array.isArray(r.items))return null;
+  const items=r.items.map(i=>({name:String(i.name??'').slice(0,80),qty:Number(i.qty)||1,total:Number(String(i.total).replace(',','.'))||0})).filter(i=>i.name&&i.total>0);
+  if(!items.length)return null;
+  const num=v=>(v===null||v===''||v===undefined||isNaN(Number(v)))?null:Number(v);
+  return{store:String(r.store??'').slice(0,60),date:String(r.date??'').slice(0,10),lat:num(r.lat),lon:num(r.lon),items};
+}
+function mergeBase(list){
+  const base=getBase(),keys=new Set(base.map(r=>JSON.stringify([r.store,r.date,r.items])));
+  let add=0,dup=0;
+  list.forEach(r=>{const k=JSON.stringify([r.store,r.date,r.items]);if(keys.has(k))dup++;else{keys.add(k);base.push(r);add++;}});
+  setBase(base);baseStat();return[add,dup];
+}
+const XLS='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+$('expx').onclick=async()=>{
+  try{await loadScript(XLS,'XLSX');}catch{msg(t('xlsfail'));return;}
+  const rows=[];
+  getBase().forEach(r=>r.items.forEach(i=>rows.push({Store:r.store,Date:r.date,Latitude:r.lat,Longitude:r.lon,Item:i.name,Quantity:i.qty,'Total EUR':i.total})));
+  const ws=XLSX.utils.json_to_sheet(rows.length?rows:[{Store:'',Date:'',Latitude:'',Longitude:'',Item:'',Quantity:'','Total EUR':''}]);
+  ws['!cols']=[{wch:22},{wch:12},{wch:10},{wch:10},{wch:36},{wch:9},{wch:10}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Tickets');
+  XLSX.writeFile(wb,'panier-malin-base.xlsx');
+};
+const xdate=v=>{if(typeof v==='number'&&v>20000){const d=new Date(Math.round((v-25569)*86400000));return d.toISOString().slice(0,10);}
+  const m=String(v).match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/);return m?`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`:String(v||'').slice(0,10);};
+function receiptsFromRows(rows){
+  const col=(row,re)=>{const k=Object.keys(row).find(k=>re.test(k.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase()));return k?row[k]:'';};
+  const G=new Map();
+  rows.forEach(row=>{
+    const name=String(col(row,/^(article|item|produit|product)/)).trim();
+    const total=parseFloat(String(col(row,/^(total|prix|price)/)).replace(',','.'));
+    if(!name||!(total>0))return;
+    const store=String(col(row,/^(enseigne|store|magasin)/)),date=xdate(col(row,/^date/));
+    const lat=col(row,/^lat/),lon=col(row,/^lon/),k=[store,date,lat,lon].join('|');
+    if(!G.has(k))G.set(k,{store,date,lat,lon,items:[]});
+    G.get(k).items.push({name,qty:parseFloat(String(col(row,/^(qt|qty|quant)/)).replace(',','.'))||1,total});
+  });
+  return[...G.values()];
+}
+async function readFile(f){
+  if(/\.json$/i.test(f.name)){let j=JSON.parse(await f.text());if(!Array.isArray(j))j=j.receipts||j.tickets||[];if(!Array.isArray(j))throw new Error('fmt');return j;}
+  try{await loadScript(XLS,'XLSX');}catch{throw new Error('net');}
+  const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});
+  return receiptsFromRows(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}));
+}
+/* ============ IDENTIFICATION PAR PHOTO (pipeline multimodal) ============
+   A prétraitement → B code-barres → C lecture du texte → D fusion des indices
+   → E hypothèses (bases ouvertes + ma base locale) → F évaluation → G réponse avec limites */
+const ZX='https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';
+const TESS='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+const wait=()=>new Promise(r=>setTimeout(r,0));
+
+/* ---- A. Prétraitement de l'image ---- */
+function loadImg(f){return new Promise((res,rej)=>{const u=URL.createObjectURL(f),im=new Image();im.onload=()=>res({im,u});im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('img'));};im.src=u;});}
+// recadrage / échelle / rotation / amélioration → canvas
+function cv(src,o={}){
+  const {max=1600,up=1,rot=0,crop=null,mode=''}=o;
+  const sx=crop?crop.x:0,sy=crop?crop.y:0,sw=crop?crop.w:(src.naturalWidth||src.width),sh=crop?crop.h:(src.naturalHeight||src.height);
+  const k=Math.min(up,max/Math.max(sw,sh)),w=Math.max(1,Math.round(sw*k)),h=Math.max(1,Math.round(sh*k));
+  const c=document.createElement('canvas'),swap=rot%180!==0;
+  c.width=swap?h:w;c.height=swap?w:h;
+  const g=c.getContext('2d',{willReadFrequently:true});
+  g.translate(c.width/2,c.height/2);g.rotate(rot*Math.PI/180);g.drawImage(src,sx,sy,sw,sh,-w/2,-h/2,w,h);
+  if(mode)enhance(c,mode);
+  return c;
+}
+// niveaux de gris + étirement du contraste ; 'bin' = seuil local ; 'inv' = négatif (texte clair sur fond foncé)
+function enhance(c,mode){
+  const g=c.getContext('2d',{willReadFrequently:true}),W=c.width,H=c.height,d=g.getImageData(0,0,W,H),p=d.data,n=W*H;
+  const Y=new Uint8ClampedArray(n),hist=new Uint32Array(256);
+  for(let i=0;i<n;i++){const v=(p[4*i]*299+p[4*i+1]*587+p[4*i+2]*114)/1000|0;Y[i]=v;hist[v]++;}
+  let lo=0,hi=255,a=0;const cut=n*0.01;
+  for(;lo<255&&(a+=hist[lo])<cut;lo++);
+  a=0;for(;hi>0&&(a+=hist[hi])<cut;hi--);
+  const sc=hi>lo+10?255/(hi-lo):1;
+  for(let i=0;i<n;i++)Y[i]=Math.max(0,Math.min(255,(Y[i]-lo)*sc));
+  if(mode==='bin'){
+    const I=new Float64Array((W+1)*(H+1));
+    for(let y=0;y<H;y++){let r=0;for(let x=0;x<W;x++){r+=Y[y*W+x];I[(y+1)*(W+1)+x+1]=I[y*(W+1)+x+1]+r;}}
+    const s=Math.max(8,W>>4)>>1,out=new Uint8ClampedArray(n);
+    for(let y=0;y<H;y++){const y0=Math.max(0,y-s),y1=Math.min(H,y+s+1);
+      for(let x=0;x<W;x++){const x0=Math.max(0,x-s),x1=Math.min(W,x+s+1);
+        const sum=I[y1*(W+1)+x1]-I[y0*(W+1)+x1]-I[y1*(W+1)+x0]+I[y0*(W+1)+x0];
+        out[y*W+x]=Y[y*W+x]<(sum/((x1-x0)*(y1-y0)))*0.92?0:255;}}
+    Y.set(out);
+  }
+  if(mode==='inv')for(let i=0;i<n;i++)Y[i]=255-Y[i];
+  for(let i=0;i<n;i++){p[4*i]=p[4*i+1]=p[4*i+2]=Y[i];p[4*i+3]=255;}
+  g.putImageData(d,0,0);
+}
+
+/* ---- B. Code-barres (plusieurs variantes de l'image, somme de contrôle GTIN) ---- */
+function gtinOk(c){
+  if(!/^(\d{8}|\d{12,14})$/.test(c||''))return false;
+  const d=c.split('').map(Number),ck=d.pop();let s=0;
+  d.reverse().forEach((v,i)=>{s+=v*(i%2?1:3);});
+  return (10-s%10)%10===ck;
+}
+async function detectBarcode(im,say){
+  const W=im.naturalWidth,H=im.naturalHeight;
+  const V=[{max:1600},{max:1600,mode:'gray'},{max:2200,up:2,mode:'bin'},{max:1600,rot:90,mode:'gray'},{max:1600,rot:270,mode:'gray'}];
+  [{x:0,y:H/2,w:W,h:H/2},{x:0,y:0,w:W,h:H/2},{x:W*.15,y:H*.15,w:W*.7,h:H*.7},{x:0,y:0,w:W/2,h:H},{x:W/2,y:0,w:W/2,h:H}]
+    .forEach(c=>V.push({max:1800,up:2.5,crop:c,mode:'gray'}));
+  let bd=null;try{if('BarcodeDetector' in window)bd=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e']});}catch{}
+  let rd=null;
+  try{await loadScript(ZX,'ZXing');
+    const h=new Map();h.set(ZXing.DecodeHintType.TRY_HARDER,true);
+    h.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[ZXing.BarcodeFormat.EAN_13,ZXing.BarcodeFormat.EAN_8,ZXing.BarcodeFormat.UPC_A,ZXing.BarcodeFormat.UPC_E]);
+    rd=new ZXing.MultiFormatReader();rd.setHints(h);}catch{}
+  for(let i=0;i<V.length;i++){
+    say(t('idcode')(i+1,V.length));
+    const c=cv(im,V[i]);
+    if(bd){try{const r=await bd.detect(c);for(const x of r)if(gtinOk(x.rawValue))return x.rawValue;}catch{}}
+    if(rd){try{const bm=new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(new ZXing.HTMLCanvasElementLuminanceSource(c)));const r=rd.decodeWithState(bm);if(gtinOk(r.getText()))return r.getText();}catch{}}
+    await wait();
+  }
+  return '';
+}
+
+/* ---- C. Lecture du texte (OCR en 1 ou 2 passes : normal, puis négatif) ---- */
+async function readText(im,say){
+  await loadScript(TESS,'Tesseract');
+  say(t('loadocr'));
+  const w=await Tesseract.createWorker('fra+eng',1,{logger:m=>{if(m.status==='recognizing text')say(t('idocr')+' '+Math.round(m.progress*100)+' %');}});
+  try{
+    try{await w.setParameters({tessedit_pageseg_mode:'11',preserve_interword_spaces:'1'});}catch{}
+    const out=[];let text='';
+    for(const pass of [{max:1800,up:2,mode:'gray'},{max:1800,up:2,mode:'inv'}]){
+      const {data}=await w.recognize(cv(im,pass));
+      const words=data.words||((data.blocks||[]).flatMap(b=>(b.paragraphs||[]).flatMap(pg=>(pg.lines||[]).flatMap(l=>l.words||[]))));
+      text+='\n'+(data.text||'');
+      words.forEach(x=>out.push({text:x.text,conf:x.confidence,h:x.bbox?x.bbox.y1-x.bbox.y0:10}));
+      if(out.filter(x=>x.conf>=60&&/[A-Za-zÀ-ÿ]{3,}/.test(x.text)).length>=6)break;
+    }
+    return{words:out,text};
+  }finally{try{await w.terminate();}catch{}}
+}
+
+/* ---- D. Fusion des indices : mots pondérés (confiance × taille des lettres) + quantités ---- */
+const STOP=new Set('le la les de du des et en au aux un une pour avec sans par sur the and of for with new nouveau nouvelle recette gout saveur'.split(' '));
+function tokensFrom(words){
+  const hs=words.map(w=>w.h).sort((a,b)=>a-b),med=hs.length?hs[hs.length>>1]||10:10,M=new Map();
+  words.forEach(w=>{
+    const s=norm(w.text||'').replace(/[^a-z0-9]/g,'');
+    if(w.conf<55||s.length<3||STOP.has(s)||/^\d+$/.test(s)||(s.match(/[a-z]/g)||[]).length<3)return;
+    const wt=(w.conf/100)*Math.min(3,Math.max(.5,w.h/med));
+    if(!M.has(s)||M.get(s)<wt)M.set(s,wt);
+  });
+  return [...M].map(([w,wt])=>({w,wt})).sort((a,b)=>b.wt-a.wt).slice(0,10);
+}
+function tokensFromText(q){
+  return [...new Set(norm(q).replace(/[^a-z0-9]+/g,' ').split(' ').filter(x=>x.length>=3&&!STOP.has(x)&&!/^\d+$/.test(x)))].map(w=>({w,wt:1}));
+}
+function qtysOf(text){
+  const out=[],re=/(\d+(?:[.,]\d+)?)\s*(kg|g|cl|ml|l)\b/g,s=norm(text||'');let m;
+  while((m=re.exec(s))){let v=parseFloat(m[1].replace(',','.')),u=m[2];
+    if(u==='kg'){v*=1000;u='g';}else if(u==='l'){v*=1000;u='ml';}else if(u==='cl'){v*=10;u='ml';}
+    const k=Math.round(v)+u;if(!out.includes(k))out.push(k);}
+  return out;
+}
+
+/* ---- E. Hypothèses : code exact, recherche texte (Open Food Facts), ma base locale ---- */
+const OFF_F='code,product_name,product_name_fr,brands,quantity,unique_scans_n';
+async function jget(url,ms=12000){const ac=new AbortController(),to=setTimeout(()=>ac.abort(),ms);try{const r=await fetch(url,{signal:ac.signal});if(!r.ok)throw new Error(r.status);return await r.json();}finally{clearTimeout(to);}}
+const toCand=p=>({code:p.code||'',name:p.product_name_fr||p.product_name||'',brand:(p.brands||'').split(',')[0].trim(),qty:p.quantity||'',q:qtysOf(p.quantity||'')[0]||'',pop:p.unique_scans_n||0,src:'Open Food Facts'});
+async function lookupCode(code){
+  for(const [host,src] of [['world.openfoodfacts.org','Open Food Facts'],['world.openproductsfacts.org','Open Products Facts'],['world.openbeautyfacts.org','Open Beauty Facts']]){
+    try{const j=await jget(`https://${host}/api/v2/product/${code}.json?fields=${OFF_F}`);
+      if(j.status===1&&j.product){const c=toCand({...j.product,code});c.src=src;if(c.name||c.brand)return c;}}catch{}
+  }
+  return null;
+}
+async function offSearch(q){
+  const p=new URLSearchParams({search_terms:q,search_simple:'1',action:'process',json:'1',page_size:'12',fields:OFF_F});
+  const j=await jget('https://world.openfoodfacts.org/cgi/search.pl?'+p);
+  return (j.products||[]).map(toCand);
+}
+function localCands(cues){
+  const toks=cues.tokens.map(x=>x.w);if(!toks.length)return[];
+  const out=[],seen=new Set();
+  getBase().forEach(rc=>rc.items.forEach(i=>{
+    const k=norm(i.name);if(seen.has(k))return;seen.add(k);
+    const n=k.replace(/[^a-z0-9]+/g,' ');if(!toks.some(w=>n.includes(w)))return;
+    out.push({code:'',name:i.name,brand:'',qty:'',q:qtysOf(i.name)[0]||'',pop:0,bonus:.04,src:t('mine')});
+  }));
+  return out;
+}
+
+/* ---- F. Évaluation : concordance (indice qualitatif, pas une probabilité) ---- */
+function lev(a,b){const m=a.length,n=b.length;if(!m)return n;if(!n)return m;let p=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){const q=[i];for(let j=1;j<=n;j++)q[j]=Math.min(p[j]+1,q[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=q;}return p[n];}
+const sim=(a,b)=>a===b?1:(Math.min(a.length,b.length)>=5&&1-lev(a,b)/Math.max(a.length,b.length)>=.78?.7:0);
+// score ≈ vraisemblance (le texte lu est-il compatible avec la fiche ?) + petit a priori (popularité de la fiche, produit déjà acheté)
+function evaluate(c,cues){
+  const ct=[...new Set(norm([c.brand,c.name].filter(Boolean).join(' ')).replace(/[^a-z0-9]+/g,' ').split(' ').filter(x=>x.length>=3&&!STOP.has(x)))];
+  const top=cues.tokens.slice(0,8),tot=top.reduce((s,x)=>s+x.wt,0)||1,used=new Set();
+  let hit=0;
+  top.forEach(x=>{let b=0,bj=null;ct.forEach(y=>{const s=sim(x.w,y);if(s>b){b=s;bj=y;}});if(b){hit+=x.wt*b;used.add(bj);}});
+  const cover=hit/tot,prec=ct.length?used.size/ct.length:0,qm=c.q&&cues.qty.includes(c.q)?1:0;
+  const prior=c.pop?Math.min(.06,Math.log10(1+c.pop)/80):0;
+  return Math.min(.99,.62*cover+.28*prec+.10*qm+prior+(c.bonus||0));
+}
+function rank(list,cues){
+  const M=new Map();
+  list.forEach(c=>{
+    if(!(c.name||c.brand))return;
+    if(!c.exact)c.score=evaluate(c,cues);
+    if(!c.exact&&cues.tokens.length&&c.score<.12)return;
+    const k=c.code||norm((c.brand||'')+c.name),o=M.get(k);
+    if(!o||o.score<c.score)M.set(k,c);
+  });
+  return [...M.values()].sort((a,b)=>b.score-a.score).slice(0,6);
+}
+
+/* ---- C bis. Lecture visuelle par IA (modèle de vision multimodal) : même principe que l'analyse d'une photo par Claude ---- */
+const AI_MODELS={gemini:[['gemini-3.1-flash-lite','Gemini 3.1 Flash-Lite']],anthropic:[['claude-haiku-5-5','Haiku 5.5'],['claude-sonnet-5-5','Sonnet 5.5']]};
+const aiRaw=()=>{try{return JSON.parse(localStorage.getItem('pm_ai')||'{}');}catch{return{};}};
+function aiCfg(){const r=aiRaw(),p=AI_MODELS[r.prov]?r.prov:'gemini';return{on:!!r.on,prov:p,key:(r.keys||{})[p]||'',model:(r.models||{})[p]||AI_MODELS[p][0][0],proxy:r.proxy||''};}
+const aiReady=()=>{const c=aiCfg();return !!(c.on&&(c.key||c.proxy));};
+function aiFill(){
+  const c=aiCfg(),sel=$('aimodel');
+  $('aiprov').value=c.prov;sel.innerHTML='';
+  AI_MODELS[c.prov].forEach(([v,l])=>{const o=document.createElement('option');o.value=v;o.textContent=l;sel.appendChild(o);});
+  sel.value=c.model;$('aikey').value=c.key;$('aiproxy').value=c.proxy;$('aion').checked=c.on;$('aibox').hidden=!c.on;
+}
+function aiSave(){
+  const r=aiRaw(),p=$('aiprov').value;
+  r.on=$('aion').checked;r.prov=p;r.keys=r.keys||{};r.models=r.models||{};
+  r.keys[p]=$('aikey').value.trim();r.models[p]=$('aimodel').value;r.proxy=$('aiproxy').value.trim();
+  localStorage.setItem('pm_ai',JSON.stringify(r));$('aibox').hidden=!r.on;
+}
+aiFill();
+['aion','aikey','aimodel','aiproxy'].forEach(id=>$(id).addEventListener('change',aiSave));
+$('aiprov').addEventListener('change',()=>{const r=aiRaw();r.prov=$('aiprov').value;localStorage.setItem('pm_ai',JSON.stringify(r));aiFill();});
+const AI_PROMPT=`Tu identifies un produit de supermarché à partir d’une photo. Réponds UNIQUEMENT par un objet JSON, sans texte autour ni balises :
+{"brand":string|null,"product":string|null,"variant":string|null,"quantity":string|null,"barcode":string|null,"category":string|null,"text":[string]}
+Règles : ne note que ce qui est visible ou clairement lisible sur l’emballage ; mets null si tu n’es pas sûr ; n’invente jamais un poids ni un code-barres ; "barcode" = uniquement les chiffres, seulement s’ils sont lisibles en entier ; "product" = le nom du produit sans la marque ; "variant" = déclinaison (ex. Soft, Zéro, Bio) ; "text" = les mots principaux lus sur l’emballage (10 maximum).`;
+async function visionRead(im){
+  const c=aiCfg(),data=cv(im,{max:1280}).toDataURL('image/jpeg',.85).split(',')[1];
+  const h={'content-type':'application/json'};let url,body;
+  if(c.prov==='gemini'){
+    url=c.proxy||`https://generativelanguage.googleapis.com/v1beta/models/${c.model}:generateContent`;
+    if(!c.proxy)h['x-goog-api-key']=c.key;
+    body={systemInstruction:{parts:[{text:AI_PROMPT}]},contents:[{role:'user',parts:[{inlineData:{mimeType:'image/jpeg',data}},{text:'Identifie ce produit.'}]}],
+      generationConfig:{temperature:0,maxOutputTokens:1200,responseMimeType:'application/json'}};
+  }else{
+    url=c.proxy||'https://api.anthropic.com/v1/messages';
+    if(!c.proxy){h['x-api-key']=c.key;h['anthropic-version']='2023-06-01';h['anthropic-dangerous-direct-browser-access']='true';}
+    body={model:c.model,max_tokens:500,system:AI_PROMPT,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data}},{type:'text',text:'Identifie ce produit.'}]}]};
+  }
+  const ac=new AbortController(),to=setTimeout(()=>ac.abort(),30000);
+  let j;
+  try{
+    const r=await fetch(url,{method:'POST',headers:h,signal:ac.signal,body:JSON.stringify(body)});
+    if(!r.ok)throw new Error(r.status);
+    j=await r.json();
+  }finally{clearTimeout(to);}
+  const txt=c.prov==='gemini'
+    ?(((j.candidates||[])[0]||{}).content||{parts:[]}).parts.filter(x=>!x.thought).map(x=>x.text||'').join('')
+    :(j.content||[]).map(x=>x.text||'').join('');
+  const m=txt.match(/\{[\s\S]*\}/);
+  if(!m)throw new Error('json');
+  const o=JSON.parse(m[0]),M=new Map();
+  const add=(s,wt)=>tokensFromText(String(s||'')).forEach(x=>{if(!M.has(x.w)||M.get(x.w)<wt)M.set(x.w,wt);});
+  add(o.brand,3);add(o.product,3);add(o.variant,2);(Array.isArray(o.text)?o.text:[]).forEach(s=>add(s,1));
+  const tokens=[...M].map(([w,wt])=>({w,wt})).sort((a,b)=>b.wt-a.wt).slice(0,10);
+  if(!tokens.length)throw new Error('empty');
+  return{tokens,qty:qtysOf(o.quantity||''),code:String(o.barcode||'').replace(/\D/g,''),
+    cand:{name:[o.product,o.variant].filter(Boolean).join(' ')||o.brand||'',brand:o.product?(o.brand||''):'',qty:o.quantity||''}};
+}
+
+/* ---- G. Réponse : carte d'identification avec alternatives et limites ---- */
+let idRef=null,idSel=null,idCues=null;
+const candLabel=c=>[c.name,c.brand,c.qty].filter(Boolean).join(' ').trim();
+function applyCand(c){
+  const name=candLabel(c),code=(idCues&&idCues.code)||c.code||'';
+  const patch={name,term:searchTerm(c.name||c.brand)||name.toLowerCase(),code,_termEdited:false};
+  if(idRef&&items.includes(idRef)){Object.assign(idRef,patch);renderRows();}
+  else{const it={qty:1,total:0,store:'',date:'',fresh:false,...patch};addItems([it],'Photo');idRef=items.includes(it)?it:null;}
+  idSel=c;
+}
+function renderCands(cands){
+  const box=$('idcands');box.innerHTML='';
+  cands.forEach(c=>{
+    const row=document.createElement('div');row.className='offer'+(c===idSel?' sel':'');
+    row.innerHTML=`<span><b>${esc(c.name||c.brand)}</b>${c.brand&&c.name?` <span class="small">— ${esc(c.brand)}</span>`:''}${c.qty?` <span class="small">· ${esc(c.qty)}</span>`:''}<br><span class="small">${esc(c.src)}${c.code?' · '+esc(c.code):''}</span></span><span class="score">${c.exact?esc(t('idexact')):(c.score>0?Math.round(c.score*100)+' % '+esc(t('idscore')):'')}</span>`;
+    row.onclick=()=>{applyCand(c);renderCands(cands);$('idmsg').textContent=t('artdone')(candLabel(c));};
+    box.appendChild(row);
+  });
+}
+function finish(cands,cues,allowAuto){
+  idCues=cues;idSel=null;
+  const cu=[];
+  if(cues.ai)cu.push(t('idl_ai'));
+  if(cues.code)cu.push(t('idl_code')+' '+cues.code);
+  if(cues.tokens.length)cu.push(t('idl_text')+' '+cues.tokens.slice(0,6).map(x=>x.w).join(', '));
+  if(cues.qty.length)cu.push(t('idl_qty')+' '+cues.qty.slice(0,3).join(', '));
+  $('idcues').textContent=cu.join(' · ');
+  if(!cands.length){$('idcands').innerHTML='';$('idmsg').textContent=t('idnone');return;}
+  const top=cands[0],sec=cands[1];
+  const auto=allowAuto&&(top.exact||top.auto||(top.score>=.6&&(!sec||top.score-sec.score>=.15)));
+  if(auto){applyCand(top);$('idmsg').textContent=t('artdone')(candLabel(top));}
+  else $('idmsg').textContent=t('idpick');
+  renderCands(cands);
+}
+async function scanArticle(f){
+  const box=$('idbox');box.hidden=false;box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  $('idcands').innerHTML='';$('idcues').textContent='';idRef=null;idSel=null;
+  const say=m=>{$('idmsg').textContent=m;};
+  let L;try{L=await loadImg(f);}catch{say(t('artnone'));return;}
+  try{
+    $('idthumb').src=cv(L.im,{max:160}).toDataURL('image/jpeg',.7);
+    const cues={code:'',tokens:[],qty:[],text:''};
+    // B. code-barres : si la fiche existe, l'identification est exacte
+    cues.code=await detectBarcode(L.im,say);
+    if(cues.code){
+      say(t('idlook'));
+      const c=await lookupCode(cues.code);
+      if(c){c.exact=true;c.score=1;finish([c],cues,true);return;}
+    }
+    // C. lecture : IA visuelle si activée, sinon (ou en secours) OCR
+    let vis=null;
+    if(aiReady()){say(t('airead'));try{vis=await visionRead(L.im);}catch{say(t('aifail'));}}
+    if(vis){
+      cues.tokens=vis.tokens;cues.qty=vis.qty;cues.ai=true;
+      if(!cues.code&&gtinOk(vis.code)){const c=await lookupCode(vis.code);if(c){cues.code=vis.code;c.exact=true;c.score=1;finish([c],cues,true);return;}}
+    }else{
+      let ocr=null;try{ocr=await readText(L.im,say);}catch{}
+      if(ocr){cues.tokens=tokensFrom(ocr.words);cues.qty=qtysOf(ocr.text);cues.text=ocr.text;}
+    }
+    // E. hypothèses
+    say(t('idcands'));
+    const tk=cues.tokens.map(x=>x.w),qs=[];
+    if(tk.length>=2)qs.push(tk.slice(0,3).join(' '));
+    if(tk.length>=1)qs.push(tk.slice(0,2).join(' '));
+    if(tk.length>=4)qs.push(tk.slice(0,5).join(' '));
+    const res=await Promise.allSettled([...new Set(qs)].map(offSearch));
+    const list=[];let net=false;
+    res.forEach(r=>{if(r.status==='fulfilled')list.push(...r.value);else net=true;});
+    list.push(...localCands(cues));
+    // F. évaluation
+    let ranked=rank(list,cues);
+    if(vis)ranked.push({code:cues.code,...vis.cand,score:0,src:t('idl_ai'),auto:!ranked.length});
+    if(!vis&&!ranked.length&&tk.length)ranked=[{code:cues.code,name:tk.slice(0,3).join(' '),brand:'',qty:'',score:0,src:t('idocrtext')}];
+    if(!ranked.length&&cues.code)ranked=[{code:cues.code,name:cues.code,brand:'',qty:'',score:0,src:t('idocrtext')}];
+    finish(ranked,cues,true);
+    if(net&&!list.length)$('idmsg').textContent=t('idneterr')+' '+$('idmsg').textContent;
+  }catch(e){say(t('artnone'));}
+  finally{URL.revokeObjectURL(L.u);}
+}
+// recherche manuelle (nom, marque ou code-barres) dans la même carte
+$('idqgo').onclick=async()=>{
+  const q=$('idq').value.trim();if(!q)return;
+  $('idmsg').textContent=t('idcands');
+  try{
+    if(gtinOk(q.replace(/\s/g,''))){
+      const code=q.replace(/\s/g,''),c=await lookupCode(code);
+      if(c){c.exact=true;c.score=1;finish([c],{code,tokens:[],qty:[],text:''},false);return;}
+    }
+    const cues={code:'',tokens:tokensFromText(q),qty:qtysOf(q),text:q};
+    const list=(await offSearch(q)).concat(localCands(cues));
+    finish(rank(list,cues),cues,false);
+  }catch{$('idmsg').textContent=t('idneterr');}
+};
+$('idq').addEventListener('keydown',e=>{if(e.key==='Enter')$('idqgo').click();});
+['artfile','artfile2'].forEach(id=>$(id).addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';if(f)scanArticle(f);}));
+$('impbtn').onclick=()=>$('fimp').click();
+$('fimp').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  const dr=await readDraft(f);
+  if(dr){restoreDraft(dr);return;}
+  let list;
+  try{list=(await readFile(f)).map(cleanReceipt).filter(Boolean);if(!list.length)throw new Error('fmt');}
+  catch(err){msg(err&&err.message==='net'?t('xlsfail'):t('importfail'));return;}
+  const [a,d]=mergeBase(list);
+  const its=[];
+  list.forEach(r=>r.items.forEach(i=>its.push({name:i.name,term:searchTerm(i.name)||i.name.toLowerCase(),qty:i.qty,total:i.total,store:r.store,date:r.date,fresh:false})));
+  const n=addItems(its,f.name);
+  msg(t('added')(n,f.name)+' '+t('imported')(a,d));
+  $('review').scrollIntoView({behavior:'smooth'});
+};
+
+/* ============ AFFLUENCE (heures chargées saisies par l’utilisateur) ============ */
+const CK='pm_crowd_v1';
+const getCrowd=()=>{try{return JSON.parse(localStorage.getItem(CK)||'{}')}catch{return{}}};
+const setCrowd=c=>{try{localStorage.setItem(CK,JSON.stringify(c));}catch{}};
+const crowdKey=o=>norm(o.store||'').replace(/[^a-z0-9]+/g,' ').trim()+(o.lat!=null?'@'+Number(o.lat).toFixed(3)+','+Number(o.lon).toFixed(3):'');
+const DAYS={fr:['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'],en:['Mon','Tue','Wed','Thu','Fri','Sat','Sun']};
+function daysLabel(ds){const D=DAYS[lang],a=[...ds].sort((x,y)=>x-y),out=[];let i=0;
+  while(i<a.length){let j=i;while(j+1<a.length&&a[j+1]===a[j]+1)j++;out.push(j-i>=2?D[a[i]-1]+'–'+D[a[j]-1]:a.slice(i,j+1).map(x=>D[x-1]).join(', '));i=j+1;}
+  return out.join(', ');}
+const slotText=x=>daysLabel(x.d)+' '+x.from+'–'+x.to;
+const mins=h=>{const m=String(h).match(/^(\d{1,2}):(\d{2})/);return m?+m[1]*60+ +m[2]:null;};
+const plannedDate=()=>{const v=$('planned').value;if(!v)return null;const d=new Date(v);return isNaN(d)?null:d;};
+function inSlot(x,d){const day=(d.getDay()+6)%7+1,m=d.getHours()*60+d.getMinutes(),a=mins(x.from),b=mins(x.to);return x.d.includes(day)&&a!=null&&b!=null&&m>=a&&m<=b;}
+const storeInfo=o=>(o&&o.lat!=null)?(stores.find(x=>Math.abs(x.lat-o.lat)<0.0007&&Math.abs(x.lon-o.lon)<0.001)||null):null;
+const openCrowd=new Set();
+function crowdBlock(g){
+  const o=g.o,key=crowdKey(o),C=getCrowd(),rec=C[key]||{name:o.store,slots:[]};
+  const box=document.createElement('div');box.className='crowd';
+  const pl=plannedDate();
+  if(pl&&rec.slots.some(x=>inSlot(x,pl))){const w=document.createElement('div');w.className='crowdwarn';w.textContent=t('crowdwarn');box.appendChild(w);}
+  const line=document.createElement('div');line.className='small';
+  line.textContent='🕒 '+(rec.slots.length?t('crowd')+' : '+rec.slots.map(slotText).join(' · '):t('crowdnone'));
+  box.appendChild(line);
+  const si=storeInfo(o);
+  if(si&&si.oh){const h=document.createElement('div');h.className='small';h.textContent='⏰ '+t('hours')+' : '+si.oh;box.appendChild(h);}
+  const ed=document.createElement('div');ed.className='noprint';
+  const tog=document.createElement('button');tog.className='s';tog.style.cssText='font-size:12px;padding:4px 10px;margin-top:4px';
+  const open=openCrowd.has(key);tog.textContent=open?t('crowdclose'):t('crowdedit');
+  tog.onclick=()=>{open?openCrowd.delete(key):openCrowd.add(key);renderPlan(lastR);};
+  ed.appendChild(tog);
+  if(open){
+    const f=document.createElement('div');f.style.marginTop='6px';
+    rec.slots.forEach((x,i)=>{const sp=document.createElement('span');sp.className='slot';sp.append(slotText(x));
+      const del=document.createElement('button');del.textContent='✕';del.onclick=()=>{const c=getCrowd();c[key].slots.splice(i,1);if(!c[key].slots.length)delete c[key];setCrowd(c);renderPlan(lastR);};sp.appendChild(del);f.appendChild(sp);});
+    const dayrow=document.createElement('div');dayrow.style.marginTop='6px';
+    const cbs=DAYS[lang].map((n,i)=>{const l=document.createElement('label');l.className='dayc';const c=document.createElement('input');c.type='checkbox';c.checked=i<5;l.append(c,n);dayrow.appendChild(l);return c;});
+    const tr=document.createElement('div');tr.className='row';
+    const a=document.createElement('input');a.type='time';a.value='17:30';a.style.width='auto';
+    const b=document.createElement('input');b.type='time';b.value='19:30';b.style.width='auto';
+    const add=document.createElement('button');add.className='s';add.textContent=t('crowdadd');
+    const err=document.createElement('span');err.className='err';
+    add.onclick=()=>{
+      const d=cbs.map((c,i)=>c.checked?i+1:0).filter(Boolean);
+      if(!d.length){err.textContent=t('crowdnodays');return;}
+      if(!(mins(a.value)<mins(b.value))){err.textContent=t('crowderr');return;}
+      const c=getCrowd();(c[key]=c[key]||{name:o.store,slots:[]}).slots.push({d,from:a.value,to:b.value});setCrowd(c);renderPlan(lastR);
+    };
+    tr.append(a,t('crowdto'),b,add,err);
+    const hint=document.createElement('div');hint.className='small';hint.textContent=t('crowdhint');
+    f.append(dayrow,tr,hint);ed.appendChild(f);
+  }
+  box.appendChild(ed);return box;
+}
+$('planned').onchange=()=>{if(lastR)renderPlan(lastR);if(routeData)renderSteps();};
+
+/* ============ PARCOURS D’ACHAT (plan imprimable) ============ */
+const LEAF='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js',LEAFCSS='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css';
+let routeData=null,routeKey='',rmap=null,rtiles=null,rbounds=null;
+const planStops=()=>(lastPlan||[]).filter(g=>g.o&&!g.o.online&&g.o.lat!=null&&g.o.lon!=null).map(g=>({name:g.o.store,lat:Number(g.o.lat),lon:Number(g.o.lon),rows:g.rows,o:g.o}));
+const planKey=()=>planStops().map(x=>x.name+x.lat.toFixed(4)+x.lon.toFixed(4)+x.rows.length).join(';')+'|'+(loc?loc.lat.toFixed(4)+loc.lon.toFixed(4):'');
+function clearRoute(){routeData=null;routeKey='';$('rsteps').innerHTML='';$('rmapwrap').hidden=true;$('rlinks').innerHTML='';$('rmsg').textContent='';if(rmap){rmap.remove();rmap=null;}}
+function orderStops(home,S){
+  const n=S.length;if(n<=1)return S.slice();
+  const P=[home,...S],D=P.map(a=>P.map(b=>hav(a.lat,a.lon,b.lat,b.lon)));
+  let best=null,bl=Infinity;
+  if(n<=8){
+    const cur=[];
+    (function rec(rem,last,len){
+      if(len>=bl)return;
+      if(!rem.length){const tot=len+D[last][0];if(tot<bl){bl=tot;best=cur.slice();}return;}
+      for(let k=0;k<rem.length;k++){const x=rem[k];cur.push(x);rec(rem.filter((_,i)=>i!==k),x,len+D[last][x]);cur.pop();}
+    })(S.map((_,i)=>i+1),0,0);
+  }else{
+    const rem=S.map((_,i)=>i+1);best=[];let last=0;
+    while(rem.length){let k=0;rem.forEach((x,i)=>{if(D[last][x]<D[last][rem[k]])k=i;});last=rem.splice(k,1)[0];best.push(last);}
+  }
+  return best.map(i=>P[i]);
+}
+const PROF={foot:'routed-foot',bike:'routed-bike',car:'routed-car'},SPEED={foot:4.8,bike:15,car:25};
+async function fetchRoute(pts,prof){
+  const ac=new AbortController(),to=setTimeout(()=>ac.abort(),12000);
+  try{
+    const c=pts.map(p=>p.lon.toFixed(6)+','+p.lat.toFixed(6)).join(';');
+    const r=await fetch(`https://routing.openstreetmap.de/${PROF[prof]}/route/v1/driving/${c}?overview=full&geometries=geojson`,{signal:ac.signal});
+    if(!r.ok)return null;
+    const j=await r.json(),rt=j.routes&&j.routes[0];if(!rt)return null;
+    return{legs:rt.legs.map(l=>({d:l.distance/1000,s:l.duration})),geo:rt.geometry.coordinates.map(([x,y])=>[y,x]),real:true};
+  }catch{return null;}finally{clearTimeout(to);}
+}
+async function computeRoute(){
+  if(!loc){$('rmsg').textContent=t('needhome');return false;}
+  const S=planStops();if(!S.length){$('rmsg').textContent=t('nostops');return false;}
+  const home={lat:loc.lat,lon:loc.lon,name:t('start')+(loc.label&&loc.label!=='GPS'?' — '+loc.label:'')};
+  const ord=orderStops(home,S),pts=[home,...ord,home],prof=$('transport').value;
+  $('rmsg').textContent=t('routing');
+  let R=await fetchRoute(pts,prof),real=true;
+  if(!R){
+    real=false;
+    R={legs:pts.slice(1).map((q,i)=>{const d=hav(pts[i].lat,pts[i].lon,q.lat,q.lon)*1.3;return{d,s:d/SPEED[prof]*3600};}),geo:pts.map(q=>[q.lat,q.lon])};
+  }
+  routeData={home,ord,pts,legs:R.legs,geo:R.geo,real,prof};routeKey=planKey();
+  $('rmsg').textContent=real?'':t('birdfly');
+  await drawRoute();renderSteps();renderLinks();return true;
+}
+function renderLinks(){
+  const L=$('rlinks');L.innerHTML='';if(!routeData)return;
+  const pts=routeData.pts,eng={foot:'fossgis_osrm_foot',bike:'fossgis_osrm_bike',car:'fossgis_osrm_car'}[routeData.prof];
+  const mk=(h,txt)=>{const a=document.createElement('a');a.href=h;a.target='_blank';a.rel='noopener';a.className='tag';a.style.fontSize='13px';a.textContent=txt;L.appendChild(a);};
+  mk(`https://www.openstreetmap.org/directions?engine=${eng}&route=${pts.map(q=>q.lat.toFixed(5)+'%2C'+q.lon.toFixed(5)).join('%3B')}`,t('rlink1'));
+  const gm={foot:'walking',bike:'bicycling',car:'driving'}[routeData.prof];
+  mk(`https://www.google.com/maps/dir/${pts.map(q=>q.lat.toFixed(5)+','+q.lon.toFixed(5)).join('/')}/?travelmode=${gm}`,t('rlink2'));
+}
+function renderSteps(){
+  const ol=$('rsteps');ol.innerHTML='';if(!routeData)return;
+  const {ord,legs,home}=routeData,fm=m=>m<1?Math.round(m*1000)+' m':m.toFixed(1)+' km',mn=x=>Math.max(1,Math.round(x/60))+' min';
+  const li=h=>{const e=document.createElement('li');e.innerHTML=h;ol.appendChild(e);return e;};
+  li(`🏠 <b>${esc(home.name)}</b>`);
+  const pl=plannedDate(),C=getCrowd();
+  ord.forEach((st,i)=>{
+    const rec=C[crowdKey(st.o)],warn=pl&&rec&&rec.slots.some(x=>inSlot(x,pl));
+    const items=st.rows.map(x=>esc(x.name)+(x.q>1?' ×'+x.q:'')).join(', ');
+    li(`<b>${i+1}. ${esc(st.name)}</b> — ${fm(legs[i].d)} · ${mn(legs[i].s)}<br><span class="small">${t('nitems')(st.rows.length)} : ${items}</span>`+
+      (rec&&rec.slots.length?`<br><span class="small">🕒 ${esc(t('crowd'))} : ${esc(rec.slots.map(slotText).join(' · '))}</span>`:'')+
+      (warn?`<br><span class="crowdwarn">${esc(t('crowdwarn'))}</span>`:''));
+  });
+  const last=legs[legs.length-1];
+  li(`🏠 <b>${esc(t('back'))}</b> — ${fm(last.d)} · ${mn(last.s)}`);
+  const km=legs.reduce((a,l)=>a+l.d,0),sec=legs.reduce((a,l)=>a+l.s,0);
+  const tot=document.createElement('div');tot.className='small';tot.style.marginTop='6px';tot.textContent=t('rtotal')(km.toFixed(1),Math.round(sec/60));
+  ol.appendChild(tot).style.listStyle='none';
+}
+function loadCss(href){return new Promise(res=>{if([...document.styleSheets].some(x=>x.href===href))return res();const l=document.createElement('link');l.rel='stylesheet';l.href=href;l.onload=res;l.onerror=res;document.head.appendChild(l);setTimeout(res,3000);});}
+function fitRoute(){if(rmap&&rbounds)rmap.fitBounds(rbounds,{padding:[30,30],animate:false});}
+async function drawRoute(){
+  $('rmapwrap').hidden=false;
+  try{
+    await loadCss(LEAFCSS);await loadScript(LEAF,'L');
+    if(rmap){rmap.remove();rmap=null;}
+    $('rsvg').hidden=true;$('rmap').hidden=false;
+    rmap=L.map('rmap',{scrollWheelZoom:false});
+    rtiles=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(rmap);
+    const {pts,geo}=routeData;
+    L.polyline(geo,{color:'#1f7a4d',weight:5,opacity:.85}).addTo(rmap);
+    pts.slice(0,-1).forEach((q,i)=>L.marker([q.lat,q.lon],{icon:L.divIcon({className:'',html:`<div class="pin${i?'':' home'}">${i?i:'🏠'}</div>`,iconSize:[26,26],iconAnchor:[13,13]}),title:q.name}).addTo(rmap));
+    rbounds=L.latLngBounds(pts.map(q=>[q.lat,q.lon]).concat(geo.length<400?geo:[]));
+    fitRoute();
+  }catch{
+    if(rmap){rmap.remove();rmap=null;}
+    $('rmap').hidden=true;$('rsvg').hidden=false;drawSvg();
+    $('rmsg').textContent=($('rmsg').textContent+' '+t('mapfail')).trim();
+  }
+}
+function drawSvg(){
+  const {pts,geo}=routeData,W=680,H=440,m=40,la0=pts[0].lat,k=Math.cos(la0*Math.PI/180);
+  const all=pts.concat(geo.map(([a,b])=>({lat:a,lon:b})));
+  const xs=all.map(q=>q.lon*k),ys=all.map(q=>-q.lat),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const sc=Math.min((W-2*m)/Math.max(x1-x0,1e-6),(H-2*m)/Math.max(y1-y0,1e-6));
+  const X=q=>m+(q.lon*k-x0)*sc,Y=q=>m+(-q.lat-y0)*sc;
+  const line=geo.map(([a,b])=>X({lon:b})+','+Y({lat:a})).join(' ');
+  let h=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="100%"><polyline points="${line}" fill="none" stroke="#1f7a4d" stroke-width="4" stroke-dasharray="${routeData.real?'':'8 6'}"/>`;
+  pts.slice(0,-1).forEach((q,i)=>{h+=`<circle cx="${X(q)}" cy="${Y(q)}" r="13" fill="${i?'#1f7a4d':'#444'}" stroke="#fff" stroke-width="2"/><text x="${X(q)}" y="${Y(q)+5}" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">${i?i:'⌂'}</text><text x="${X(q)+17}" y="${Y(q)+4}" font-size="12" fill="currentColor">${esc((q.name||'').slice(0,26))}</text>`;});
+  $('rsvg').innerHTML=h+'</svg>';
+}
+$('routego').onclick=async()=>{$('routego').disabled=true;try{await computeRoute();}finally{$('routego').disabled=false;}};
+$('transport').onchange=()=>{if(routeData)computeRoute();};
+const tilesIdle=()=>new Promise(r=>{if(!rtiles||!rtiles._loading)return r();rtiles.once('load',r);setTimeout(r,4500);});
+$('printplan').onclick=async()=>{
+  const withRoute=$('printroute').checked&&planStops().length&&!!loc;
+  $('printhead').textContent=t('printtitle')+' — '+new Date().toLocaleDateString(lang==='fr'?'fr-FR':'en-GB');
+  if(withRoute&&(!routeData||routeKey!==planKey())){await computeRoute();}
+  document.body.classList.toggle('withroute',!!(withRoute&&routeData));
+  document.body.classList.add('printing');
+  if(withRoute&&rmap){await wait();rmap.invalidateSize();fitRoute();await tilesIdle();}
+  setTimeout(()=>window.print(),60);
+};
+
+/* ============ BROUILLONS DU PANIER ============ */
+const DKEY='pm_drafts_v1';
+const getDrafts=()=>{try{return JSON.parse(localStorage.getItem(DKEY)||'[]')}catch{return[]}};
+const setDrafts=d=>{try{localStorage.setItem(DKEY,JSON.stringify(d));return true;}catch{return false;}};
+const pad2=n=>String(n).padStart(2,'0');
+const dmsg=m=>{$('dmsg').textContent=m;};
+function stampOf(d){
+  const Y=d.getFullYear(),M=pad2(d.getMonth()+1),D=pad2(d.getDate()),h=pad2(d.getHours()),m=pad2(d.getMinutes());
+  return{human:lang==='fr'?`${D}/${M}/${Y} à ${h}:${m}`:`${Y}-${M}-${D} at ${h}:${m}`,file:`${Y}-${M}-${D}-${h}${m}`};
+}
+const slug=x=>norm(x||'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,30);
+function snapshot(){
+  const now=new Date(),st=stampOf(now),name=$('draftname').value.trim();
+  const list=items.filter(i=>((i.name||'').trim()||i.code)&&!i.skip);
+  return{type:'panier-malin-brouillon',version:1,status:'draft',
+    title:t('draftword')+(name?' '+name:'')+' — '+st.human,name,savedAt:now.toISOString(),fileStamp:st.file,
+    items:list.map(i=>({name:i.name||'',term:i.term||'',qty:i.qty||1,total:i.auto?0:(i.total||0),store:i.store||'',date:i.date||'',code:i.code||''})),
+    settings:{store:$('store').value,date:$('rdate').value,mode:getMode(),radius:radKm(),loc,useop:$('useop').checked,usebase:$('usebase').checked,useest:$('useest').checked,keep:$('keep').checked,planned:$('planned').value,transport:$('transport').value},
+    crowd:getCrowd()};
+}
+function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);}
+const dFile=(d,ext)=>`brouillon-panier${d.name?'-'+slug(d.name):''}-${d.fileStamp}.${ext}`;
+function applySettings(x){
+  if(!x)return;
+  if(x.store!=null)$('store').value=x.store;if(x.date!=null)$('rdate').value=x.date;
+  if(x.mode){const r=document.querySelector(`input[name=mode][value=${x.mode==='online'?'online':'near'}]`);if(r){r.checked=true;$('nearbox').hidden=x.mode==='online';}}
+  if(x.radius>0){$('radius').value=x.radius;radLab();}
+  if(x.loc&&typeof x.loc.lat==='number'&&typeof x.loc.lon==='number')setLoc(x.loc.lat,x.loc.lon,x.loc.label||'');
+  ['useop','usebase','useest','keep'].forEach(k=>{if(typeof x[k]==='boolean')$(k).checked=x[k];});
+  if(x.planned!=null)$('planned').value=x.planned;
+  if(['foot','bike','car'].includes(x.transport))$('transport').value=x.transport;
+}
+function restoreDraft(d){
+  const wasEmpty=!items.some(i=>(i.name||'').trim());
+  const its=(d.items||[]).map(i=>({name:String(i.name||'').slice(0,100),term:String(i.term||''),qty:Number(i.qty)||1,total:Number(i.total)||0,store:String(i.store||''),date:String(i.date||''),code:String(i.code||'').replace(/\D/g,''),fresh:false})).filter(i=>i.name||i.code);
+  if(!its.length){msg(t('importfail'));return;}
+  its.forEach(i=>{if(!i.term)i.term=searchTerm(i.name)||i.name.toLowerCase();});
+  if(wasEmpty)applySettings(d.settings);
+  if(d.crowd&&typeof d.crowd==='object'){const c=getCrowd();Object.keys(d.crowd).forEach(k=>{if(d.crowd[k]&&Array.isArray(d.crowd[k].slots))c[k]=d.crowd[k];});setCrowd(c);}
+  const n=addItems(its,d.title||t('draftword'));
+  msg(t('dloaded')(its.length,d.title||t('draftword')));$('res').hidden=true;
+  $('review').scrollIntoView({behavior:'smooth'});
+}
+function renderDrafts(){
+  const L=getDrafts().slice().reverse(),b=$('drafts');b.innerHTML='';
+  $('draftsbox').querySelector('summary').textContent='📁 '+t('draftlist')+' ('+L.length+')';
+  if(!L.length){const p=document.createElement('p');p.className='small';p.textContent=t('dnone');b.appendChild(p);return;}
+  L.forEach(d=>{
+    const row=document.createElement('div');row.className='draftrow';
+    const sp=document.createElement('span');sp.innerHTML=`<b>${esc(d.title)}</b> <span class="small">· ${esc(t('nitems')((d.items||[]).length))}</span>`;
+    const act=document.createElement('span');
+    const mk=(txt,fn)=>{const x=document.createElement('button');x.className='s';x.style.cssText='font-size:13px;margin-left:4px';x.textContent=txt;x.onclick=fn;act.appendChild(x);};
+    mk(t('dresume'),()=>restoreDraft(d));
+    mk('JSON',()=>download(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),dFile(d,'json')));
+    mk(t('ddelete'),()=>{setDrafts(getDrafts().filter(x=>x.savedAt!==d.savedAt));renderDrafts();});
+    row.append(sp,act);b.appendChild(row);
+  });
+}
+$('dsave').onclick=()=>{
+  const d=snapshot();if(!d.items.length){dmsg(t('dempty'));return;}
+  const L=getDrafts();L.push(d);while(L.length>25)L.shift();
+  if(setDrafts(L)){dmsg(t('dsavedmsg')(d.title));renderDrafts();$('draftsbox').open=true;}else dmsg(t('dfull'));
+};
+$('djson').onclick=()=>{const d=snapshot();if(!d.items.length){dmsg(t('dempty'));return;}download(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),dFile(d,'json'));dmsg(d.title);};
+$('dxls').onclick=async()=>{
+  const d=snapshot();if(!d.items.length){dmsg(t('dempty'));return;}
+  try{await loadScript(XLS,'XLSX');}catch{dmsg(t('xlsfail'));return;}
+  const fr=lang==='fr',se=d.settings;
+  const A=[[d.title],[t('dstatus'),t('draftword')],[t('dsaved'),d.savedAt],[],
+    fr?['Article','Terme recherché','Quantité','Prix payé (€)','Enseigne','Date','Code-barres']:['Item','Search term','Quantity','Price paid (€)','Store','Date','Barcode'],
+    ...d.items.map(i=>[i.name,i.term,i.qty,i.total||'',i.store,i.date,i.code])];
+  const ws=XLSX.utils.aoa_to_sheet(A);ws['!cols']=[{wch:42},{wch:22},{wch:10},{wch:12},{wch:20},{wch:12},{wch:16}];
+  const S=[['key','value'],['store',se.store],['date',se.date],['mode',se.mode],['radius',se.radius],['lat',se.loc?se.loc.lat:''],['lon',se.loc?se.loc.lon:''],['label',se.loc?se.loc.label:''],['planned',se.planned],['transport',se.transport],['useop',se.useop?1:0],['usebase',se.usebase?1:0],['useest',se.useest?1:0],['keep',se.keep?1:0]];
+  const C=[[fr?'Clé magasin':'Store key',fr?'Magasin':'Store',fr?'Jours (1=lun)':'Days (1=Mon)',fr?'De':'From',fr?'À':'To']];
+  Object.entries(d.crowd||{}).forEach(([k,v])=>(v.slots||[]).forEach(x=>C.push([k,v.name||'',x.d.join(','),x.from,x.to])));
+  const wb=XLSX.utils.book_new();wb.Props={Title:d.title};
+  XLSX.utils.book_append_sheet(wb,ws,fr?'Brouillon':'Draft');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(S),fr?'Paramètres':'Settings');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(C),fr?'Affluence':'Busy hours');
+  XLSX.writeFile(wb,dFile(d,'xlsx'));dmsg(d.title);
+};
+// a draft file (JSON or Excel) is recognised on import; anything else follows the usual receipt import
+async function readDraft(f){
+  try{
+    if(/\.json$/i.test(f.name)){const j=JSON.parse(await f.text());return j&&j.type==='panier-malin-brouillon'?j:null;}
+    if(!/\.xlsx?$/i.test(f.name))return null;
+    await loadScript(XLS,'XLSX');
+    const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});
+    const nm=re=>wb.SheetNames.find(n=>re.test(n));
+    const sn=nm(/^(brouillon|draft)/i);if(!sn)return null;
+    const A=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:''});
+    const hr=A.findIndex(r=>/^(article|item)/i.test(String(r[0]).trim()));if(hr<0)return null;
+    const num=v=>parseFloat(String(v).replace(',','.'))||0;
+    const d={type:'panier-malin-brouillon',title:String(A[0][0]||''),items:A.slice(hr+1).filter(r=>String(r[0]).trim()).map(r=>({name:String(r[0]),term:String(r[1]||''),qty:num(r[2])||1,total:num(r[3]),store:String(r[4]||''),date:xdate(r[5]),code:String(r[6]||'').replace(/\D/g,'')})),settings:{},crowd:{}};
+    const ss=nm(/^(param|setting)/i);
+    if(ss){const o={};XLSX.utils.sheet_to_json(wb.Sheets[ss],{header:1,defval:''}).forEach(r=>{o[String(r[0])]=r[1];});
+      d.settings={store:String(o.store||''),date:String(o.date||''),mode:o.mode==='online'?'online':'near',radius:num(o.radius),planned:String(o.planned||''),transport:String(o.transport||''),
+        loc:(o.lat!==''&&o.lon!==''&&o.lat!==undefined)?{lat:num(o.lat),lon:num(o.lon),label:String(o.label||'')}:null,
+        useop:o.useop!==0&&o.useop!=='0',usebase:o.usebase!==0&&o.usebase!=='0',useest:o.useest!==0&&o.useest!=='0',keep:o.keep!==0&&o.keep!=='0'};}
+    const cs=nm(/^(affluence|busy)/i);
+    if(cs)XLSX.utils.sheet_to_json(wb.Sheets[cs],{header:1,defval:''}).slice(1).forEach(r=>{
+      if(!r[0]||!r[3]||!r[4])return;const e=(d.crowd[r[0]]=d.crowd[r[0]]||{name:String(r[1]||''),slots:[]});
+      e.slots.push({d:String(r[2]).split(',').map(Number).filter(x=>x>=1&&x<=7),from:String(r[3]),to:String(r[4])});});
+    return d;
+  }catch{return null;}
+}
+bfr.onclick=()=>{lang='fr';localStorage.setItem('pm_lang',lang);applyLang();};
+ben.onclick=()=>{lang='en';localStorage.setItem('pm_lang',lang);applyLang();};
+applyLang();
+</script>
+</body>
+</html>
