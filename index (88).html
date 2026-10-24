@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panier Malin — Smart Basket</title>
+<style>
+:root{--bg:#f6f7f4;--card:#fff;--ink:#1d2a22;--mute:#667269;--line:#e0e5de;--acc:#1f7a4d;--acc2:#e8f3ec;--warn:#b4531a;--good:#137a3a;--bad:#b3261e}
+@media(prefers-color-scheme:dark){:root{--bg:#121714;--card:#1b231e;--ink:#e8efe9;--mute:#9aa89e;--line:#2c3830;--acc:#4cc38a;--acc2:#1f2f26;--warn:#e59a63;--good:#5fd68b;--bad:#ff8a80}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;max-width:860px;margin:0 auto}
+header h1{font-size:20px;margin:0;letter-spacing:-.2px}
+header h1 span{color:var(--acc)}
+.lang button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:6px 11px;cursor:pointer;font-weight:600}
+.lang button:first-child{border-radius:8px 0 0 8px}.lang button:last-child{border-radius:0 8px 8px 0;border-left:0}
+.lang button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+main{max-width:860px;margin:0 auto;padding:0 16px 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:0 0 14px}
+.card h2{font-size:16px;margin:0 0 10px;display:flex;gap:8px;align-items:center}
+.num{background:var(--acc);color:#fff;border-radius:50%;width:24px;height:24px;display:inline-grid;place-items:center;font-size:13px}
+.hint,.small{color:var(--mute);font-size:13px}
+button.p,label.p{background:var(--acc);color:#fff;border:0;border-radius:10px;padding:10px 16px;font-size:15px;font-weight:600;cursor:pointer;display:inline-block}
+button.s{background:var(--acc2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:14px;cursor:pointer}
+button:disabled{opacity:.5;cursor:default}
+input[type=text],input[type=number],textarea,select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+textarea{min-height:90px;font-family:ui-monospace,Menlo,monospace;font-size:13px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.row>*{flex:0 0 auto}.row .grow{flex:1 1 180px}
+.bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--acc);width:0;transition:width .2s}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;color:var(--mute);font-weight:600;font-size:12px;padding:4px}
+td{padding:4px;vertical-align:middle}
+td input{padding:6px 8px}
+.item{border-top:1px solid var(--line);padding:12px 0}
+.item:first-child{border-top:0}
+.ihead{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-weight:600}
+.paid{color:var(--mute);font-weight:400;font-size:13px}
+.offer{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:7px 10px;border:1px solid var(--line);border-radius:9px;margin-top:6px;cursor:pointer;font-size:14px}
+.offer.sel{border-color:var(--acc);background:var(--acc2)}
+.offer .pr{font-weight:700;white-space:nowrap}
+.offer .pr.cheap{color:var(--good)}.offer .pr.dear{color:var(--bad)}
+.tag{font-size:11px;background:var(--line);border-radius:5px;padding:1px 6px;margin-left:6px;color:var(--mute)}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:6px}
+.sum div{background:var(--acc2);border-radius:10px;padding:10px 12px}
+.sum b{display:block;font-size:20px}
+.sum .save b{color:var(--good)}
+.note{border-left:3px solid var(--warn);padding:6px 10px;color:var(--mute);font-size:13px;margin-top:10px}
+.err{color:var(--bad);font-size:14px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <h1>Panier <span>Malin</span></h1>
+  <div class="lang"><button id="bfr">FR</button><button id="ben">EN</button></div>
+</header>
+<main>
+
+<section class="card">
+  <h2><span class="num">1</span><span data-i="s1"></span></h2>
+  <p class="hint" data-i="s1h"></p>
+  <div class="row">
+    <label class="p"><span data-i="photo"></span><input id="file" type="file" accept="image/*" capture="environment" hidden></label>
+    <button class="s" id="paste" data-i="manual"></button>
+    <button class="s" id="demo" data-i="demo"></button>
+  </div>
+  <div id="ocrbox" hidden><div class="small" id="ocrmsg"></div><div class="bar"><i id="ocrbar"></i></div></div>
+  <div id="pastebox" hidden>
+    <textarea id="rawtxt" data-ph="rawph"></textarea>
+    <div class="row"><button class="p" id="parse" data-i="analyse"></button></div>
+  </div>
+</section>
+
+<section class="card" id="review" hidden>
+  <h2><span class="num">2</span><span data-i="s2"></span></h2>
+  <div class="row">
+    <div class="grow"><label class="small" data-i="store"></label><input type="text" id="store"></div>
+    <div><label class="small" data-i="date"></label><input type="text" id="rdate" style="width:130px"></div>
+  </div>
+  <table><thead><tr><th data-i="item"></th><th data-i="search"></th><th style="width:56px" data-i="qty"></th><th style="width:84px" data-i="total"></th><th style="width:30px"></th></tr></thead><tbody id="rows"></tbody></table>
+  <div class="row"><button class="s" id="addrow" data-i="addrow"></button></div>
+  <p class="small" data-i="searchhint"></p>
+</section>
+
+<section class="card" id="setcard" hidden>
+  <h2><span class="num">3</span><span data-i="s3"></span></h2>
+  <div class="row">
+    <label><input type="radio" name="mode" value="near" checked> <span data-i="near"></span></label>
+    <label><input type="radio" name="mode" value="online"> <span data-i="online"></span></label>
+  </div>
+  <div id="nearbox">
+    <div class="row"><span data-i="radius"></span> <b id="rlab"></b></div>
+    <input type="range" id="radius" min="0.5" max="50" step="0.5" value="2" style="width:100%">
+    <div class="row">
+      <button class="s" id="geo" data-i="geo"></button>
+      <input type="text" id="addr" class="grow" data-ph="addrph">
+      <button class="s" id="addrgo" data-i="find"></button>
+    </div>
+    <div class="small" id="locmsg"></div>
+  </div>
+  <div class="row"><label><input type="checkbox" id="keep" checked> <span data-i="keep"></span></label></div>
+  <div class="row"><button class="p" id="go" data-i="compare"></button></div>
+</section>
+
+<section class="card" id="res" hidden>
+  <h2><span class="num">4</span><span data-i="s4"></span></h2>
+  <div class="bar" id="rbar"><i id="rbari"></i></div>
+  <div id="summary"></div>
+  <div id="list"></div>
+  <div class="note" data-i="caveat"></div>
+</section>
+
+<section class="card">
+  <h2 data-i="basetitle"></h2>
+  <p class="small" id="basestat"></p>
+  <div class="row"><button class="s" id="exp" data-i="export"></button><button class="s" id="clr" data-i="clear"></button></div>
+  <p class="small" data-i="privacy"></p>
+</section>
+</main>
+
+<script>
+/* ============ i18n ============ */
+const T={
+fr:{s1:"Scanner un ticket de caisse",s1h:"Prenez en photo un ticket déjà payé : l’appli lit l’enseigne, les articles et les prix payés.",photo:"📷 Scanner / choisir une photo",manual:"Coller le texte",demo:"Exemple de ticket",rawph:"Collez ici le texte du ticket…",analyse:"Analyser",
+s2:"Vérifier les articles lus",store:"Enseigne",date:"Date",item:"Article (ticket)",search:"Terme recherché",qty:"Qté",total:"Total €",addrow:"+ Ajouter un article",searchhint:"Les noms de ticket sont souvent abrégés : ajustez le « terme recherché » (ex. « lait demi-écrémé ») pour de meilleurs résultats.",
+s3:"Où chercher ?",near:"Autour de moi",online:"Sur Internet",radius:"Rayon de recherche :",geo:"📍 Me localiser",addrph:"ou saisir une ville / adresse",find:"Chercher",keep:"Ajouter ce ticket à ma base de prix locale (sur cet appareil)",compare:"Trouver les prix les moins chers",
+s4:"Résultats",caveat:"Les prix proviennent de la base collaborative Open Prices et de vos propres tickets. Ils sont relevés par des contributeurs : vérifiez le format (poids, marque) et la date avant de vous déplacer.",
+basetitle:"Ma base de prix locale",export:"Exporter (JSON)",clear:"Tout effacer",privacy:"Vos tickets restent sur cet appareil. Seuls les termes recherchés et la zone de recherche sont envoyés à Open Prices ; l’adresse saisie est envoyée à OpenStreetMap (Nominatim).",
+reading:"Lecture du ticket…",loadocr:"Chargement du moteur de lecture…",ocrfail:"Lecture impossible. Collez le texte du ticket à la place.",noitems:"Aucun article reconnu. Ajoutez-les à la main.",
+km:"km",m:"m",locok:"Position :",locno:"Position inconnue",locfail:"Localisation refusée ou indisponible.",geofail:"Adresse introuvable.",
+paid:"Payé",none:"Aucune offre trouvée",err:"Erreur réseau",cheapest:"Moins cher",same:"Prix équivalent",
+tpaid:"Total payé",tbest:"Total optimisé",tsave:"Économie possible",tfound:"Articles comparés",online_tag:"En ligne",mine:"Mon ticket",away:"à",
+bstat:(n,i)=>`${n} ticket(s), ${i} article(s) enregistrés.`,confirmclear:"Effacer toute la base locale ?",needloc:"Indiquez d’abord votre position (ou choisissez Internet).",
+srcnote:"Cliquez sur une offre pour la retenir."},
+en:{s1:"Scan a receipt",s1h:"Take a photo of a receipt you already paid: the app reads the store, the items and the prices paid.",photo:"📷 Scan / pick a photo",manual:"Paste text",demo:"Sample receipt",rawph:"Paste the receipt text here…",analyse:"Analyse",
+s2:"Check the items read",store:"Store",date:"Date",item:"Item (receipt)",search:"Search term",qty:"Qty",total:"Total €",addrow:"+ Add an item",searchhint:"Receipt names are often abbreviated: adjust the “search term” (e.g. “semi-skimmed milk”) for better results.",
+s3:"Where to search?",near:"Around me",online:"Online",radius:"Search radius:",geo:"📍 Locate me",addrph:"or type a city / address",find:"Search",keep:"Add this receipt to my local price base (on this device)",compare:"Find the cheapest prices",
+s4:"Results",caveat:"Prices come from the community database Open Prices and from your own receipts. They are contributed by people: check the size, brand and date before travelling.",
+basetitle:"My local price base",export:"Export (JSON)",clear:"Clear all",privacy:"Your receipts stay on this device. Only search terms and the search area are sent to Open Prices; a typed address is sent to OpenStreetMap (Nominatim).",
+reading:"Reading receipt…",loadocr:"Loading the reading engine…",ocrfail:"Could not read it. Paste the receipt text instead.",noitems:"No item recognised. Add them by hand.",
+km:"km",m:"m",locok:"Position:",locno:"Position unknown",locfail:"Location denied or unavailable.",geofail:"Address not found.",
+paid:"Paid",none:"No offer found",err:"Network error",cheapest:"Cheapest",same:"Same price",
+tpaid:"Total paid",tbest:"Optimised total",tsave:"Possible saving",tfound:"Items compared",online_tag:"Online",mine:"My receipt",away:"at",
+bstat:(n,i)=>`${n} receipt(s), ${i} item(s) saved.`,confirmclear:"Clear the whole local base?",needloc:"Set your location first (or choose Online).",
+srcnote:"Click an offer to select it."}};
+let lang=localStorage.getItem('pm_lang')||((navigator.language||'fr').startsWith('en')?'en':'fr');
+const t=k=>T[lang][k];
+function applyLang(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll('[data-i]').forEach(e=>e.textContent=t(e.dataset.i));
+  document.querySelectorAll('[data-ph]').forEach(e=>e.placeholder=t(e.dataset.ph));
+  bfr.classList.toggle('on',lang==='fr');ben.classList.toggle('on',lang==='en');
+  radLab();locLab();baseStat();if(items.length)renderRows();
+}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ============ PARSER ============ */
+const STORES=['carrefour','leclerc','auchan','lidl','aldi','intermarch','monoprix','casino','franprix','super u','hyper u','u express','picard','biocoop','naturalia','cora','match','netto','grand frais','tesco','sainsbury','asda','walmart','kroger','costco','target','whole foods','mercadona','dia','colruyt','delhaize','spar','g20','simply market','carrefour city','carrefour market'];
+const SKIP=/(sous[- ]?total|subtotal|\btotal|\btva\b|\bvat\b|\btax\b|\bcarte\b|\bcb\b|\bvisa\b|mastercard|esp[eè]ces|\bcash\b|\brendu\b|\bchange\b|monnaie|merci|thank|fid[eé]lit|\bpoints?\b|\bremise|r[eé]duction|net [àa] payer|paiement|payment|siret|\bt[eé]l\b|www|\bcaisse\b|h[oô]te|\bticket\b|facture|nb articles|articles?\s*:|\bavoir\b|cagnotte|\bdate\b|\bheure\b)/i;
+const PRICE_END=/^(.*?)[\s.]*(-?\d{1,4}[.,]\s?\d{2})\s*(?:€|eur)?\s*[A-Z*]?\s*$/i;
+function parseReceipt(text){
+  const lines=text.split(/\r?\n/).map(l=>l.replace(/\s+/g,' ').trim()).filter(Boolean);
+  let store='',date='';
+  const head=lines.slice(0,8).join(' ').toLowerCase();
+  for(const s of STORES){if(head.includes(s)){store=s.replace(/\b\w/g,c=>c.toUpperCase());if(s==='intermarch')store='Intermarché';break;}}
+  if(!store&&lines[0]&&!/\d{2}[.,]\d{2}/.test(lines[0]))store=lines[0].slice(0,40);
+  const dm=text.match(/(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/);
+  if(dm){let y=dm[3].length===2?'20'+dm[3]:dm[3];date=`${y}-${dm[2].padStart(2,'0')}-${dm[1].padStart(2,'0')}`;}
+  const out=[];
+  for(const ln of lines){
+    if(SKIP.test(ln))continue;
+    const m=ln.match(PRICE_END);if(!m)continue;
+    let name=m[1].trim(),price=parseFloat(m[2].replace(/\s/,'').replace(',','.'));
+    if(!(price>0)||price>999)continue;
+    let qty=1;
+    const q=name.match(/^(\d{1,2})\s*[x×*]\s*(.*)$/i);
+    if(q){qty=parseInt(q[1],10);name=q[2];}
+    name=name.replace(/\s*\d+\s*[x×]\s*\d+[.,]\d{2}\s*$/i,'').replace(/[\s.*]+$/,'').trim();
+    if((name.match(/[A-Za-zÀ-ÿ]/g)||[]).length<3)continue;
+    out.push({name,term:searchTerm(name),qty,total:price});
+  }
+  return{store,date,items:out};
+}
+const UNITS=/^(g|kg|l|cl|ml|x|pce|pcs|pc|la|le|les|de|du|des|et|bte|sach|bio|u|uht|pk|lot)$/i;
+function searchTerm(name){
+  return name.toLowerCase().replace(/[^a-zà-ÿ0-9\s']/g,' ').split(/\s+/)
+    .filter(w=>w.length>=3&&!/^\d/.test(w)&&!UNITS.test(w)).slice(0,3).join(' ');
+}
+const DEMO=`CARREFOUR MARKET
+12 RUE DE LA PAIX 75002 PARIS
+24/10/2026 10:32
+LAIT DEMI ECREME 1L        1,15
+2 x PATES SPAGHETTI 500G   1,98
+YAOURT NATURE X8           2,45
+BEURRE DOUX 250G           2,39
+POMMES GALA 1KG            2,99
+NUTELLA 400G               3,59
+CAFE MOULU 250G            3,29
+SOUS-TOTAL                17,84
+TOTAL EUR                 17,84
+CB VISA                   17,84`;
+
+/* ============ STATE ============ */
+let items=[],baseKey='pm_base_v1';
+let loc=JSON.parse(localStorage.getItem('pm_loc')||'null');
+const getBase=()=>{try{return JSON.parse(localStorage.getItem(baseKey)||'[]')}catch{return[]}};
+const setBase=b=>localStorage.setItem(baseKey,JSON.stringify(b));
+function baseStat(){const b=getBase();$('basestat').textContent=t('bstat')(b.length,b.reduce((a,r)=>a+r.items.length,0));}
+
+/* ============ SCAN ============ */
+function loadScript(src){return new Promise((res,rej)=>{if(window.Tesseract)return res();const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+$('file').addEventListener('change',async e=>{
+  const f=e.target.files[0];if(!f)return;
+  $('ocrbox').hidden=false;$('ocrmsg').textContent=t('loadocr');$('ocrbar').style.width='3%';
+  try{
+    await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js');
+    const r=await Tesseract.recognize(f,'fra+eng',{logger:m=>{if(m.status==='recognizing text'){$('ocrmsg').textContent=t('reading');$('ocrbar').style.width=Math.round(m.progress*100)+'%';}}});
+    $('ocrbox').hidden=true;$('rawtxt').value=r.data.text;
+    handleText(r.data.text);
+  }catch(err){$('ocrmsg').textContent=t('ocrfail');$('pastebox').hidden=false;}
+});
+$('paste').onclick=()=>{$('pastebox').hidden=false;$('rawtxt').focus();};
+$('demo').onclick=()=>{$('pastebox').hidden=false;$('rawtxt').value=DEMO;handleText(DEMO);};
+$('parse').onclick=()=>handleText($('rawtxt').value);
+function handleText(txt){
+  const r=parseReceipt(txt);
+  $('store').value=r.store;$('rdate').value=r.date;items=r.items;
+  $('review').hidden=false;$('setcard').hidden=false;
+  if(!items.length)items=[{name:'',term:'',qty:1,total:0}];
+  renderRows();$('review').scrollIntoView({behavior:'smooth'});
+}
+function renderRows(){
+  const tb=$('rows');tb.innerHTML='';
+  items.forEach((it,i)=>{
+    const tr=document.createElement('tr');
+    const mk=(k,type,w)=>{const td=document.createElement('td');const inp=document.createElement('input');inp.type=type;inp.value=it[k];if(type==='number'){inp.step='0.01';inp.min='0';}
+      inp.oninput=()=>{it[k]=type==='number'?parseFloat(inp.value)||0:inp.value;if(k==='name'&&!it._termEdited)it.term=searchTerm(it.name),tr.children[1].firstChild.value=it.term;if(k==='term')it._termEdited=true;};
+      td.appendChild(inp);return td;};
+    tr.append(mk('name','text'),mk('term','text'),mk('qty','number'),mk('total','number'));
+    const td=document.createElement('td');const b=document.createElement('button');b.textContent='✕';b.className='s';b.style.padding='4px 8px';b.onclick=()=>{items.splice(i,1);renderRows();};td.appendChild(b);tr.appendChild(td);
+    tb.appendChild(tr);
+  });
+}
+$('addrow').onclick=()=>{items.push({name:'',term:'',qty:1,total:0});renderRows();};
+
+/* ============ SETTINGS ============ */
+const radKm=()=>parseFloat($('radius').value);
+function radLab(){const r=radKm();$('rlab').textContent=r<1?Math.round(r*1000)+' '+t('m'):r+' '+t('km');}
+function locLab(){$('locmsg').textContent=loc?`${t('locok')} ${loc.label||''} (${loc.lat.toFixed(3)}, ${loc.lon.toFixed(3)})`:t('locno');}
+$('radius').oninput=radLab;
+document.querySelectorAll('input[name=mode]').forEach(r=>r.onchange=()=>{$('nearbox').hidden=getMode()==='online';});
+const getMode=()=>document.querySelector('input[name=mode]:checked').value;
+function setLoc(lat,lon,label){loc={lat,lon,label};localStorage.setItem('pm_loc',JSON.stringify(loc));locLab();}
+$('geo').onclick=()=>{
+  if(!navigator.geolocation){$('locmsg').textContent=t('locfail');return;}
+  navigator.geolocation.getCurrentPosition(p=>setLoc(p.coords.latitude,p.coords.longitude,'GPS'),()=>{$('locmsg').textContent=t('locfail');},{timeout:10000});
+};
+$('addrgo').onclick=async()=>{
+  const q=$('addr').value.trim();if(!q)return;
+  try{const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language='+lang+'&q='+encodeURIComponent(q));
+    const j=await r.json();if(!j.length){$('locmsg').textContent=t('geofail');return;}
+    setLoc(parseFloat(j[0].lat),parseFloat(j[0].lon),(j[0].display_name||q).split(',').slice(0,2).join(','));
+  }catch{$('locmsg').textContent=t('geofail');}
+};
+
+/* ============ COMPARE ============ */
+const hav=(a,b,c,d)=>{const R=6371,r=x=>x*Math.PI/180,dl=r(c-a),dn=r(d-b);const h=Math.sin(dl/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h));};
+const norm=s=>s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+const fmt=n=>n.toLocaleString(lang==='fr'?'fr-FR':'en-GB',{style:'currency',currency:'EUR'});
+
+async function findCodes(term){
+  // Open Prices exposes a substring filter on product names; retry with fewer words if nothing matches
+  const words=term.split(/\s+/).filter(Boolean);
+  for(let n=words.length;n>=1;n--){
+    const q=words.slice(0,n).join(' ');
+    const p=new URLSearchParams({product_name__like:q,order_by:'-price_count',size:'10'});
+    const r=await fetch('https://prices.openfoodfacts.org/api/v1/products?'+p);
+    if(!r.ok)throw new Error(r.status);
+    const j=await r.json();
+    if((j.items||[]).length)return j.items.map(x=>x.code);
+  }
+  return[];
+}
+async function fetchOpen(term,mode){
+  const codes=await findCodes(term);
+  if(!codes.length)return[];
+  const p=new URLSearchParams({product_code__in:codes.join(','),currency:'EUR',order_by:'price',size:'30'});
+  if(mode==='online')p.set('location__type','ONLINE');
+  else{p.set('lat',loc.lat);p.set('lon',loc.lon);p.set('radius_km',radKm());}
+  const r=await fetch('https://prices.openfoodfacts.org/api/v1/prices?'+p);
+  if(!r.ok)throw new Error(r.status);
+  const j=await r.json();
+  return(j.items||[]).filter(x=>x.price>0).map(x=>{
+    const L=x.location||{},P=x.product||{};
+    const d=(mode==='near'&&L.osm_lat!=null)?hav(loc.lat,loc.lon,L.osm_lat,L.osm_lon):null;
+    return{price:x.price,store:L.type==='ONLINE'?(L.website_url||t('online_tag')):(L.osm_name||L.osm_brand||'?'),city:L.osm_address_city||'',
+      product:[P.product_name,P.brands,P.quantity].filter(Boolean).join(' · ')||term,date:x.date||'',dist:d,online:L.type==='ONLINE',src:'op'};
+  });
+}
+function fromBase(term,mode,paidStore){
+  const toks=norm(term).split(/\s+/).filter(Boolean);if(!toks.length)return[];
+  const out=[];
+  for(const rc of getBase()){
+    if(mode==='near'){if(rc.lat==null)continue;if(hav(loc.lat,loc.lon,rc.lat,rc.lon)>radKm())continue;}
+    else continue;
+    for(const it of rc.items){
+      const n=norm(it.name);if(!toks.every(w=>n.includes(w)))continue;
+      out.push({price:it.total/(it.qty||1),store:rc.store||'?',city:'',product:it.name,date:rc.date||'',dist:rc.lat!=null?hav(loc.lat,loc.lon,rc.lat,rc.lon):null,online:false,src:'mine'});
+    }
+  }
+  return out;
+}
+$('go').onclick=async()=>{
+  const mode=getMode();
+  if(mode==='near'&&!loc){$('locmsg').textContent=t('needloc');return;}
+  const valid=items.filter(i=>i.name.trim()&&i.total>0);if(!valid.length)return;
+  const store=$('store').value.trim(),date=$('rdate').value.trim();
+  // snapshot of base BEFORE adding the current receipt, so it is not compared with itself
+  const baseBefore=getBase();
+  $('res').hidden=false;$('res').scrollIntoView({behavior:'smooth'});
+  $('list').innerHTML='';$('summary').innerHTML='';$('rbari').style.width='0';
+  const results=new Array(valid.length);let done=0;
+  const work=async(i)=>{
+    const it=valid[i],term=(it.term||searchTerm(it.name)).trim();
+    const unit=it.total/(it.qty||1);
+    let offers=[],err=false;
+    try{offers=await fetchOpen(term,mode);}catch{err=true;}
+    offers=offers.concat(fromBase(term,mode));
+    offers.sort((a,b)=>a.price-b.price);
+    {const seen=new Set();offers=offers.filter(o=>{const k=o.store+'|'+o.product+'|'+o.price;if(seen.has(k))return false;seen.add(k);return true;});}
+    results[i]={it,unit,term,offers:offers.slice(0,6),sel:0,err};
+    $('rbari').style.width=Math.round(++done/valid.length*100)+'%';
+  };
+  const q=valid.map((_,i)=>i);
+  await Promise.all([0,1,2].map(async()=>{while(q.length)await work(q.shift());}));
+  renderResults(results);
+  if($('keep').checked){
+    const b=baseBefore;
+    b.push({store,date,lat:loc?loc.lat:null,lon:loc?loc.lon:null,items:valid.map(i=>({name:i.name,qty:i.qty||1,total:i.total}))});
+    setBase(b);baseStat();
+  }
+};
+function renderResults(R){
+  const L=$('list');L.innerHTML='';
+  R.forEach((r,ri)=>{
+    const d=document.createElement('div');d.className='item';
+    const h=document.createElement('div');h.className='ihead';
+    h.innerHTML=`<span>${esc(r.it.name)} ${r.it.qty>1?'×'+r.it.qty:''}</span><span class="paid">${t('paid')} : ${fmt(r.unit)}${r.it.qty>1?' /u':''}</span>`;
+    d.appendChild(h);
+    if(r.err&&!r.offers.length){const e=document.createElement('div');e.className='err';e.textContent=t('err');d.appendChild(e);}
+    else if(!r.offers.length){const e=document.createElement('div');e.className='small';e.textContent=t('none')+' (« '+r.term+' »)';d.appendChild(e);}
+    r.offers.forEach((o,oi)=>{
+      const row=document.createElement('div');row.className='offer'+(oi===r.sel?' sel':'');
+      const cls=o.price<r.unit-0.005?'cheap':(o.price>r.unit+0.005?'dear':'');
+      const where=o.online?t('online_tag'):(o.city||'')+(o.dist!=null?` · ${o.dist<1?Math.round(o.dist*1000)+' m':o.dist.toFixed(1)+' km'}`:'');
+      row.innerHTML=`<span><b>${esc(o.store)}</b>${o.src==='mine'?`<span class="tag">${t('mine')}</span>`:''}<br><span class="small">${esc(o.product)}${where?' — '+esc(where):''}${o.date?' — '+esc(o.date):''}</span></span><span class="pr ${cls}">${fmt(o.price)}</span>`;
+      row.onclick=()=>{r.sel=oi;renderResults(R);};
+      d.appendChild(row);
+    });
+    L.appendChild(d);
+  });
+  let paid=0,best=0,n=0;
+  R.forEach(r=>{const q=r.it.qty||1;paid+=r.it.total;const o=r.offers[r.sel];if(o){n++;best+=Math.min(o.price,r.unit)*q;}else best+=r.it.total;});
+  $('summary').innerHTML=`<div class="sum"><div><span class="small">${t('tpaid')}</span><b>${fmt(paid)}</b></div><div><span class="small">${t('tbest')}</span><b>${fmt(best)}</b></div><div class="save"><span class="small">${t('tsave')}</span><b>${fmt(paid-best)}</b></div><div><span class="small">${t('tfound')}</span><b>${n}/${R.length}</b></div></div><p class="small">${t('srcnote')}</p>`;
+}
+
+/* ============ BASE ============ */
+$('exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(getBase(),null,2)],{type:'application/json'}));a.download='panier-malin-base.json';a.click();};
+$('clr').onclick=()=>{if(confirm(t('confirmclear'))){setBase([]);baseStat();}};
+bfr.onclick=()=>{lang='fr';localStorage.setItem('pm_lang',lang);applyLang();};
+ben.onclick=()=>{lang='en';localStorage.setItem('pm_lang',lang);applyLang();};
+applyLang();
+</script>
+</body>
+</html>
