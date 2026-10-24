@@ -67,14 +67,23 @@ td input{padding:6px 8px}
   <p class="hint" data-i="s1h"></p>
   <div class="row">
     <label class="p"><span data-i="photo"></span><input id="file" type="file" accept="image/*" capture="environment" hidden></label>
+    <button class="s" id="impbtn" data-i="impfile"></button>
+    <button class="s" id="listbtn" data-i="typelist"></button>
     <button class="s" id="paste" data-i="manual"></button>
     <button class="s" id="demo" data-i="demo"></button>
   </div>
+  <input type="file" id="fimp" accept=".json,.xlsx,.xls,.csv,application/json" hidden>
   <div id="ocrbox" hidden><div class="small" id="ocrmsg"></div><div class="bar"><i id="ocrbar"></i></div></div>
   <div id="pastebox" hidden>
     <textarea id="rawtxt" data-ph="rawph"></textarea>
     <div class="row"><button class="p" id="parse" data-i="analyse"></button></div>
   </div>
+  <div id="listbox" hidden>
+    <textarea id="rawlist" data-ph="listph"></textarea>
+    <div class="row"><button class="p" id="addlist" data-i="addlist"></button></div>
+  </div>
+  <div id="chips" class="row"></div>
+  <p class="small" id="srcmsg"></p>
 </section>
 
 <section class="card" id="review" hidden>
@@ -104,6 +113,9 @@ td input{padding:6px 8px}
     </div>
     <div class="small" id="locmsg"></div>
   </div>
+  <div class="row"><span class="small" data-i="srcs"></span>
+    <label><input type="checkbox" id="useop" checked> <span data-i="useop"></span></label>
+    <label><input type="checkbox" id="usebase" checked> <span data-i="usebase"></span></label></div>
   <div class="row"><label><input type="checkbox" id="keep" checked> <span data-i="keep"></span></label></div>
   <div class="row"><button class="p" id="go" data-i="compare"></button></div>
 </section>
@@ -121,9 +133,8 @@ td input{padding:6px 8px}
 <section class="card">
   <h2 data-i="basetitle"></h2>
   <p class="small" id="basestat"></p>
-  <div class="row"><button class="s" id="exp" data-i="export"></button><button class="s" id="impj" data-i="impjson"></button><button class="s" id="expx" data-i="expxls"></button><button class="s" id="impx" data-i="impxls"></button><button class="s" id="clr" data-i="clear"></button></div>
-  <input type="file" id="fjson" accept=".json,application/json" hidden><input type="file" id="fxls" accept=".xlsx,.xls,.csv" hidden>
-  <p class="small" id="basemsg"></p>
+  <div class="row"><button class="s" id="exp" data-i="export"></button><button class="s" id="expx" data-i="expxls"></button><button class="s" id="clr" data-i="clear"></button></div>
+  
   <p class="small" data-i="privacy"></p>
 </section>
 </main>
@@ -131,7 +142,7 @@ td input{padding:6px 8px}
 <script>
 /* ============ i18n ============ */
 const T={
-fr:{s1:"Scanner un ticket de caisse",s1h:"Prenez en photo un ticket déjà payé : l’appli lit l’enseigne, les articles et les prix payés.",photo:"📷 Scanner / choisir une photo",manual:"Coller le texte",demo:"Exemple de ticket",rawph:"Collez ici le texte du ticket…",analyse:"Analyser",
+fr:{s1:"Scanner un ticket de caisse",s1h:"Combinez plusieurs sources : photo d’un nouveau ticket, ancien fichier de courses (JSON ou Excel), liste saisie… Tout s’ajoute à la liste ci-dessous, puis la recherche relance les prix.",photo:"📷 Scanner / choisir une photo",manual:"Coller le texte",demo:"Exemple de ticket",rawph:"Collez ici le texte du ticket…",analyse:"Analyser",
 s2:"Vérifier les articles lus",store:"Enseigne",date:"Date",item:"Article (ticket)",search:"Terme recherché",qty:"Qté",total:"Total €",addrow:"+ Ajouter un article",searchhint:"Les noms de ticket sont souvent abrégés : ajustez le « terme recherché » (ex. « lait demi-écrémé ») pour de meilleurs résultats.",
 s3:"Où chercher ?",near:"Autour de moi",online:"Sur Internet",radius:"Rayon de recherche :",geo:"📍 Me localiser",addrph:"ou saisir une ville / adresse",find:"Chercher",keep:"Ajouter ce ticket à ma base de prix locale (sur cet appareil)",compare:"Trouver les prix les moins chers",
 s4:"Résultats",caveat:"Les prix proviennent de la base collaborative Open Prices et de vos propres tickets. Ils sont relevés par des contributeurs : vérifiez le format (poids, marque) et la date avant de vous déplacer.",
@@ -141,8 +152,8 @@ km:"km",m:"m",locok:"Position :",locno:"Position inconnue",locfail:"Localisation
 paid:"Payé",none:"Aucune offre trouvée",err:"Erreur réseau",cheapest:"Moins cher",same:"Prix équivalent",
 tpaid:"Total payé",tbest:"Total optimisé",tsave:"Économie possible",tfound:"Articles moins chers",online_tag:"En ligne",mine:"Mon ticket",away:"à",
 bstat:(n,i)=>`${n} ticket(s), ${i} article(s) enregistrés.`,confirmclear:"Effacer toute la base locale ?",needloc:"Indiquez d’abord votre position (ou choisissez Internet).",
-srcnote:"Cliquez sur une offre pour la retenir.",nearbest:"Le moins cher à proximité",nonear:"Aucune offre dans le périmètre",outside:"Prix moins chers hors périmètre",viewfar:"Voir",hidefar:"Masquer",remove:"Retirer de la liste",restore:"Remettre",removed:"Article retiré du résultat",noprice:"prix payé inconnu",saveby:"économie",nothing:"Aucun article à comparer. Ajoutez au moins un nom d’article.",impjson:"Importer (JSON)",expxls:"Exporter (Excel)",impxls:"Importer (Excel)",wheretitle:"Où acheter vos articles",stayat:"Rien de moins cher trouvé — rester chez",nitems:n=>n+" article"+(n>1?"s":""),subtotal:"Sous-total",imported:(a,b)=>`${a} ticket(s) importé(s), ${b} déjà présent(s).`,importfail:"Fichier illisible ou format non reconnu.",xlsfail:"Impossible de charger le module Excel (connexion ?).",unknownp:"prix inconnu"},
-en:{s1:"Scan a receipt",s1h:"Take a photo of a receipt you already paid: the app reads the store, the items and the prices paid.",photo:"📷 Scan / pick a photo",manual:"Paste text",demo:"Sample receipt",rawph:"Paste the receipt text here…",analyse:"Analyse",
+srcnote:"Cliquez sur une offre pour la retenir.",nearbest:"Le moins cher à proximité",nonear:"Aucune offre dans le périmètre",outside:"Prix moins chers hors périmètre",viewfar:"Voir",hidefar:"Masquer",remove:"Retirer de la liste",restore:"Remettre",removed:"Article retiré du résultat",noprice:"prix payé inconnu",saveby:"économie",nothing:"Aucun article à comparer. Ajoutez au moins un nom d’article.",impjson:"Importer (JSON)",expxls:"Exporter (Excel)",impxls:"Importer (Excel)",wheretitle:"Où acheter vos articles",stayat:"Rien de moins cher trouvé — rester chez",nitems:n=>n+" article"+(n>1?"s":""),subtotal:"Sous-total",imported:(a,b)=>`${a} ticket(s) importé(s), ${b} déjà présent(s).`,importfail:"Fichier illisible ou format non reconnu.",xlsfail:"Impossible de charger le module Excel (connexion ?).",unknownp:"prix inconnu",impfile:"📂 Importer un ancien fichier (JSON / Excel)",typelist:"Saisir une liste",listph:"Un article par ligne, par ex. :\nlait demi-écrémé\n2 x pâtes spaghetti 1,20",addlist:"Ajouter à la liste",srcs:"Sources de prix :",useop:"Open Prices (prix relevés en magasin)",usebase:"Ma base locale (mes tickets, fichiers importés)",clearlist:"Vider la liste",atstore:"chez",added:(n,l)=>`${n} nouvel(s) article(s) depuis « ${l} ».`},
+en:{s1:"Scan a receipt",s1h:"Combine several sources: a photo of a new receipt, an old shopping file (JSON or Excel), a typed list… Everything is added to the list below, then the search checks the prices again.",photo:"📷 Scan / pick a photo",manual:"Paste text",demo:"Sample receipt",rawph:"Paste the receipt text here…",analyse:"Analyse",
 s2:"Check the items read",store:"Store",date:"Date",item:"Item (receipt)",search:"Search term",qty:"Qty",total:"Total €",addrow:"+ Add an item",searchhint:"Receipt names are often abbreviated: adjust the “search term” (e.g. “semi-skimmed milk”) for better results.",
 s3:"Where to search?",near:"Around me",online:"Online",radius:"Search radius:",geo:"📍 Locate me",addrph:"or type a city / address",find:"Search",keep:"Add this receipt to my local price base (on this device)",compare:"Find the cheapest prices",
 s4:"Results",caveat:"Prices come from the community database Open Prices and from your own receipts. They are contributed by people: check the size, brand and date before travelling.",
@@ -152,7 +163,7 @@ km:"km",m:"m",locok:"Position:",locno:"Position unknown",locfail:"Location denie
 paid:"Paid",none:"No offer found",err:"Network error",cheapest:"Cheapest",same:"Same price",
 tpaid:"Total paid",tbest:"Optimised total",tsave:"Possible saving",tfound:"Cheaper items",online_tag:"Online",mine:"My receipt",away:"at",
 bstat:(n,i)=>`${n} receipt(s), ${i} item(s) saved.`,confirmclear:"Clear the whole local base?",needloc:"Set your location first (or choose Online).",
-srcnote:"Click an offer to select it.",nearbest:"Cheapest nearby",nonear:"No offer within the radius",outside:"Cheaper prices outside the radius",viewfar:"Show",hidefar:"Hide",remove:"Remove from list",restore:"Restore",removed:"Item removed from the result",noprice:"price paid unknown",saveby:"saving",nothing:"No item to compare. Add at least one item name.",impjson:"Import (JSON)",expxls:"Export (Excel)",impxls:"Import (Excel)",wheretitle:"Where to buy your items",stayat:"Nothing cheaper found — stay at",nitems:n=>n+" item"+(n>1?"s":""),subtotal:"Subtotal",imported:(a,b)=>`${a} receipt(s) imported, ${b} already present.`,importfail:"Unreadable file or unknown format.",xlsfail:"Could not load the Excel module (connection?).",unknownp:"price unknown"}};
+srcnote:"Click an offer to select it.",nearbest:"Cheapest nearby",nonear:"No offer within the radius",outside:"Cheaper prices outside the radius",viewfar:"Show",hidefar:"Hide",remove:"Remove from list",restore:"Restore",removed:"Item removed from the result",noprice:"price paid unknown",saveby:"saving",nothing:"No item to compare. Add at least one item name.",impjson:"Import (JSON)",expxls:"Export (Excel)",impxls:"Import (Excel)",wheretitle:"Where to buy your items",stayat:"Nothing cheaper found — stay at",nitems:n=>n+" item"+(n>1?"s":""),subtotal:"Subtotal",imported:(a,b)=>`${a} receipt(s) imported, ${b} already present.`,importfail:"Unreadable file or unknown format.",xlsfail:"Could not load the Excel module (connection?).",unknownp:"price unknown",impfile:"📂 Import an old file (JSON / Excel)",typelist:"Type a list",listph:"One item per line, e.g.:\nsemi-skimmed milk\n2 x spaghetti 1.20",addlist:"Add to the list",srcs:"Price sources:",useop:"Open Prices (in-store prices)",usebase:"My local base (my receipts, imported files)",clearlist:"Clear the list",atstore:"at",added:(n,l)=>`${n} new item(s) from “${l}”.`}};
 let lang=localStorage.getItem('pm_lang')||((navigator.language||'fr').startsWith('en')?'en':'fr');
 const t=k=>T[lang][k];
 function applyLang(){
@@ -243,32 +254,67 @@ $('file').addEventListener('change',async e=>{
     await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js');
     const r=await Tesseract.recognize(f,'fra+eng',{logger:m=>{if(m.status==='recognizing text'){$('ocrmsg').textContent=t('reading');$('ocrbar').style.width=Math.round(m.progress*100)+'%';}}});
     $('ocrbox').hidden=true;$('rawtxt').value=r.data.text;
-    handleText(r.data.text);
+    handleText(r.data.text,'Ticket photo');
   }catch(err){$('ocrmsg').textContent=t('ocrfail');$('pastebox').hidden=false;}
 });
 $('paste').onclick=()=>{$('pastebox').hidden=false;$('rawtxt').focus();};
-$('demo').onclick=()=>{$('pastebox').hidden=false;$('rawtxt').value=DEMO;handleText(DEMO);};
-$('parse').onclick=()=>handleText($('rawtxt').value);
-function handleText(txt){
-  const r=parseReceipt(txt);
-  $('store').value=r.store;$('rdate').value=r.date;items=r.items;
-  $('review').hidden=false;$('setcard').hidden=false;
-  if(!items.length)items=[{name:'',term:'',qty:1,total:0}];
-  renderRows();$('review').scrollIntoView({behavior:'smooth'});
+$('demo').onclick=()=>{$('pastebox').hidden=false;$('rawtxt').value=DEMO;handleText(DEMO,'Exemple');};
+$('parse').onclick=()=>handleText($('rawtxt').value,'Ticket (texte)');
+let sources=[];
+function showCards(){$('review').hidden=false;$('setcard').hidden=false;renderRows();}
+function renderChips(){
+  const c=$('chips');c.innerHTML='';
+  sources.forEach(x=>{const e=document.createElement('span');e.className='tag';e.textContent=x.label+' · '+x.n;c.appendChild(e);});
+  if(sources.length){const b=document.createElement('button');b.className='s';b.style.fontSize='13px';b.textContent=t('clearlist');b.onclick=()=>{items=[];sources=[];renderChips();renderRows();msg('');};c.appendChild(b);}
 }
+function addItems(arr,label){
+  items=items.filter(i=>i.name.trim());
+  let n=0;
+  arr.forEach(x=>{
+    const k=norm(x.name),ex=items.find(i=>norm(i.name)===k);
+    if(!ex){items.push(x);n++;}
+    else if(x.total>0&&(!(ex.total>0)||(x.date||'')>(ex.date||'')))Object.assign(ex,{total:x.total,qty:x.qty,store:x.store,date:x.date,fresh:x.fresh});
+  });
+  sources.push({label,n});
+  showCards();renderChips();return n;
+}
+function handleText(txt,label){
+  const r=parseReceipt(txt);
+  if(r.store)$('store').value=r.store;if(r.date)$('rdate').value=r.date;
+  const st=$('store').value,dt=$('rdate').value;
+  const its=r.items.map(i=>({...i,store:st,date:dt,fresh:true}));
+  if(!its.length){msg(t('noitems'));if(!items.length)items=[{name:'',term:'',qty:1,total:0,store:st,date:dt,fresh:true}];showCards();return;}
+  const n=addItems(its,label);msg(t('added')(n,label));
+  $('review').scrollIntoView({behavior:'smooth'});
+}
+$('store').oninput=()=>items.forEach(i=>{if(i.fresh)i.store=$('store').value;});
+$('rdate').oninput=()=>items.forEach(i=>{if(i.fresh)i.date=$('rdate').value;});
+$('listbtn').onclick=()=>{$('listbox').hidden=false;$('rawlist').focus();};
+function parseList(text){
+  return text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(ln=>{
+    let name=ln,total=0,qty=1;
+    const m=ln.match(PRICE_END);if(m){name=m[1].trim();total=parseFloat(m[2].replace(/\s/,'').replace(',','.'))||0;}
+    const q=name.match(/^(\d{1,2})\s*[x×*]\s*(.*)$/i);if(q){qty=parseInt(q[1],10);name=q[2];}
+    name=name.replace(/[\s.*,;-]+$/,'');
+    return name.length>=2?{name,term:searchTerm(name)||name.toLowerCase(),qty,total,store:'',date:'',fresh:false}:null;
+  }).filter(Boolean);
+}
+$('addlist').onclick=()=>{const its=parseList($('rawlist').value);if(!its.length)return;const n=addItems(its,'Liste');$('rawlist').value='';msg(t('added')(n,'Liste'));};
 function renderRows(){
   const tb=$('rows');tb.innerHTML='';
   items.forEach((it,i)=>{
     const tr=document.createElement('tr');
     const mk=(k,type,w)=>{const td=document.createElement('td');const inp=document.createElement('input');inp.type=type;inp.value=it[k];if(type==='number'){inp.step='0.01';inp.min='0';}
       inp.oninput=()=>{it[k]=type==='number'?parseFloat(inp.value)||0:inp.value;if(k==='name'&&!it._termEdited)it.term=searchTerm(it.name),tr.children[1].firstChild.value=it.term;if(k==='term')it._termEdited=true;};
-      td.appendChild(inp);return td;};
+      td.appendChild(inp);
+      if(k==='name'&&(it.store||it.date)){const sm=document.createElement('div');sm.className='small';sm.textContent=[it.store,it.date].filter(Boolean).join(' · ');td.appendChild(sm);}
+      return td;};
     tr.append(mk('name','text'),mk('term','text'),mk('qty','number'),mk('total','number'));
     const td=document.createElement('td');const b=document.createElement('button');b.textContent='✕';b.className='s';b.style.padding='4px 8px';b.onclick=()=>{items.splice(i,1);renderRows();};td.appendChild(b);tr.appendChild(td);
     tb.appendChild(tr);
   });
 }
-$('addrow').onclick=()=>{items.push({name:'',term:'',qty:1,total:0});renderRows();};
+$('addrow').onclick=()=>{items.push({name:'',term:'',qty:1,total:0,store:$('store').value,date:$('rdate').value,fresh:true});renderRows();};
 
 /* ============ SETTINGS ============ */
 const radKm=()=>parseFloat($('radius').value);
@@ -359,8 +405,8 @@ $('go').onclick=async()=>{
     const it=valid[i],term=(it.term||searchTerm(it.name)).trim();
     const unit=it.total>0?it.total/(it.qty||1):0;
     let offers=[],err=false;
-    try{offers=await fetchOpen(term,mode);}catch{err=true;}
-    offers=offers.concat(fromBase(term,mode));
+    if($('useop').checked){try{offers=await fetchOpen(term,mode);}catch{err=true;}}
+    if($('usebase').checked)offers=offers.concat(fromBase(term,mode).filter(o=>!(o.store===it.store&&o.date===it.date&&Math.abs(o.price-unit)<0.005)));
     offers.sort((a,b)=>a.price-b.price);
     const seen=new Set();offers=offers.filter(o=>{const k=o.store+'|'+o.product+'|'+o.price;if(seen.has(k))return false;seen.add(k);return true;});
     const R=radKm();
@@ -374,8 +420,9 @@ $('go').onclick=async()=>{
   finally{$('go').disabled=false;}
   renderResults(results);
   if($('keep').checked){
-    const priced=valid.filter(i=>i.total>0);
-    if(priced.length){baseBefore.push({store,date,lat:loc?loc.lat:null,lon:loc?loc.lon:null,items:priced.map(i=>({name:i.name,qty:i.qty||1,total:i.total}))});setBase(baseBefore);baseStat();}
+    const fresh=valid.filter(i=>i.fresh&&i.total>0),g={};
+    fresh.forEach(i=>{const k=(i.store||store)+'|'+(i.date||date);(g[k]=g[k]||{store:i.store||store,date:i.date||date,lat:loc?loc.lat:null,lon:loc?loc.lon:null,items:[]}).items.push({name:i.name,qty:i.qty||1,total:i.total});i.fresh=false;});
+    if(fresh.length){Object.values(g).forEach(r=>baseBefore.push(r));setBase(baseBefore);baseStat();}
   }
 };
 function offerRow(R,r,o){
@@ -392,7 +439,7 @@ function renderResults(R){
   R.forEach(r=>{
     const d=document.createElement('div');d.className='item';
     const h=document.createElement('div');h.className='ihead';
-    const paid=r.unit>0?`${t('paid')} : ${fmt(r.unit)}${r.it.qty>1?' /u':''}`:t('noprice');
+    const paid=r.unit>0?`${t('paid')} : ${fmt(r.unit)}${r.it.qty>1?' /u':''}${r.it.store?' '+esc(t('atstore'))+' '+esc(r.it.store):''}${r.it.date?' ('+esc(r.it.date)+')':''}`:t('noprice');
     h.innerHTML=`<span>${esc(r.it.name)} ${r.it.qty>1?'×'+r.it.qty:''}<br><span class="paid">${paid}</span></span>`;
     const btn=document.createElement('button');btn.className='s';btn.style.fontSize='13px';btn.textContent=r.off?t('restore'):t('remove');
     btn.onclick=()=>{r.off=!r.off;renderResults(R);};
@@ -432,8 +479,8 @@ function renderPlan(R){
   const G={},store0=$('store').value.trim()||'—';
   R.filter(r=>!r.off).forEach(r=>{
     const o=(isCheaper(r)||(r.unit<=0&&r.sel))?r.sel:null;
-    const key=o?[o.store,o.city,o.dist!=null?o.dist.toFixed(2):'',o.online].join('|'):'__stay';
-    const g=G[key]||(G[key]={o,stay:!o,rows:[],sum:0});
+    const key=o?[o.store,o.city,o.dist!=null?o.dist.toFixed(2):'',o.online].join('|'):'__stay|'+(r.it.store||store0);
+    const g=G[key]||(G[key]={o,stay:!o,ss:o?null:(r.it.store||store0),rows:[],sum:0});
     const q=r.it.qty||1,price=o?o.price:(r.unit>0?r.unit:null);
     g.rows.push({name:r.it.name,q,price});if(price!=null)g.sum+=price*q;
   });
@@ -442,7 +489,7 @@ function renderPlan(R){
   arr.forEach(g=>{
     const d=document.createElement('div');d.className='plan';
     const where=g.stay?'':(g.o.online?t('online_tag'):[g.o.city,fd(g.o.dist)].filter(Boolean).join(' · '));
-    const title=g.stay?`${t('stayat')} ${esc(store0)}`:`🛒 ${esc(g.o.store)}${where?` <span class="small">— ${esc(where)}</span>`:''}`;
+    const title=g.stay?`${t('stayat')} ${esc(g.ss)}`:`🛒 ${esc(g.o.store)}${where?` <span class="small">— ${esc(where)}</span>`:''}`;
     d.innerHTML=`<h3><span>${title}</span><span class="small">${t('nitems')(g.rows.length)} · ${t('subtotal')} ${fmt(g.sum)}</span></h3><ul>`+
       g.rows.map(x=>`<li><span>${esc(x.name)}${x.q>1?' ×'+x.q:''}</span><b>${x.price!=null?fmt(x.price*x.q):esc(t('unknownp'))}</b></li>`).join('')+'</ul>';
     box.appendChild(d);
@@ -452,7 +499,7 @@ function renderPlan(R){
 /* ============ BASE ============ */
 $('exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(getBase(),null,2)],{type:'application/json'}));a.download='panier-malin-base.json';a.click();};
 $('clr').onclick=()=>{if(confirm(t('confirmclear'))){setBase([]);baseStat();}};
-const msg=m=>{$('basemsg').textContent=m;};
+const msg=m=>{$('srcmsg').textContent=m;};
 function cleanReceipt(r){
   if(!r||!Array.isArray(r.items))return null;
   const items=r.items.map(i=>({name:String(i.name??'').slice(0,80),qty:Number(i.qty)||1,total:Number(String(i.total).replace(',','.'))||0})).filter(i=>i.name&&i.total>0);
@@ -463,14 +510,9 @@ function cleanReceipt(r){
 function mergeBase(list){
   const base=getBase(),keys=new Set(base.map(r=>JSON.stringify([r.store,r.date,r.items])));
   let add=0,dup=0;
-  list.map(cleanReceipt).filter(Boolean).forEach(r=>{const k=JSON.stringify([r.store,r.date,r.items]);if(keys.has(k))dup++;else{keys.add(k);base.push(r);add++;}});
-  setBase(base);baseStat();msg(t('imported')(add,dup));
+  list.forEach(r=>{const k=JSON.stringify([r.store,r.date,r.items]);if(keys.has(k))dup++;else{keys.add(k);base.push(r);add++;}});
+  setBase(base);baseStat();return[add,dup];
 }
-$('impj').onclick=()=>$('fjson').click();
-$('fjson').onchange=async e=>{
-  const f=e.target.files[0];e.target.value='';if(!f)return;
-  try{let j=JSON.parse(await f.text());if(!Array.isArray(j))j=j.receipts||j.tickets||[];if(!Array.isArray(j))throw 0;mergeBase(j);}catch{msg(t('importfail'));}
-};
 const XLS='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
 $('expx').onclick=async()=>{
   try{await loadScript(XLS,'XLSX');}catch{msg(t('xlsfail'));return;}
@@ -481,31 +523,40 @@ $('expx').onclick=async()=>{
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Tickets');
   XLSX.writeFile(wb,'panier-malin-base.xlsx');
 };
-$('impx').onclick=()=>$('fxls').click();
 const xdate=v=>{if(typeof v==='number'&&v>20000){const d=new Date(Math.round((v-25569)*86400000));return d.toISOString().slice(0,10);}
   const m=String(v).match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/);return m?`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`:String(v||'').slice(0,10);};
-$('fxls').onchange=async e=>{
+function receiptsFromRows(rows){
+  const col=(row,re)=>{const k=Object.keys(row).find(k=>re.test(k.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase()));return k?row[k]:'';};
+  const G=new Map();
+  rows.forEach(row=>{
+    const name=String(col(row,/^(article|item|produit|product)/)).trim();
+    const total=parseFloat(String(col(row,/^(total|prix|price)/)).replace(',','.'));
+    if(!name||!(total>0))return;
+    const store=String(col(row,/^(enseigne|store|magasin)/)),date=xdate(col(row,/^date/));
+    const lat=col(row,/^lat/),lon=col(row,/^lon/),k=[store,date,lat,lon].join('|');
+    if(!G.has(k))G.set(k,{store,date,lat,lon,items:[]});
+    G.get(k).items.push({name,qty:parseFloat(String(col(row,/^(qt|qty|quant)/)).replace(',','.'))||1,total});
+  });
+  return[...G.values()];
+}
+async function readFile(f){
+  if(/\.json$/i.test(f.name)){let j=JSON.parse(await f.text());if(!Array.isArray(j))j=j.receipts||j.tickets||[];if(!Array.isArray(j))throw new Error('fmt');return j;}
+  try{await loadScript(XLS,'XLSX');}catch{throw new Error('net');}
+  const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});
+  return receiptsFromRows(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}));
+}
+$('impbtn').onclick=()=>$('fimp').click();
+$('fimp').onchange=async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
-  try{await loadScript(XLS,'XLSX');}catch{msg(t('xlsfail'));return;}
-  try{
-    const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});
-    const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
-    if(!rows.length)throw 0;
-    const col=(row,re)=>{const k=Object.keys(row).find(k=>re.test(k.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase()));return k?row[k]:'';};
-    const G=new Map();
-    rows.forEach(row=>{
-      const name=String(col(row,/^(article|item|produit|product)/)).trim();
-      const total=parseFloat(String(col(row,/^(total|prix|price)/)).replace(',','.'));
-      if(!name||!(total>0))return;
-      const store=String(col(row,/^(enseigne|store|magasin)/)),date=xdate(col(row,/^date/));
-      const lat=col(row,/^lat/),lon=col(row,/^lon/);
-      const k=[store,date,lat,lon].join('|');
-      if(!G.has(k))G.set(k,{store,date,lat,lon,items:[]});
-      G.get(k).items.push({name,qty:parseFloat(String(col(row,/^(qt|qty|quant)/)).replace(',','.'))||1,total});
-    });
-    if(!G.size)throw 0;
-    mergeBase([...G.values()]);
-  }catch{msg(t('importfail'));}
+  let list;
+  try{list=(await readFile(f)).map(cleanReceipt).filter(Boolean);if(!list.length)throw new Error('fmt');}
+  catch(err){msg(err&&err.message==='net'?t('xlsfail'):t('importfail'));return;}
+  const [a,d]=mergeBase(list);
+  const its=[];
+  list.forEach(r=>r.items.forEach(i=>its.push({name:i.name,term:searchTerm(i.name)||i.name.toLowerCase(),qty:i.qty,total:i.total,store:r.store,date:r.date,fresh:false})));
+  const n=addItems(its,f.name);
+  msg(t('added')(n,f.name)+' '+t('imported')(a,d));
+  $('review').scrollIntoView({behavior:'smooth'});
 };
 bfr.onclick=()=>{lang='fr';localStorage.setItem('pm_lang',lang);applyLang();};
 ben.onclick=()=>{lang='en';localStorage.setItem('pm_lang',lang);applyLang();};
