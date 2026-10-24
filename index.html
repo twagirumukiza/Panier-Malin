@@ -116,7 +116,8 @@ td input{padding:6px 8px}
   </div>
   <div class="row"><span class="small" data-i="srcs"></span>
     <label><input type="checkbox" id="useop" checked> <span data-i="useop"></span></label>
-    <label><input type="checkbox" id="usebase" checked> <span data-i="usebase"></span></label></div>
+    <label><input type="checkbox" id="usebase" checked> <span data-i="usebase"></span></label>
+    <label><input type="checkbox" id="useest" checked> <span data-i="useest"></span></label></div>
   <div class="row"><label><input type="checkbox" id="keep" checked> <span data-i="keep"></span></label></div>
   <div class="row"><button class="p" id="go" data-i="compare"></button></div>
 </section>
@@ -124,6 +125,7 @@ td input{padding:6px 8px}
 <section class="card" id="res" hidden>
   <h2><span class="num">4</span><span data-i="s4"></span></h2>
   <div class="bar" id="rbar"><i id="rbari"></i></div>
+  <div id="stores"></div>
   <div id="summary"></div>
   <div id="list"></div>
   <h2 style="margin-top:18px" id="plantitle" hidden data-i="wheretitle"></h2>
@@ -153,7 +155,7 @@ km:"km",m:"m",locok:"Position :",locno:"Position inconnue",locfail:"Localisation
 paid:"Payé",none:"Aucune offre trouvée",err:"Erreur réseau",cheapest:"Moins cher",same:"Prix équivalent",
 tpaid:"Total payé",tbest:"Total optimisé",tsave:"Économie possible",tfound:"Articles moins chers",online_tag:"En ligne",mine:"Mon ticket",away:"à",
 bstat:(n,i)=>`${n} ticket(s), ${i} article(s) enregistrés.`,confirmclear:"Effacer toute la base locale ?",needloc:"Indiquez d’abord votre position (ou choisissez Internet).",
-srcnote:"Cliquez sur une offre pour la retenir.",nearbest:"Le moins cher à proximité",nonear:"Aucune offre dans le périmètre",outside:"Prix moins chers hors périmètre",viewfar:"Voir",hidefar:"Masquer",remove:"Retirer de la liste",restore:"Remettre",removed:"Article retiré du résultat",noprice:"prix payé inconnu",saveby:"économie",nothing:"Aucun article à comparer. Ajoutez au moins un nom d’article.",impjson:"Importer (JSON)",expxls:"Exporter (Excel)",impxls:"Importer (Excel)",wheretitle:"Où acheter vos articles",stayat:"Rien de moins cher trouvé — rester chez",nitems:n=>n+" article"+(n>1?"s":""),subtotal:"Sous-total",imported:(a,b)=>`${a} ticket(s) importé(s), ${b} déjà présent(s).`,importfail:"Fichier illisible ou format non reconnu.",xlsfail:"Impossible de charger le module Excel (connexion ?).",unknownp:"prix inconnu",testim:"Panier estimé (articles sans prix)",tlist:"Articles trouvés",nooffer:"Aucune offre trouvée dans le périmètre",listh:"Liste sans prix : l’appli cherche le meilleur prix de chaque article dans le périmètre choisi à l’étape 3.",impfile:"📂 Importer un ancien fichier (JSON / Excel)",typelist:"Saisir une liste",listph:"Un article par ligne, par ex. :\nlait demi-écrémé\n2 x pâtes spaghetti 1,20",addlist:"Ajouter à la liste",srcs:"Sources de prix :",useop:"Open Prices (prix relevés en magasin)",usebase:"Ma base locale (mes tickets, fichiers importés)",clearlist:"Vider la liste",atstore:"chez",added:(n,l)=>`${n} nouvel(s) article(s) depuis « ${l} ».`},
+srcnote:"Cliquez sur une offre pour la retenir.",nearbest:"Le moins cher à proximité",nonear:"Aucune offre dans le périmètre",outside:"Prix moins chers hors périmètre",viewfar:"Voir",hidefar:"Masquer",remove:"Retirer de la liste",restore:"Remettre",removed:"Article retiré du résultat",noprice:"prix payé inconnu",saveby:"économie",nothing:"Aucun article à comparer. Ajoutez au moins un nom d’article.",impjson:"Importer (JSON)",expxls:"Exporter (Excel)",impxls:"Importer (Excel)",wheretitle:"Où acheter vos articles",stayat:"Rien de moins cher trouvé — rester chez",nitems:n=>n+" article"+(n>1?"s":""),subtotal:"Sous-total",imported:(a,b)=>`${a} ticket(s) importé(s), ${b} déjà présent(s).`,importfail:"Fichier illisible ou format non reconnu.",xlsfail:"Impossible de charger le module Excel (connexion ?).",unknownp:"prix inconnu",est:"indicatif",estfrom:"prix relevé chez",storesnear:"Magasins dans le périmètre",nonearstores:"Aucun prix relevé pour cet article dans le périmètre. Magasins proches :",contrib:"Peu de prix relevés ici : scannez vos tickets pour enrichir la base.",useest:"Prix indicatifs (même enseigne, relevé ailleurs)",nostores:"Aucun magasin trouvé (service de cartographie indisponible ?)",testim:"Panier estimé (articles sans prix)",tlist:"Articles trouvés",nooffer:"Aucune offre trouvée dans le périmètre",listh:"Liste sans prix : l’appli cherche le meilleur prix de chaque article dans le périmètre choisi à l’étape 3.",impfile:"📂 Importer un ancien fichier (JSON / Excel)",typelist:"Saisir une liste",listph:"Un article par ligne, par ex. :\nlait demi-écrémé\n2 x pâtes spaghetti 1,20",addlist:"Ajouter à la liste",srcs:"Sources de prix :",useop:"Open Prices (prix relevés en magasin)",usebase:"Ma base locale (mes tickets, fichiers importés)",clearlist:"Vider la liste",atstore:"chez",added:(n,l)=>`${n} nouvel(s) article(s) depuis « ${l} ».`},
 en:{s1:"Scan a receipt",s1h:"Combine several sources: a photo of a new receipt, an old shopping file (JSON or Excel), a typed list… Everything is added to the list below, then the search checks the prices again.",photo:"📷 Scan / pick a photo",manual:"Paste text",demo:"Sample receipt",rawph:"Paste the receipt text here…",analyse:"Analyse",
 s2:"Check the items read",store:"Store",date:"Date",item:"Item (receipt)",search:"Search term",qty:"Qty",total:"Total €",addrow:"+ Add an item",searchhint:"Receipt names are often abbreviated: adjust the “search term” (e.g. “semi-skimmed milk”) for better results.",
 s3:"Where to search?",near:"Around me",online:"Online",radius:"Search radius:",geo:"📍 Locate me",addrph:"or type a city / address",find:"Search",keep:"Add this receipt to my local price base (on this device)",compare:"Find the cheapest prices",
@@ -164,7 +166,7 @@ km:"km",m:"m",locok:"Position:",locno:"Position unknown",locfail:"Location denie
 paid:"Paid",none:"No offer found",err:"Network error",cheapest:"Cheapest",same:"Same price",
 tpaid:"Total paid",tbest:"Optimised total",tsave:"Possible saving",tfound:"Cheaper items",online_tag:"Online",mine:"My receipt",away:"at",
 bstat:(n,i)=>`${n} receipt(s), ${i} item(s) saved.`,confirmclear:"Clear the whole local base?",needloc:"Set your location first (or choose Online).",
-srcnote:"Click an offer to select it.",nearbest:"Cheapest nearby",nonear:"No offer within the radius",outside:"Cheaper prices outside the radius",viewfar:"Show",hidefar:"Hide",remove:"Remove from list",restore:"Restore",removed:"Item removed from the result",noprice:"price paid unknown",saveby:"saving",nothing:"No item to compare. Add at least one item name.",impjson:"Import (JSON)",expxls:"Export (Excel)",impxls:"Import (Excel)",wheretitle:"Where to buy your items",stayat:"Nothing cheaper found — stay at",nitems:n=>n+" item"+(n>1?"s":""),subtotal:"Subtotal",imported:(a,b)=>`${a} receipt(s) imported, ${b} already present.`,importfail:"Unreadable file or unknown format.",xlsfail:"Could not load the Excel module (connection?).",unknownp:"price unknown",testim:"Estimated basket (items without price)",tlist:"Items found",nooffer:"No offer found within the radius",listh:"Price-less list: the app looks for the best price of each item within the radius chosen in step 3.",impfile:"📂 Import an old file (JSON / Excel)",typelist:"Type a list",listph:"One item per line, e.g.:\nsemi-skimmed milk\n2 x spaghetti 1.20",addlist:"Add to the list",srcs:"Price sources:",useop:"Open Prices (in-store prices)",usebase:"My local base (my receipts, imported files)",clearlist:"Clear the list",atstore:"at",added:(n,l)=>`${n} new item(s) from “${l}”.`}};
+srcnote:"Click an offer to select it.",nearbest:"Cheapest nearby",nonear:"No offer within the radius",outside:"Cheaper prices outside the radius",viewfar:"Show",hidefar:"Hide",remove:"Remove from list",restore:"Restore",removed:"Item removed from the result",noprice:"price paid unknown",saveby:"saving",nothing:"No item to compare. Add at least one item name.",impjson:"Import (JSON)",expxls:"Export (Excel)",impxls:"Import (Excel)",wheretitle:"Where to buy your items",stayat:"Nothing cheaper found — stay at",nitems:n=>n+" item"+(n>1?"s":""),subtotal:"Subtotal",imported:(a,b)=>`${a} receipt(s) imported, ${b} already present.`,importfail:"Unreadable file or unknown format.",xlsfail:"Could not load the Excel module (connection?).",unknownp:"price unknown",est:"indicative",estfrom:"price seen at",storesnear:"Stores within the radius",nonearstores:"No price recorded for this item within the radius. Nearby stores:",contrib:"Few prices recorded here: scan your receipts to enrich the base.",useest:"Indicative prices (same chain, seen elsewhere)",nostores:"No store found (map service unavailable?)",testim:"Estimated basket (items without price)",tlist:"Items found",nooffer:"No offer found within the radius",listh:"Price-less list: the app looks for the best price of each item within the radius chosen in step 3.",impfile:"📂 Import an old file (JSON / Excel)",typelist:"Type a list",listph:"One item per line, e.g.:\nsemi-skimmed milk\n2 x spaghetti 1.20",addlist:"Add to the list",srcs:"Price sources:",useop:"Open Prices (in-store prices)",usebase:"My local base (my receipts, imported files)",clearlist:"Clear the list",atstore:"at",added:(n,l)=>`${n} new item(s) from “${l}”.`}};
 let lang=localStorage.getItem('pm_lang')||((navigator.language||'fr').startsWith('en')?'en':'fr');
 const t=k=>T[lang][k];
 function applyLang(){
@@ -342,21 +344,29 @@ const hav=(a,b,c,d)=>{const R=6371,r=x=>x*Math.PI/180,dl=r(c-a),dn=r(d-b);const 
 const norm=s=>s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 const fmt=n=>n.toLocaleString(lang==='fr'?'fr-FR':'en-GB',{style:'currency',currency:'EUR'});
 
-async function findCodes(term){
-  // Open Prices exposes a substring filter on product names; retry with fewer words if nothing matches
-  const words=term.split(/\s+/).filter(Boolean);
-  for(let n=words.length;n>=1;n--){
-    const q=words.slice(0,n).join(' ');
-    const p=new URLSearchParams({product_name__like:q,order_by:'-price_count',size:'10'});
-    const r=await fetch('https://prices.openfoodfacts.org/api/v1/products?'+p);
-    if(!r.ok)throw new Error(r.status);
-    const j=await r.json();
-    if((j.items||[]).length)return j.items.map(x=>x.code);
-  }
-  return[];
+const ACC={ecreme:'écrémé',ecremé:'écrémé',pates:'pâtes',pate:'pâte',cafe:'café',the:'thé',creme:'crème',fraiche:'fraîche',oeufs:'œufs',oeuf:'œuf',boeuf:'bœuf',epinards:'épinards',legumes:'légumes',cereales:'céréales',melange:'mélange',menage:'ménage',sucre:'sucré',sale:'salé',fume:'fumé',chevre:'chèvre',gruyere:'gruyère',ble:'blé',bebe:'bébé',poelee:'poêlée',specialite:'spécialité',deshydrate:'déshydraté',degraisse:'dégraissé'};
+const sing=w=>w.length>4&&w.endsWith('s')?w.slice(0,-1):w;
+async function codesFor(q){
+  const p=new URLSearchParams({product_name__like:q,order_by:'-price_count',size:'25'});
+  const r=await fetch('https://prices.openfoodfacts.org/api/v1/products?'+p);
+  if(!r.ok)throw new Error(r.status);
+  return((await r.json()).items||[]).map(x=>x.code);
 }
-async function fetchPrices(codes,mode,radius,term){
-  const p=new URLSearchParams({product_code__in:codes.join(','),currency:'EUR',order_by:'price',size:'30'});
+async function findCodes(term){
+  // several spellings of the search term, from most to least specific; results are merged
+  const words=term.split(/\s+/).filter(Boolean),V=[];
+  for(let n=words.length;n>=1;n--)V.push(words.slice(0,n).join(' '));
+  const acc=words.map(w=>ACC[w]||w);
+  for(let n=acc.length;n>=1;n--)V.push(acc.slice(0,n).join(' '));
+  V.push(words.map(sing).join(' '));
+  if(words.length>1)V.push(sing(words[words.length-1]));
+  const uniq=[...new Set(V.filter(Boolean))].slice(0,6);
+  const res=await Promise.all(uniq.map(q=>codesFor(q).catch(()=>[])));
+  const out=[];res.forEach(l=>l.forEach(c=>{if(!out.includes(c))out.push(c);}));
+  return out.slice(0,40);
+}
+async function fetchPrices(codes,mode,radius,term,size=60){
+  const p=new URLSearchParams({product_code__in:codes.join(','),currency:'EUR',order_by:'price',size:String(size)});
   if(mode==='online')p.set('location__type','ONLINE');
   else{p.set('lat',loc.lat);p.set('lon',loc.lon);p.set('radius_km',radius);}
   const r=await fetch('https://prices.openfoodfacts.org/api/v1/prices?'+p);
@@ -374,7 +384,7 @@ async function fetchOpen(term,mode){
   const codes=await findCodes(term);
   if(!codes.length)return[];
   if(mode==='online')return fetchPrices(codes,mode,0,term);
-  const [a,b]=await Promise.all([fetchPrices(codes,mode,radKm(),term),fetchPrices(codes,mode,Math.max(WIDE,radKm()),term)]);
+  const [a,b]=await Promise.all([fetchPrices(codes,mode,radKm(),term),fetchPrices(codes,mode,Math.max(WIDE,radKm()),term,100)]);
   return a.concat(b);
 }
 function fromBase(term,mode){
@@ -390,6 +400,37 @@ function fromBase(term,mode){
   }
   return out;
 }
+const BRANDS=['carrefour','leclerc','auchan','lidl','aldi','intermarche','monoprix','franprix','casino','picard','biocoop','naturalia','cora','match','netto','grand frais','super u','hyper u','marche u','simply','g20','spar','colruyt','delhaize','leader price','supeco','thiriet','bio c bon','tesco','sainsbury','asda','walmart','kroger','costco','mercadona'];
+const brandOf=n=>{const x=' '+norm(n||'').replace(/[^a-z0-9]+/g,' ')+' ';for(const b of BRANDS)if(x.includes(' '+b+' '))return b;return null;};
+let stores=[],storeKey='';
+async function nearbyStores(rkm){
+  const key=[loc.lat.toFixed(3),loc.lon.toFixed(3),rkm].join('|');
+  if(key===storeKey)return stores;
+  const q=`[out:json][timeout:25];nwr["shop"~"^(supermarket|convenience|frozen_food|greengrocer|department_store|wholesale)$"](around:${Math.round(rkm*1000)},${loc.lat},${loc.lon});out center tags 250;`;
+  const r=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'data='+encodeURIComponent(q)});
+  if(!r.ok)throw new Error(r.status);
+  const j=await r.json(),seen=new Set(),out=[];
+  (j.elements||[]).forEach(e=>{
+    const tg=e.tags||{},la=e.lat??(e.center&&e.center.lat),lo=e.lon??(e.center&&e.center.lon),name=tg.name||tg.brand;
+    if(!name||la==null)return;
+    const dist=hav(loc.lat,loc.lon,la,lo),k=norm(name)+'|'+dist.toFixed(2);if(seen.has(k))return;seen.add(k);
+    out.push({name,brand:brandOf(tg.brand)||brandOf(name),dist,lat:la,lon:lo});
+  });
+  out.sort((a,b)=>a.dist-b.dist);stores=out;storeKey=key;return out;
+}
+// A price seen at a store of a chain is used as an indication for the nearby stores of the same chain
+function estimateOffers(offers,R){
+  const out=[];
+  stores.filter(x=>x.brand&&x.dist<=R).forEach(ns=>{
+    const real=offers.some(o=>o.src==='op'&&!o.est&&o.dist!=null&&Math.abs(o.dist-ns.dist)<0.3&&brandOf(o.store)===ns.brand);
+    if(real)return;
+    const cand=offers.filter(o=>o.src==='op'&&!o.est&&brandOf(o.store)===ns.brand);
+    if(!cand.length)return;
+    const c=cand.reduce((a,b)=>a.price<=b.price?a:b);
+    out.push({price:c.price,store:ns.name,city:'',product:c.product,date:c.date,dist:ns.dist,online:false,src:'op',est:true,from:c.store+(c.city?' ('+c.city+')':'')});
+  });
+  return out;
+}
 const fd=d=>d==null?'':(d<1?Math.round(d*1000)+' m':d.toFixed(1)+' km');
 $('go').onclick=async()=>{
   const mode=getMode();
@@ -401,6 +442,9 @@ $('go').onclick=async()=>{
   const store=$('store').value.trim(),date=$('rdate').value.trim();
   const baseBefore=getBase();
   $('go').disabled=true;
+  stores=[];storeKey='';
+  if(mode==='near'){try{await nearbyStores(Math.min(radKm(),8));}catch{}}
+  renderStores(mode);
   const results=new Array(valid.length);let done=0;
   const work=async(i)=>{
     const it=valid[i],term=(it.term||searchTerm(it.name)).trim();
@@ -408,12 +452,13 @@ $('go').onclick=async()=>{
     let offers=[],err=false;
     if($('useop').checked){try{offers=await fetchOpen(term,mode);}catch{err=true;}}
     if($('usebase').checked)offers=offers.concat(fromBase(term,mode).filter(o=>!(o.store===it.store&&o.date===it.date&&Math.abs(o.price-unit)<0.005)));
+    if(mode==='near'&&$('useest').checked&&stores.length)offers=offers.concat(estimateOffers(offers,radKm()));
     offers.sort((a,b)=>a.price-b.price);
-    const seen=new Set();offers=offers.filter(o=>{const k=o.store+'|'+o.product+'|'+o.price;if(seen.has(k))return false;seen.add(k);return true;});
+    const seen=new Set();offers=offers.filter(o=>{const k=o.store+'|'+o.product+'|'+o.price+'|'+(o.dist!=null?o.dist.toFixed(1):'')+'|'+(o.est?1:0);if(seen.has(k))return false;seen.add(k);return true;});
     const R=radKm();
     const isNear=o=>mode==='online'||o.dist==null||o.dist<=R;
     const near=offers.filter(isNear).slice(0,5),far=offers.filter(o=>!isNear(o)).slice(0,5);
-    results[i]={it,unit,term,near,far,sel:near[0]||null,showFar:false,off:false,err};
+    results[i]={it,unit,term,near,far,nstores:stores.filter(x=>x.dist<=radKm()).slice(0,4),sel:near[0]||null,showFar:false,off:false,err};
     $('rbari').style.width=Math.round(++done/valid.length*100)+'%';
   };
   const q=valid.map((_,i)=>i);
@@ -426,11 +471,18 @@ $('go').onclick=async()=>{
     if(fresh.length){Object.values(g).forEach(r=>baseBefore.push(r));setBase(baseBefore);baseStat();}
   }
 };
+function renderStores(mode){
+  const b=$('stores');b.innerHTML='';if(mode!=='near')return;
+  const R=radKm(),L=stores.filter(x=>x.dist<=R);
+  const d=document.createElement('div');d.className='small';d.style.margin='6px 0';
+  d.textContent=L.length?`🏬 ${t('storesnear')} (${L.length}) : `+L.slice(0,12).map(x=>`${x.name} ${fd(x.dist)}`).join(' · ')+(L.length>12?' …':''):t('nostores');
+  b.appendChild(d);
+}
 function offerRow(R,r,o){
   const row=document.createElement('div');row.className='offer'+(o===r.sel?' sel':'');
   const cls=r.unit>0?(o.price<r.unit-0.005?'cheap':(o.price>r.unit+0.005?'dear':'')):'';
   const where=o.online?t('online_tag'):[o.city,fd(o.dist)].filter(Boolean).join(' · ');
-  row.innerHTML=`<span><b>${esc(o.store)}</b>${o.src==='mine'?`<span class="tag">${t('mine')}</span>`:''}<br><span class="small">${esc(o.product)}${where?' — '+esc(where):''}${o.date?' — '+esc(o.date):''}</span></span><span class="pr ${cls}">${fmt(o.price)}</span>`;
+  row.innerHTML=`<span><b>${esc(o.store)}</b>${o.src==='mine'?`<span class="tag">${t('mine')}</span>`:''}${o.est?`<span class="tag">${t('est')}</span>`:''}<br><span class="small">${esc(o.product)}${where?' — '+esc(where):''}${o.date?' — '+esc(o.date):''}${o.est?' — '+esc(t('estfrom'))+' '+esc(o.from):''}</span></span><span class="pr ${cls}">${fmt(o.price)}</span>`;
   row.onclick=()=>{r.sel=o;renderResults(R);};
   return row;
 }
@@ -450,7 +502,7 @@ function renderResults(R){
     if(r.near.length){
       const lab=document.createElement('div');lab.className='small';lab.style.marginTop='6px';lab.textContent=t('nearbest');d.appendChild(lab);
       r.near.forEach(o=>d.appendChild(offerRow(R,r,o)));
-    }else if(!r.err){const e=document.createElement('div');e.className='small';e.style.marginTop='6px';e.textContent=t('nonear')+' (« '+r.term+' »)';d.appendChild(e);}
+    }else if(!r.err){const e=document.createElement('div');e.className='small';e.style.marginTop='6px';e.textContent=(r.nstores&&r.nstores.length?t('nonearstores')+' '+r.nstores.map(x=>x.name+' '+fd(x.dist)).join(', ')+'. '+t('contrib'):t('nonear'))+' (« '+r.term+' »)';d.appendChild(e);}
     // outside the radius: only offers strictly cheaper than what was paid (and than the best nearby offer)
     const nb=r.near[0];
     const ref=Math.min(r.unit>0?r.unit:Infinity,nb?nb.price:Infinity);
@@ -492,7 +544,7 @@ function renderPlan(R){
   arr.forEach(g=>{
     const d=document.createElement('div');d.className='plan';
     const where=g.stay?'':(g.o.online?t('online_tag'):[g.o.city,fd(g.o.dist)].filter(Boolean).join(' · '));
-    const title=g.none?esc(t('nooffer')):g.stay?`${t('stayat')} ${esc(g.ss)}`:`🛒 ${esc(g.o.store)}${where?` <span class="small">— ${esc(where)}</span>`:''}`;
+    const title=g.none?esc(t('nooffer')):g.stay?`${t('stayat')} ${esc(g.ss)}`:`🛒 ${esc(g.o.store)}${g.o.est?` <span class="tag">${t('est')}</span>`:''}${where?` <span class="small">— ${esc(where)}</span>`:''}`;
     d.innerHTML=`<h3><span>${title}</span><span class="small">${t('nitems')(g.rows.length)} · ${t('subtotal')} ${fmt(g.sum)}</span></h3><ul>`+
       g.rows.map(x=>`<li><span>${esc(x.name)}${x.q>1?' ×'+x.q:''}</span><b>${x.price!=null?fmt(x.price*x.q):esc(t('unknownp'))}</b></li>`).join('')+'</ul>';
     box.appendChild(d);
